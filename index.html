@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>캠핑투게더 화목난로·연통 경로 시뮬레이터 & 맞춤 추천 가이드</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    input[type="range"] {
+      accent-color: #f97316;
+    }
+    @keyframes smokeRise {
+      0% { transform: translateY(0) scale(0.85); opacity: 0.65; }
+      50% { transform: translateY(-10px) scale(1.08); opacity: 0.4; }
+      100% { transform: translateY(-22px) scale(1.3); opacity: 0; }
+    }
+    .smoke-puff-1 { animation: smokeRise 2.6s infinite ease-out; }
+    .smoke-puff-2 { animation: smokeRise 2.6s infinite ease-out 0.9s; }
+    .smoke-puff-3 { animation: smokeRise 2.6s infinite ease-out 1.8s; }
+    @keyframes flameFlicker {
+      0%, 100% { transform: scaleY(1) scaleX(1); opacity: 0.92; }
+      50% { transform: scaleY(1.12) scaleX(0.94); opacity: 1; }
+    }
+    .flame-anim {
+      transform-origin: center bottom;
+      animation: flameFlicker 1.4s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 selection:bg-orange-500 selection:text-white">
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/20 font-extrabold text-white text-lg">
+            🔥
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">캠핑투게더 난로·연통 시뮬레이터</h1>
+              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                실측 제원 · 5cm 결속단축 반영
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">
+              텐트·난로·스탠드·홀잭 높이 기반 맞춤형 연통 경로 설계 및 구매 BOM 추천
+            </p>
+          </div>
+        </div>
+        <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
+           class="md:hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+          스토어 ↗
+        </a>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 md:pb-0">
+        <button id="tabBtn-simulator" data-tab="simulator" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap bg-orange-600 text-white shadow-sm transition">
+          📐 연통 경로 시뮬레이터
+        </button>
+        <button id="tabBtn-products" data-tab="products" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition">
+          🔥 스토어 난로·연통 DB
+        </button>
+        <button id="tabBtn-tents" data-tab="tents" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition">
+          ⛺ 국내·해외 인기 텐트 DB
+        </button>
+        <button id="tabBtn-rules" data-tab="rules" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition">
+          📘 설치 규칙·난이도 기준
+        </button>
+        <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
+           class="hidden md:inline-flex items-center gap-1.5 ml-2 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold whitespace-nowrap shadow-sm transition">
+          <span>캠핑투게더 스마트스토어</span>
+          <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden max-w-sm rounded-xl bg-slate-900/95 border border-orange-500/50 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-md">
+    <div class="flex items-center gap-2.5">
+      <span class="text-orange-400 text-base">✓</span>
+      <span id="toastMessage" class="font-medium">복사되었습니다.</span>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SIMULATOR (메인 시뮬레이터 화면) -->
+    <!-- ========================================== -->
+    <section id="tabPanel-simulator" class="space-y-6">
+
+      <!-- Quick Scenario Presets Bar -->
+      <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-orange-400">빠른 시나리오 프리셋</span>
+          <p class="text-xs text-slate-400 mt-0.5">대표적인 텐트 + 난로 + 스탠드 조합을 원클릭으로 불러와 바로 비교해 보세요.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-preset="varanger_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🟢 바랑에르돔 8-10 + 엠스토브 v3 (천장 직상·쉬움)
+          </button>
+          <button type="button" data-preset="orison_mstove_stand" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🟢 백컨트리 오리손 + 엠스토브 v3 + 스탠드550
+          </button>
+          <button type="button" data-preset="alfheim_lumora" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🟡 알페임 12.6 + 포몰리 루모라 Ti (45° 경사·중급)
+          </button>
+          <button type="button" data-preset="landlock_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🔴 랜드락 리빙쉘 + 엠스토브 v3 (측면 90°·고급)
+          </button>
+          <button type="button" data-preset="ghost_dweller" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🔴 코베아 고스트 플러스 + 드웰러 맥스 3 (측면 90°)
+          </button>
+        </div>
+      </div>
+
+      <!-- Main 12-Col Grid: Left Controls (5 cols) + Right Visualization & Recommendation (7 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN: USER INPUT CONTROLS -->
+        <div class="lg:col-span-5 space-y-5">
+
+          <!-- STEP 1: 텐트 및 홀잭 위치 설정 -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-extrabold flex items-center justify-center">1</span>
+                <h2 class="text-sm sm:text-base font-bold text-white">텐트 선택 및 홀잭(연통 통과) 높이 입력</h2>
+              </div>
+              <span id="selectedTentBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">해외 인기</span>
+            </div>
+
+            <!-- Tent Category Filter -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1.5">텐트 목록 필터</label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-origin="all" class="tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition">전체 (15)</button>
+                <button type="button" data-origin="국내" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">국내 인기 (8)</button>
+                <button type="button" data-origin="해외" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">해외 인기 (7)</button>
+                <button type="button" data-origin="custom" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">직접 입력</button>
+              </div>
+            </div>
+
+            <!-- Tent Select Dropdown -->
+            <div>
+              <label for="tentSelect" class="block text-xs font-semibold text-slate-300 mb-1">보유 텐트 모델 선택</label>
+              <select id="tentSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+              </select>
+              <div id="tentSpecSummary" class="mt-2 rounded-xl bg-slate-950/80 border border-slate-800/90 p-2.5 text-xs text-slate-300 flex flex-wrap items-center justify-between gap-2">
+              </div>
+            </div>
+
+            <!-- Tent Shape Type Selector -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">텐트 형태 (시뮬레이션 단면 프로파일)</label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-shape="dome" class="tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">돔 쉘터</button>
+                <button type="button" data-shape="tipi" class="tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">티피·원폴</button>
+                <button type="button" data-shape="tunnel" class="tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">터널·리빙쉘</button>
+                <button type="button" data-shape="cabin" class="tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">오두막·캐빈</button>
+              </div>
+            </div>
+
+            <!-- Tent Peak Height Input -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="tentHeightInput" class="text-xs font-semibold text-slate-300">텐트 최고 높이 (천장고)</label>
+                <div class="flex items-center gap-1">
+                  <input id="tentHeightInput" type="number" min="130" max="350" step="1" value="210"
+                         class="w-20 rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-right text-sm font-bold text-orange-400 focus:border-orange-500 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <input id="tentHeightSlider" type="range" min="130" max="350" step="1" value="210" class="w-full" />
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>소형 쉘터 (130cm)</span>
+                <span>표준 리빙쉘 (205cm)</span>
+                <span>대형 티피 (300cm+)</span>
+              </div>
+            </div>
+
+            <!-- Stove Jack Height Input -->
+            <div class="space-y-1.5 pt-1 border-t border-slate-800/80">
+              <div class="flex items-center justify-between">
+                <label for="jackHeightInput" class="text-xs font-semibold text-amber-300">🔥 텐트 통과(홀잭 중심) 높이</label>
+                <div class="flex items-center gap-1">
+                  <input id="jackHeightInput" type="number" min="80" max="320" step="1" value="175"
+                         class="w-20 rounded-lg bg-slate-950 border border-amber-500/60 px-2 py-1 text-right text-sm font-bold text-amber-300 focus:border-amber-400 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <input id="jackHeightSlider" type="range" min="80" max="320" step="1" value="175" class="w-full" />
+              <p class="text-[11px] text-slate-400 leading-relaxed">
+                연통이 텐트 스킨(홀잭 또는 측면 창문 지퍼)을 관통하는 지점의 지면 기준 높이입니다. 해당 위치에 50cm 이중연통 또는 메쉬 보호망이 배치됩니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- STEP 2: 난로 높이 및 스탠드 높이 설정 -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-extrabold flex items-center justify-center">2</span>
+                <h2 class="text-sm sm:text-base font-bold text-white">난로 높이 및 스탠드 높이 입력</h2>
+              </div>
+              <span id="totalStartHeightBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30">
+                배기구 출발: 35cm
+              </span>
+            </div>
+
+            <!-- Stove Model Select -->
+            <div>
+              <label for="stoveSelect" class="block text-xs font-semibold text-slate-300 mb-1">캠핑투게더 난로 모델 선택 (또는 직접 입력)</label>
+              <select id="stoveSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+              </select>
+              <div id="stoveSpecSummary" class="mt-2 rounded-xl bg-slate-950/80 border border-slate-800/90 p-2.5 text-xs text-slate-300 flex items-center justify-between gap-2">
+              </div>
+            </div>
+
+            <!-- Stove Height Input -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="stoveHeightInput" class="text-xs font-semibold text-slate-300">난로 높이 (바닥~연통 배기구 상단)</label>
+                <div class="flex items-center gap-1">
+                  <input id="stoveHeightInput" type="number" min="20" max="90" step="0.5" value="35"
+                         class="w-20 rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-right text-sm font-bold text-orange-400 focus:border-orange-500 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <input id="stoveHeightSlider" type="range" min="20" max="90" step="0.5" value="35" class="w-full" />
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>엠스토브 v3 본체 (35cm)</span>
+                <span>루모라/드웰러 본체 (38.5cm)</span>
+                <span>루모라/드웰러 다리펼침 (49cm)</span>
+              </div>
+            </div>
+
+            <!-- Stand Height Input & Quick Buttons -->
+            <div class="space-y-2 pt-2 border-t border-slate-800/80">
+              <div class="flex items-center justify-between">
+                <label for="standHeightInput" class="text-xs font-semibold text-sky-300">🟦 스탠드(받침대) 추가 높이</label>
+                <div class="flex items-center gap-1">
+                  <input id="standHeightInput" type="number" min="0" max="80" step="1" value="0"
+                         class="w-20 rounded-lg bg-slate-950 border border-sky-500/60 px-2 py-1 text-right text-sm font-bold text-sky-300 focus:border-sky-400 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <input id="standHeightSlider" type="range" min="0" max="80" step="1" value="0" class="w-full" />
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <button type="button" data-stand="0" class="stand-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  스탠드 없음 (0cm)
+                </button>
+                <button type="button" data-stand="20" class="stand-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  로우 스탠드 (20cm)
+                </button>
+                <button type="button" data-stand="40" class="stand-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  IGT 테이블 (40cm)
+                </button>
+                <button type="button" data-stand="55" class="stand-preset-btn py-1.5 px-2 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/40 transition">
+                  유니버셜 550 (55cm)
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                * <a href="https://smartstore.naver.com/camping-together/products/12412259304" target="_blank" rel="noopener noreferrer" class="text-sky-400 underline hover:text-sky-300">유니버셜 스탠드 550 IGT 원유닛</a>(높이 55cm, 허용하중 30kg) 적용 시 난로 위치가 높아져 실내 필요한 연통 마디 수가 약 2본(56cm) 절감됩니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- STEP 3: 연통 배출 경로 타입 & 규격 설정 -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 text-xs font-extrabold flex items-center justify-center">3</span>
+                <h2 class="text-sm sm:text-base font-bold text-white">연통 설치 경로 및 직경·연결 규칙</h2>
+              </div>
+            </div>
+
+            <!-- Path Type Selection -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-slate-300">텐트 관통 경로 방식 (홀잭 위치별 경로)</label>
+              <div class="grid grid-cols-1 gap-2">
+                <button type="button" data-path="straight" class="path-type-btn text-left p-3 rounded-xl border border-orange-500 bg-orange-500/10 transition flex items-start justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>Type A. 상부 천장 홀잭 수직 직상형</span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">난이도: 쉬움</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">엘보 없이 수직으로 천장 홀잭을 관통 (바랑에르돔, 오리손, 클론다이크 등)</p>
+                  </div>
+                </button>
+
+                <button type="button" data-path="elbow45" class="path-type-btn text-left p-3 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-800/60 transition flex items-start justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>Type B. 경사면/측면 홀잭 45° 대각선 경로</span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">난이도: 중급</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">45° 엘보 2개를 사용해 중앙 폴대를 피하거나 경사면 홀잭으로 배출 후 수직 상승</p>
+                  </div>
+                </button>
+
+                <button type="button" data-path="elbow90" class="path-type-btn text-left p-3 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-800/60 transition flex items-start justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>Type C. 리빙쉘 측면 창문/지퍼 90° 굴절 경로</span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30">난이도: 고급</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">천장 홀잭이 없는 거실형 텐트 측면 창문으로 90° 엘보 2개를 사용해 배출 후 상승</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Horizontal Offset -->
+            <div id="horizOffsetContainer" class="space-y-1.5 pt-2 border-t border-slate-800/80">
+              <div class="flex items-center justify-between">
+                <label for="horizDistInput" class="text-xs font-semibold text-slate-300">난로 중심 ~ 홀잭 수평 거리 (측면 이격)</label>
+                <div class="flex items-center gap-1">
+                  <input id="horizDistInput" type="number" min="0" max="180" step="5" value="0"
+                         class="w-20 rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-right text-sm font-bold text-orange-400 focus:border-orange-500 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <input id="horizDistSlider" type="range" min="0" max="180" step="5" value="0" class="w-full" />
+              <p id="horizDistHint" class="text-[11px] text-slate-400">
+                수직 직상형(Type A)은 난로를 홀잭 바로 아래(수평 거리 0cm)에 배치합니다.
+              </p>
+            </div>
+
+            <!-- Chimney Pipe System Select -->
+            <div class="space-y-2 pt-2 border-t border-slate-800/80">
+              <label for="pipeSystemSelect" class="block text-xs font-semibold text-slate-300">연통 직경 및 결합 규격 선택</label>
+              <select id="pipeSystemSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                <option value="tapered_70_73_76">캠핑투게더 70-73-76파이 3.3m 세트 규격 (직관 33cm → 5cm 단축 시 유효 28cm)</option>
+                <option value="single_70">70파이 단일 규격 (직관 33cm → 5cm 단축 시 유효 28cm / 포몰리·엠스토브 호환)</option>
+                <option value="single_75">75파이 단일 규격 (직관 32cm → 5cm 단축 시 유효 27cm / 레듀셔 Ø70-75 호환)</option>
+              </select>
+            </div>
+
+            <!-- Skin Protection Type Select -->
+            <div class="space-y-2">
+              <label for="protectionSelect" class="block text-xs font-semibold text-slate-300">텐트 스킨(홀잭) 단열 보호 방식 (길이 50cm)</label>
+              <select id="protectionSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
+                <option value="double_pipe">스테인리스 이중연통 50cm (내경 70/75/80mm · 외경 100~120mm · 27,000~29,000원)</option>
+                <option value="mesh_guard">스테인리스 메쉬 텐트 보호망 50cm (외경 130mm · 60~80파이 호환 · 33,000원)</option>
+                <option value="both_guard">이중연통 50cm + 메쉬 보호망 50cm 동시 적용 (극동계 장박 2중 안전)</option>
+              </select>
+            </div>
+
+            <!-- Overlap & Roof Clearance Fine-Tuning -->
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
+              <div>
+                <label for="overlapInput" class="block text-[11px] font-semibold text-slate-400 mb-1">마디당 결합 단축 길이</label>
+                <div class="flex items-center gap-1">
+                  <input id="overlapInput" type="number" min="3" max="8" step="0.5" value="5"
+                         class="w-full rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-sm font-bold text-white focus:border-orange-500 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+              <div>
+                <label for="clearanceInput" class="block text-[11px] font-semibold text-slate-400 mb-1">텐트 상단 대비 여유 높이</label>
+                <div class="flex items-center gap-1">
+                  <input id="clearanceInput" type="number" min="30" max="120" step="5" value="55"
+                         class="w-full rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-sm font-bold text-white focus:border-orange-500 focus:outline-none" />
+                  <span class="text-xs text-slate-400">cm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: REAL-TIME SVG VISUALIZATION, DIFFICULTY & BOM RECOMMENDATION -->
+        <div class="lg:col-span-7 space-y-5">
+
+          <!-- Top KPI Summary Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3.5">
+              <div class="text-[11px] font-semibold text-slate-400">배기구 출발 높이</div>
+              <div id="kpiStartHeight" class="text-lg sm:text-xl font-extrabold text-white mt-0.5">35 cm</div>
+              <div id="kpiStartSub" class="text-[11px] text-slate-400 mt-0.5">난로 35 + 스탠드 0</div>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3.5">
+              <div class="text-[11px] font-semibold text-slate-400">최상단 도달 높이</div>
+              <div id="kpiTopHeight" class="text-lg sm:text-xl font-extrabold text-orange-400 mt-0.5">365 cm</div>
+              <div id="kpiTopSub" class="text-[11px] text-slate-400 mt-0.5">텐트 상단 +155cm 여유</div>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3.5">
+              <div class="text-[11px] font-semibold text-slate-400">추천 연통 구성</div>
+              <div id="kpiPipeCount" class="text-lg sm:text-xl font-extrabold text-emerald-400 mt-0.5">총 12 본</div>
+              <div id="kpiPipeSub" class="text-[11px] text-slate-400 mt-0.5">유효 330cm (단축 -61cm)</div>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3.5">
+              <div class="text-[11px] font-semibold text-slate-400">설치 난이도 판정</div>
+              <div id="kpiDifficulty" class="text-lg sm:text-xl font-extrabold text-emerald-400 mt-0.5">쉬움 ★☆☆</div>
+              <div id="kpiDifficultySub" class="text-[11px] text-slate-400 mt-0.5">수직 직상 · 엘보 0개</div>
+            </div>
+          </div>
+
+          <!-- SVG VISUALIZATION CARD -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                  <span>🖼️ 실시간 연통 경로 시뮬레이션 도면</span>
+                  <span id="diagramTitleBadge" class="text-xs font-semibold px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                    헬스포츠 바랑에르 돔 8-10
+                  </span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  입력하신 난로·스탠드·홀잭·텐트 높이와 마디당 5cm 결속 단축이 축척대로 실시간 반영됩니다.
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="toggleDimBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  📏 치수선 표시: ON
+                </button>
+                <button id="toggleNodeBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  🔩 마디 경계: ON
+                </button>
+              </div>
+            </div>
+
+            <!-- Warning / Alert Box (if any safety issue) -->
+            <div id="safetyAlertBox" class="hidden rounded-xl bg-rose-950/70 border border-rose-500/50 p-3 text-xs text-rose-200 space-y-1">
+            </div>
+
+            <!-- Interactive SVG Canvas Container -->
+            <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-800">
+              <svg id="simSvg" viewBox="0 0 760 480" class="w-full h-auto block select-none"></svg>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-amber-500 inline-block"></span>하단 Ø70 구간(댐퍼·직관)</span>
+                <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-orange-500 inline-block"></span>중단 Ø73 구간</span>
+                <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-rose-500 inline-block"></span>상단 Ø76·불티방지 구간</span>
+                <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-cyan-400 inline-block"></span>50cm 이중연통/메쉬망(홀잭 보호)</span>
+                <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-500 inline-block"></span>스탠드(받침대)</span>
+              </div>
+              <span id="overlapFormulaBadge" class="text-slate-300 font-medium">
+                1본 33cm - 겹침 5cm = 유효 28cm/본
+              </span>
+            </div>
+          </div>
+
+          <!-- DIFFICULTY & SAFETY DIAGNOSIS CARD -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm sm:text-base font-bold text-white">🛠️ 설치 난이도 진단 및 필수 안전 가이드</h3>
+              <span id="diffBadgeLarge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                난이도: 쉬움 (초보자 추천)
+              </span>
+            </div>
+            <p id="diffReasonText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            </p>
+            <div id="safetyChecklistGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            </div>
+          </div>
+
+          <!-- RECOMMENDED CHIMNEY BOM & SMARTSTORE PURCHASE LIST -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h3 class="text-sm sm:text-base font-bold text-white">🛒 추천 연통 사이즈·타입 및 구매 구성품 (BOM)</h3>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">캠핑투게더 스마트스토어</a> 실판매 상품 규격과 단가를 기준으로 산출된 맞춤형 구성표입니다.
+                </p>
+              </div>
+              <button id="copyBomBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow transition">
+                <span>📋 추천 구성 견적 복사</span>
+              </button>
+            </div>
+
+            <!-- Pipe Length Breakdown Bar -->
+            <div id="pipeCalcDetailBox" class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 text-xs space-y-2">
+            </div>
+
+            <!-- BOM Table -->
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 text-xs">
+                    <th class="py-2.5 px-2 font-semibold">구분</th>
+                    <th class="py-2.5 px-2 font-semibold">추천 상품명 및 규격</th>
+                    <th class="py-2.5 px-2 font-semibold text-center">수량</th>
+                    <th class="py-2.5 px-2 font-semibold text-right">예상 금액</th>
+                    <th class="py-2.5 px-2 font-semibold text-center">구매링크</th>
+                  </tr>
+                </thead>
+                <tbody id="bomTableBody" class="divide-y divide-slate-800/70">
+                </tbody>
+                <tfoot>
+                  <tr class="border-t-2 border-slate-700 bg-slate-950/60">
+                    <td colspan="2" class="py-3 px-2 font-bold text-slate-300">연통·부속품 합계 (난로 본체 별도 / 포함가 병기)</td>
+                    <td id="bomTotalQty" class="py-3 px-2 font-bold text-center text-white">-</td>
+                    <td id="bomTotalPrice" class="py-3 px-2 font-extrabold text-right text-orange-400 text-sm sm:text-base">-</td>
+                    <td class="py-3 px-2 text-center">
+                      <a href="https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-emerald-400 hover:underline">전체보기↗</a>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: SMARTSTORE PRODUCTS DB              -->
+    <!-- ========================================== -->
+    <section id="tabPanel-products" class="hidden space-y-6">
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-white">🔥 캠핑투게더 스마트스토어 난로·연통 수집 데이터</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">smartstore.naver.com/camping-together</a>에서 수집한 화목난로, 연통 세트, 단품 직관, 엘보, 이중연통, 스탠드 및 안전 부속품 상세 제원입니다.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 품목</button>
+          <button type="button" data-pcat="stove" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">화목·펠릿 난로</button>
+          <button type="button" data-pcat="pipe" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">연통 세트·직관·엘보</button>
+          <button type="button" data-pcat="safety" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">이중연통·보호망·스탠드</button>
+        </div>
+      </div>
+
+      <div id="productCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: DOMESTIC & OVERSEAS TENTS DB        -->
+    <!-- ========================================== -->
+    <section id="tabPanel-tents" class="hidden space-y-6">
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-white">⛺ 국내 인기 텐트 & 국내 사용 빈도 높은 해외 텐트 제원 DB</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            국내 동계 캠핑에서 화목·펠릿난로와 함께 가장 많이 사용되는 국내 텐트 8종 및 해외 텐트 7종의 설치 크기, 최고 높이, 권장 홀잭 위치 및 연통 경로입니다. 원하는 텐트의 <strong class="text-orange-400">[시뮬레이터 적용]</strong> 버튼을 누르면 즉시 계산됩니다.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" data-tfilter="all" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 (15종)</button>
+          <button type="button" data-tfilter="국내" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">국내 인기 텐트 (8종)</button>
+          <button type="button" data-tfilter="해외" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">해외 인기 텐트 (7종)</button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 bg-slate-950 text-slate-400 text-xs">
+                <th class="py-3 px-3 font-semibold">구분</th>
+                <th class="py-3 px-3 font-semibold">브랜드 · 모델명</th>
+                <th class="py-3 px-3 font-semibold">텐트 형태</th>
+                <th class="py-3 px-3 font-semibold">설치 크기 (가로×세로×높이)</th>
+                <th class="py-3 px-3 font-semibold text-center">최고 높이</th>
+                <th class="py-3 px-3 font-semibold text-center">권장 홀잭 높이</th>
+                <th class="py-3 px-3 font-semibold">권장 연통 경로 · 난이도</th>
+                <th class="py-3 px-3 font-semibold text-center">제원 출처</th>
+                <th class="py-3 px-3 font-semibold text-center">시뮬레이션</th>
+              </tr>
+            </thead>
+            <tbody id="tentDbTableBody" class="divide-y divide-slate-800/70">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: INSTALLATION RULES & DIFFICULTY     -->
+    <!-- ========================================== -->
+    <section id="tabPanel-rules" class="hidden space-y-6">
+
+      <!-- Section 1: Chimney Connection & 5cm Overlap Rule -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-orange-500/20 text-orange-400 text-xs font-extrabold">핵심 규칙 1</span>
+            <h2 class="text-base font-bold text-white">연통 직경·길이 및 연결 시 5cm 단축 원리</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            화목난로 분절형 직관 연통은 마디와 마디를 끼울 때 약 <strong class="text-orange-400">5cm(50mm)</strong>씩 겹쳐서 삽입됩니다. 따라서 단품 길이가 33cm인 직관 1본을 추가할 때마다 실제 연장되는 유효 높이는 <strong class="text-emerald-400">28cm (33cm - 5cm)</strong>입니다.
+          </p>
+
+          <!-- Visual SVG explaining the 5cm overlap rule -->
+          <div class="rounded-xl bg-slate-950 border border-slate-800 p-4">
+            <svg viewBox="0 0 560 190" class="w-full h-auto">
+              <rect x="10" y="10" width="540" height="170" rx="10" fill="#0f172a" stroke="#1e293b" />
+              <text x="25" y="34" fill="#f8fafc" font-size="13" font-weight="bold">캠핑투게더 70-73-76파이 3.3m 연통 세트 (12본) 결속 단축 계산</text>
+
+              <!-- Pipe 1 -->
+              <rect x="30" y="65" width="160" height="36" rx="4" fill="#f59e0b" fill-opacity="0.25" stroke="#f59e0b" stroke-width="2" />
+              <text x="110" y="88" fill="#fde68a" font-size="12" font-weight="bold" text-anchor="middle">직관 1본 표기: 33cm</text>
+
+              <!-- Overlap Zone -->
+              <rect x="160" y="61" width="35" height="44" rx="3" fill="#f43f5e" fill-opacity="0.35" stroke="#f43f5e" stroke-width="2" stroke-dasharray="3,2" />
+              <text x="177" y="54" fill="#fda4af" font-size="11" font-weight="bold" text-anchor="middle">겹침 -5cm</text>
+
+              <!-- Pipe 2 -->
+              <rect x="160" y="65" width="160" height="36" rx="4" fill="#f97316" fill-opacity="0.25" stroke="#f97316" stroke-width="2" />
+              <text x="255" y="88" fill="#fed7aa" font-size="12" font-weight="bold" text-anchor="middle">직관 2본 표기: 33cm</text>
+
+              <!-- Dimension Line -->
+              <line x1="30" y1="125" x2="160" y2="125" stroke="#34d399" stroke-width="2" />
+              <line x1="30" y1="118" x2="30" y2="132" stroke="#34d399" stroke-width="2" />
+              <line x1="160" y1="118" x2="160" y2="132" stroke="#34d399" stroke-width="2" />
+              <text x="95" y="145" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">실제 연장 유효길이: 28cm</text>
+
+              <!-- Summary Box on Right -->
+              <rect x="345" y="50" width="190" height="115" rx="8" fill="#1e293b" stroke="#334155" />
+              <text x="358" y="72" fill="#94a3b8" font-size="11">• 댐퍼 1개 (28cm) → 유효 <tspan fill="#f8fafc" font-weight="bold">23cm</tspan></text>
+              <text x="358" y="92" fill="#94a3b8" font-size="11">• 직관·레듀셔 11개 (33cm×11)</text>
+              <text x="368" y="108" fill="#94a3b8" font-size="11">→ 개당 유효 28cm × 11 = <tspan fill="#f8fafc" font-weight="bold">308cm</tspan></text>
+              <text x="358" y="130" fill="#fb923c" font-size="11" font-weight="bold">• 단품 총합: 391cm (12본)</text>
+              <text x="358" y="150" fill="#34d399" font-size="12" font-weight="bold">• 결합 후 실제 높이: 약 330cm</text>
+            </svg>
+          </div>
+
+          <ul class="space-y-2 text-xs text-slate-300">
+            <li class="flex items-start gap-2">
+              <span class="text-orange-400 font-bold">•</span>
+              <span><strong>테이퍼드(70→73→76mm) 확장 구조:</strong> <a href="https://smartstore.naver.com/camping-together/products/11196831287" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline">캠핑투게더 3.3m 연통 세트</a>는 하단 Ø70mm(댐퍼+직관 4본) → Ø70-73 레듀셔 → 중단 Ø73mm(직관 4본) → Ø73-76 레듀셔 → 상단 Ø76mm 불티방지관 순으로 상부로 갈수록 넓어져 상승 기류(드래프트)를 극대화하고 난로 본체 내부에 최대 19개(5.3m)까지 포개어 수납할 수 있습니다.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-orange-400 font-bold">•</span>
+              <span><strong>음수관(하향 삽입) 결속:</strong> 가장 아래쪽 Ø70mm 댐퍼의 수관(좁아진 단관부)이 난로 상단 연통 구멍 안쪽으로 삽입되므로, 목초액이나 결로수가 연통 외벽을 타고 난로 상판으로 흘러내리는 현상을 방지합니다.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Section 2: Safety & Skin Protection Rules -->
+        <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 text-xs font-extrabold">핵심 규칙 2</span>
+            <h2 class="text-base font-bold text-white">텐트 스킨 보호·최상단 여유 높이·고정 제약</h2>
+          </div>
+
+          <div class="space-y-3 text-xs sm:text-sm text-slate-300">
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="font-bold text-cyan-300 mb-1">1) 홀잭 관통 구간 50cm 단열 보호 필수</div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                연통이 텐트 원단(홀잭 또는 측면 창문 지퍼)과 만나는 지점(중심 기준 위·아래 각 25cm)에는 반드시 <a href="https://smartstore.naver.com/camping-together/products/11318998547" target="_blank" rel="noopener noreferrer" class="text-cyan-400 underline">70/75/80파이 이중연통(길이 50cm, 외경 100~120mm)</a> 또는 <a href="https://smartstore.naver.com/camping-together/products/12670070982" target="_blank" rel="noopener noreferrer" class="text-cyan-400 underline">스테인리스 메쉬 텐트 보호망(길이 50cm, 외경 130mm)</a>을 장착해 스킨 손상을 방지해야 합니다.
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="font-bold text-orange-300 mb-1">2) 텐트 최고 높이(천장고) 대비 +50cm 이상 돌출 권장</div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                연통 최상단 불티방지 캡이 텐트 지붕 최고 높이보다 낮거나 비슷하면 와류 현상으로 연기가 텐트 쪽으로 역류하고 불티가 텐트 스킨에 떨어질 위험이 큽니다. 텐트 최고점보다 최소 <strong>+40~50cm 이상</strong> 높게 연통 최상단을 구성하세요.
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <div class="font-bold text-emerald-300 mb-1">3) 엘보(45°/90°) 사용 최소화 및 외부 고정링 3방향 지지</div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                90° 엘보는 배기 저항이 크고 그을음이 쌓이기 쉬우므로 상부/경사 홀잭이 있는 텐트는 가급적 직상형(엘보 0개) 또는 45° 엘보 2개 구성을 권장합니다. 외부로 돌출된 연통 상단에는 <a href="https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1" target="_blank" rel="noopener noreferrer" class="text-emerald-400 underline">76파이 티타늄 연통 고정링 가이드링</a>을 체결해 3방향 스트링(가이라인)이나 폴대로 강풍 전도를 방지해야 합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Difficulty 3-Level Visual Guide -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+        <h2 class="text-base sm:text-lg font-extrabold text-white">📊 설치 난이도(쉬움·중급·고급) 분류 기준 및 경로 도해</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <!-- Easy Card -->
+          <div class="rounded-xl bg-slate-950 border border-emerald-500/40 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">난이도: 쉬움 ★☆☆</span>
+              <span class="text-xs text-slate-400">소요 시간: 약 10~15분</span>
+            </div>
+            <h3 class="text-sm font-bold text-white">천장 홀잭 수직 직상형 (Type A)</h3>
+            <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
+              <polygon points="20,115 110,25 200,115" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <rect x="92" y="88" width="26" height="20" rx="2" fill="#f97316"/>
+              <line x1="105" y1="88" x2="105" y2="10" stroke="#34d399" stroke-width="5"/>
+              <rect x="100" y="34" width="10" height="18" rx="2" fill="#22d3ee"/>
+              <text x="115" y="20" fill="#34d399" font-size="10" font-weight="bold">수직 직상 (엘보 0)</text>
+            </svg>
+            <ul class="text-xs text-slate-300 space-y-1">
+              <li>• <strong>조건:</strong> 엘보 0개, 수직 직상 관통, 총 높이 3.8m 이하</li>
+              <li>• <strong>장점:</strong> 배기 흡입력(드래프트) 최상, 연통 처짐 없음</li>
+              <li>• <strong>대표 텐트:</strong> 바랑에르돔, 오리손, 280쉘터, 클론다이크</li>
+            </ul>
+          </div>
+
+          <!-- Medium Card -->
+          <div class="rounded-xl bg-slate-950 border border-amber-500/40 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40">난이도: 중급 ★★☆</span>
+              <span class="text-xs text-slate-400">소요 시간: 약 20~25분</span>
+            </div>
+            <h3 class="text-sm font-bold text-white">경사 홀잭 45° 대각선 경로 (Type B)</h3>
+            <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
+              <polygon points="20,115 110,20 200,115" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <line x1="110" y1="20" x2="110" y2="115" stroke="#64748b" stroke-width="2" stroke-dasharray="3,3"/>
+              <rect x="97" y="88" width="26" height="20" rx="2" fill="#f97316"/>
+              <polyline points="110,88 110,72 150,42 150,10" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linejoin="round"/>
+              <circle cx="110" cy="72" r="4" fill="#f59e0b"/>
+              <circle cx="150" cy="42" r="4" fill="#f59e0b"/>
+              <rect x="132" y="46" width="12" height="12" rx="2" fill="#22d3ee"/>
+              <text x="155" y="25" fill="#fbbf24" font-size="10" font-weight="bold">45° 엘보×2</text>
+            </svg>
+            <ul class="text-xs text-slate-300 space-y-1">
+              <li>• <strong>조건:</strong> 45° 엘보 2개 사용 또는 수직 3.8m 초과 장연통</li>
+              <li>• <strong>특징:</strong> 원폴 텐트 중앙 폴대 간섭 회피, 원활한 배기 유지</li>
+              <li>• <strong>대표 텐트:</strong> 알페임 12.6, 아틀라스, 비바돔 플러스</li>
+            </ul>
+          </div>
+
+          <!-- Hard Card -->
+          <div class="rounded-xl bg-slate-950 border border-rose-500/40 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40">난이도: 고급 ★★★</span>
+              <span class="text-xs text-slate-400">소요 시간: 약 30~40분</span>
+            </div>
+            <h3 class="text-sm font-bold text-white">측면 창문 90° 굴절 경로 (Type C)</h3>
+            <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
+              <path d="M 20,115 L 35,45 L 155,45 L 170,115 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <rect x="95" y="88" width="26" height="20" rx="2" fill="#f97316"/>
+              <polyline points="108,88 108,65 188,65 188,12" fill="none" stroke="#fb7185" stroke-width="5" stroke-linejoin="round"/>
+              <circle cx="108" cy="65" r="4" fill="#f43f5e"/>
+              <circle cx="188" cy="65" r="4" fill="#f43f5e"/>
+              <rect x="155" y="59" width="16" height="12" rx="2" fill="#22d3ee"/>
+              <line x1="188" y1="65" x2="188" y2="115" stroke="#94a3b8" stroke-width="2" stroke-dasharray="2,2"/>
+              <text x="122" y="32" fill="#fb7185" font-size="10" font-weight="bold">90° 엘보×2 + 지지대</text>
+            </svg>
+            <ul class="text-xs text-slate-300 space-y-1">
+              <li>• <strong>조건:</strong> 90° 엘보 2개 측면 배출 또는 총 길이 4.5m 초과</li>
+              <li>• <strong>주의:</strong> 수평 구간 처짐 방지용 외부 지지대·가이라인 필수</li>
+              <li>• <strong>대표 텐트:</strong> 스노우피크 랜드락, 코베아 고스트 플러스, 노스피크 A5/A6 RS</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. GROUNDED DATA: 캠핑투게더 스마트스토어 제품 및 국내·해외 인기 텐트 DB
+    // =========================================================================
+    const STORE_URL = "https://smartstore.naver.com/camping-together";
+
+    const STOVE_MODELS = [
+      {
+        id: "mstove_v3",
+        name: "캠핑투게더 엠스토브 v3 (3도어 IGT 화목난로)",
+        brand: "캠핑투게더",
+        status: "판매중",
+        price: 728000,
+        origPrice: 796000,
+        stoveHeight: 35,
+        bodySpec: "화실 36 × 25 × 33 cm / 설치 시 본체 높이 35cm",
+        weight: "15.1kg (악세사리 포함 15.5kg)",
+        pipeDia: "Ø70 → 73 → 76mm (3.3m 세트 기본 호환)",
+        recommendedPipeSystem: "tapered_70_73_76",
+        recommendedStand: 0,
+        url: "https://smartstore.naver.com/camping-together/products/12412109224",
+        desc: "3도어 양면 불멍 내열유리(750℃) 및 BAFFLE 기술 적용. IGT 원유닛 규격 호환으로 유니버셜 스탠드 550(55cm)과 도킹 가능."
+      },
+      {
+        id: "lumora_ti_legs",
+        name: "포몰리 루모라 Ti 티타늄 화목난로 (자체 다리 펼침)",
+        brand: "Pomoly (포몰리)",
+        status: "판매중 (예약구매)",
+        price: 1480000,
+        origPrice: 1480000,
+        stoveHeight: 49,
+        bodySpec: "본체 40×26×38.5cm / 다리 펼침 조립 높이 49cm (최대 51.5cm)",
+        weight: "티타늄 경량 스토브",
+        pipeDia: "Ø70 ~ 76mm",
+        recommendedPipeSystem: "tapered_70_73_76",
+        recommendedStand: 0,
+        url: "https://smartstore.naver.com/camping-together/products/13876525264",
+        desc: "자체 접이식 다리를 펼치면 바닥에서 배기구 상단까지 약 49cm 높이가 확보되는 프리미엄 티타늄 화목난로."
+      },
+      {
+        id: "lumora_ti_body",
+        name: "포몰리 루모라 Ti 티타늄 화목난로 (본체 기준 · 외부 스탠드용)",
+        brand: "Pomoly (포몰리)",
+        status: "판매중 (예약구매)",
+        price: 1480000,
+        origPrice: 1480000,
+        stoveHeight: 38.5,
+        bodySpec: "본체 W40 × D26 × H38.5 cm",
+        weight: "티타늄 경량 스토브",
+        pipeDia: "Ø70 ~ 76mm",
+        recommendedPipeSystem: "tapered_70_73_76",
+        recommendedStand: 40,
+        url: "https://smartstore.naver.com/camping-together/products/13876525264",
+        desc: "자체 다리를 접고 별도 스탠드나 받침대 위에 거치할 때 사용하는 본체 높이(38.5cm) 기준 모드."
+      },
+      {
+        id: "dweller_max3_legs",
+        name: "포몰리 드웰러 맥스 3 캠핑 화목난로 (자체 다리 펼침)",
+        brand: "Pomoly (포몰리)",
+        status: "일시품절 (보유고객용)",
+        price: 780000,
+        origPrice: 780000,
+        stoveHeight: 49,
+        bodySpec: "본체 36×24×38.5cm / 다리 펼침 조립 높이 49cm",
+        weight: "스테인리스 304",
+        pipeDia: "Ø70mm (70파이 이중연통 및 70-75 레듀셔 호환)",
+        recommendedPipeSystem: "single_70",
+        recommendedStand: 0,
+        url: "https://smartstore.naver.com/camping-together/products/11241535740",
+        desc: "국내 동계 캠퍼들이 많이 사용하는 포몰리 스테디셀러 모델로 다리 펼침 시 높이는 49cm입니다."
+      },
+      {
+        id: "dweller_max3_body",
+        name: "포몰리 드웰러 맥스 3 (본체 기준 · 스탠드 거치용)",
+        brand: "Pomoly (포몰리)",
+        status: "일시품절 (보유고객용)",
+        price: 780000,
+        origPrice: 780000,
+        stoveHeight: 38.5,
+        bodySpec: "본체 W36 × D24 × H38.5 cm",
+        weight: "스테인리스 304",
+        pipeDia: "Ø70mm",
+        recommendedPipeSystem: "single_70",
+        recommendedStand: 30,
+        url: "https://smartstore.naver.com/camping-together/products/11241535740",
+        desc: "드웰러 맥스 3 본체(38.5cm)를 전용 수납 스탠드나 외부 받침대에 올릴 때의 기준 높이입니다."
+      },
+      {
+        id: "custom_stove",
+        name: "직접 입력 (타사 화목·펠릿난로 또는 커스텀 높이)",
+        brand: "사용자 지정",
+        status: "자유 입력",
+        price: 0,
+        origPrice: 0,
+        stoveHeight: 40,
+        bodySpec: "사용자 직접 치수 입력 모드",
+        weight: "-",
+        pipeDia: "Ø70 / Ø75 / Ø70-73-76 선택 가능",
+        recommendedPipeSystem: "tapered_70_73_76",
+        recommendedStand: 0,
+        url: "https://smartstore.naver.com/camping-together/category/a34604002a084d7ebaadc625ef09970b?cp=1",
+        desc: "보유하신 난로의 바닥~연통 결합구 높이와 스탠드 높이를 직접 입력하여 필요한 연통 구성을 계산합니다."
+      }
+    ];
+
+    const STORE_PRODUCTS = [
+      {
+        id: "p_mstove_v3",
+        category: "stove",
+        name: "캠핑투게더 엠스토브 v3 3도어 IGT 캠핑 화목난로",
+        spec: "본체 높이 35cm (화실 36×25×33cm) · 중량 15.1kg · 연통 Ø70-73-76mm",
+        price: 728000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/12412109224",
+        note: "3.3m 연통 결합 시 총 높이 365cm / IGT 원유닛 스탠드 호환"
+      },
+      {
+        id: "p_lumora_ti",
+        category: "stove",
+        name: "포몰리 루모라 Ti 티타늄 캠핑 화목난로",
+        spec: "본체 40×26×38.5cm · 다리 펼침 높이 49cm (최대 51.5cm) · Ø70~76mm",
+        price: 1480000,
+        status: "판매중 (예약)",
+        url: "https://smartstore.naver.com/camping-together/products/13876525264",
+        note: "티타늄 소재 경량 벽난로형 스토브"
+      },
+      {
+        id: "p_dweller_max3",
+        category: "stove",
+        name: "포몰리 드웰러 맥스 3 캠핑 화목난로",
+        spec: "본체 36×24×38.5cm · 다리 펼침 높이 49cm · 연통 Ø70mm",
+        price: 780000,
+        status: "일시품절",
+        url: "https://smartstore.naver.com/camping-together/products/11241535740",
+        note: "70파이 스텐 직관 및 70파이 이중연통 기본 호환"
+      },
+      {
+        id: "p_banus_pellet",
+        category: "stove",
+        name: "바누스 프리비온 우드 펠릿 연소기 & 엠스토브 도킹툴",
+        spec: "펠릿 연소기 310,000원 (품절) / 엠스토브 v2·v3 전용 도킹툴 9,500원 (판매중)",
+        price: 9500,
+        status: "도킹툴 판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=%ED%8E%A0%EB%A6%BF",
+        note: "엠스토브 시리즈에 펠릿 연소기를 결합할 때 사용"
+      },
+      {
+        id: "p_set_33m",
+        category: "pipe",
+        name: "캠핑투게더 70-73-76 파이 3.3m 연통 세트 (총 12본)",
+        spec: "Ø70 댐퍼(28cm) 1 + Ø70 직관(33cm) 4 + Ø70-73 레듀셔 1 + Ø73 직관 4 + Ø73-76 레듀셔 1 + Ø76 최상단 1",
+        price: 86000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/11196831287",
+        note: "단품 총합 391cm → 마디당 5cm 결속 단축 시 실제 설치 길이 330cm (3.3m)"
+      },
+      {
+        id: "p_pipe_70",
+        category: "pipe",
+        name: "70파이 연통 직관 (33cm / 스테인리스)",
+        spec: "직경 Ø70mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.3~0.4mm",
+        price: 5500,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "엠스토브 v2·v3 하단부 및 포몰리 70파이 난로 연장용"
+      },
+      {
+        id: "p_pipe_73",
+        category: "pipe",
+        name: "73파이 연통 직관 (33cm / 스테인리스)",
+        spec: "직경 Ø73mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.5mm",
+        price: 6000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "3.3m 연통 세트 중단부 추가 연장용"
+      },
+      {
+        id: "p_pipe_76",
+        category: "pipe",
+        name: "76파이 연통 직관 (33cm / 스테인리스)",
+        spec: "직경 Ø76mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.3mm",
+        price: 6500,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "3.3m 연통 세트 상단부 추가 연장용"
+      },
+      {
+        id: "p_pipe_75_elbow",
+        category: "pipe",
+        name: "75파이 연통 직관(32cm) 및 엘보 45° / 90°",
+        spec: "직경 Ø75mm · 직관 길이 320mm (유효 27cm) · 두께 0.3mm 스테인리스",
+        price: 6000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/12692680424",
+        note: "75파이 직관 6,000원 / 75파이 엘보 단품 6,500원"
+      },
+      {
+        id: "p_elbow_70",
+        category: "pipe",
+        name: "70파이 연통 엘보 45도 / 90도 / 180도 (스테인리스)",
+        spec: "직경 Ø70mm · 두께 0.3mm · 각도 변경 굴절 연통",
+        price: 6000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "경사 홀잭(45°×2) 또는 리빙쉘 측면 창문 통과(90°×2) 필수 부속"
+      },
+      {
+        id: "p_reducer_70_75",
+        category: "pipe",
+        name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (304SS)",
+        spec: "하단 Ø70mm(수) → 상단 Ø75mm(암) 변환 · 길이 30cm · STS 304",
+        price: 9000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "70파이 난로 배기구에 75파이 범용 연통을 연결할 때 사용"
+      },
+      {
+        id: "p_double_70",
+        category: "safety",
+        name: "70파이 이중 연통 캠핑 화목난로 (스테인리스 304)",
+        spec: "내경 Ø70mm / 외경 Ø100mm · 길이 500mm (50cm) · 두께 0.3mm",
+        price: 29000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/11318998547",
+        note: "텐트 홀잭 관통 구간의 스킨 열손상 방지 (75파이 27,000원 / 80파이 29,000원 별도 구비)"
+      },
+      {
+        id: "p_mesh_guard",
+        category: "safety",
+        name: "화목난로 연통용 메쉬 텐트 보호망 스텐 안전망",
+        spec: "외경 Ø130mm · 길이 500mm (50cm) · 무게 약 600g · 60~80파이 호환",
+        price: 33000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/12670070982",
+        note: "볼트 조절식으로 70~76파이 테이퍼드 연통 어느 구간에나 장착 가능"
+      },
+      {
+        id: "p_stand_550",
+        category: "safety",
+        name: "유니버셜 스탠드 550 IGT 원유닛 (엠스토브 v3 호환)",
+        spec: "높이 550mm (55cm) · 허용하중 30kg · 스테인리스 소재",
+        price: 115000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/products/12412259304",
+        note: "난로 높이를 55cm 높여 장작 투입 편의성 향상 및 필요 연통 2본 절감"
+      },
+      {
+        id: "p_guide_ring",
+        category: "safety",
+        name: "화목난로 연통 고정링 홀더 가이드링 (티타늄 76파이 / 스텐 호환)",
+        spec: "직경 Ø76mm 호환 · 3방향 가이라인(스트링) 연결 고리 내장",
+        price: 8500,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "외부 돌출 연통의 강풍 흔들림 및 전도 방지 필수 부품"
+      },
+      {
+        id: "p_spark_cap",
+        category: "safety",
+        name: "이중 불티캡 75파이 / 80파이 최상단 (불티·빗물유입 방지)",
+        spec: "75파이(19,500원) / 80파이(20,500원) · 상단 빗물 및 불티 비산 억제",
+        price: 19500,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        note: "단일 직경(75파이 등) 구성 시 최상단 마감용"
+      }
+    ];
+
+    const TENT_MODELS = [
+      // 해외 인기 텐트 (7종)
+      {
+        id: "helsport_varanger_8_10",
+        origin: "해외",
+        brand: "헬스포츠 (Helsport)",
+        name: "바랑에르 돔 8-10 (Varanger Dome 8-10)",
+        shape: "dome",
+        shapeLabel: "대형 동계 돔",
+        dimensions: "435 × 470 × 210 cm",
+        peakHeight: 210,
+        defaultJackHeight: 175,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 바랑에르 돔 8-10 제원",
+        sourceUrl: "https://camping-lab.com/tents/147",
+        note: "천장 순정 연통 홀잭 내장. 엠스토브 v3 + 3.3m 기본 연통 세트로 엘보 없이 가장 이상적인 수직 직상 설치 가능."
+      },
+      {
+        id: "snowpeak_landlock",
+        origin: "해외",
+        brand: "스노우피크 (Snow Peak)",
+        name: "랜드락 (Land Lock TP-671R)",
+        shape: "tunnel",
+        shapeLabel: "거실형 리빙쉘",
+        dimensions: "625 × 405 × 205 cm",
+        peakHeight: 205,
+        defaultJackHeight: 145,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑리스트 / 텐트핏 랜드락 제원",
+        sourceUrl: "https://campinglist.co.kr/product/%EC%8A%A4%EB%85%B8%EC%9A%B0%ED%94%BC%ED%81%AC-%EB%9E%9C%EB%93%9C%EB%9D%BDr-tp-671r-kr2026-%EB%9E%9C%EB%93%9C%EB%A1%9D-%EA%B1%B0%EC%8B%A4%ED%98%95-%ED%85%90%ED%8A%B8/64/",
+        note: "순정 천장 홀잭이 없어 측면 출입문 상단 지퍼에 방염 홀잭을 끼우고 90° 엘보 2개로 빼내는 방식이 주로 사용됨."
+      },
+      {
+        id: "nordisk_alfheim_12_6",
+        origin: "해외",
+        brand: "노르디스크 (Nordisk)",
+        name: "알페임 12.6 (Alfheim 12.6)",
+        shape: "tipi",
+        shapeLabel: "티피·원폴 면텐트",
+        dimensions: "400 × 400 × 275 cm",
+        peakHeight: 275,
+        defaultJackHeight: 190,
+        defaultHorizDist: 55,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 알페임 12.6 제원",
+        sourceUrl: "https://camping-lab.com/tents/183",
+        note: "최고 높이 275cm의 원폴 티피 텐트. 중앙 폴대를 피해 45° 엘보 2개로 경사면 또는 출입구 지퍼 상단으로 배출."
+      },
+      {
+        id: "nordisk_utgard_13_2",
+        origin: "해외",
+        brand: "노르디스크 (Nordisk)",
+        name: "우트가르드 13.2 (Utgard 13.2)",
+        shape: "cabin",
+        shapeLabel: "가옥형(캐빈) 면텐트",
+        dimensions: "430 × 295 × 240 cm (측고 65cm)",
+        peakHeight: 240,
+        defaultJackHeight: 150,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 우트가르드 13.2 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=19529870",
+        note: "박공지붕 형태의 면텐트(최고 240cm). 측면 창문이나 출입구 쪽으로 90° 또는 45° 엘보를 사용해 연통 배출."
+      },
+      {
+        id: "hilleberg_atlas",
+        origin: "해외",
+        brand: "힐레베르그 (Hilleberg)",
+        name: "아틀라스 (Atlas 8인용 원정 돔)",
+        shape: "dome",
+        shapeLabel: "원정용 대형 돔",
+        dimensions: "435 × 420 × 200 cm",
+        peakHeight: 200,
+        defaultJackHeight: 160,
+        defaultHorizDist: 45,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 힐레베르그 아틀라스 제원",
+        sourceUrl: "https://camping-lab.com/tents/81",
+        note: "극동계 대표 돔텐트(높이 200cm). 커스텀 홀잭 또는 베스티블/도어 홀잭을 통해 직상 또는 45° 경사로 설치."
+      },
+      {
+        id: "robens_klondike",
+        origin: "해외",
+        brand: "로벤스 (Robens)",
+        name: "클론다이크 (Klondike 6인용)",
+        shape: "tipi",
+        shapeLabel: "티피·벨 면텐트",
+        dimensions: "400 × 400 × 270 cm",
+        peakHeight: 270,
+        defaultJackHeight: 200,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 로벤스 클론다이크 제원",
+        sourceUrl: "https://camping-lab.com/tents/301",
+        note: "순정 연통 포트(홀잭)가 천장 경사면에 기본 적용되어 있어 수직 직상 설치가 수월함 (천장고 270cm로 연장관 1~2본 추가 권장)."
+      },
+      {
+        id: "robens_klondike_grande",
+        origin: "해외",
+        brand: "로벤스 (Robens)",
+        name: "클론다이크 그랜드 (Klondike Grande 9인용)",
+        shape: "tipi",
+        shapeLabel: "대형 티피·벨 면텐트",
+        dimensions: "460 × 460 × 300 cm",
+        peakHeight: 300,
+        defaultJackHeight: 220,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "다나와 클론다이크 그랜드 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=9871704",
+        note: "최고 높이 300cm의 초대형 티피 텐트. 기본 3.3m 세트만으로는 텐트 상단 여유가 부족하므로 스탠드(55cm) 또는 추가 직관 2본 이상 필수."
+      },
+
+      // 국내 인기 텐트 (8종)
+      {
+        id: "backcountry_orison",
+        origin: "국내",
+        brand: "백컨트리 (Backcountry)",
+        name: "오리손 얼티메이트 (Orison Ultimate)",
+        shape: "dome",
+        shapeLabel: "경량 동계 돔 쉘터",
+        dimensions: "320 × 310 × 190 cm",
+        peakHeight: 190,
+        defaultJackHeight: 155,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 오리손 얼티메이트 제원",
+        sourceUrl: "https://camping-lab.com/tents/615",
+        note: "상부 연통 홀잭 기본 제공(높이 190cm). 3.3m 기본 연통 세트 1세트만으로 충분한 여유 높이가 나오는 입문 추천 조합."
+      },
+      {
+        id: "backcountry_280",
+        origin: "국내",
+        brand: "백컨트리 (Backcountry)",
+        name: "280 쉘터 얼티메이트 (SE / DAC)",
+        shape: "dome",
+        shapeLabel: "경량 돔 쉘터",
+        dimensions: "280 × 280 × 190 cm",
+        peakHeight: 190,
+        defaultJackHeight: 155,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 백컨트리 280 쉘터 제원",
+        sourceUrl: "https://camping-lab.com/tents/611",
+        note: "솔캠·듀오 동계 화목난로 캠핑의 대표 쉘터(높이 190cm). 수직 직상 설치로 초보자도 쉽게 세팅 가능."
+      },
+      {
+        id: "kzm_vivadome_plus",
+        origin: "국내",
+        brand: "카즈미 (KZM)",
+        name: "비바돔 쉘터 플러스 (Viva Dome Plus)",
+        shape: "dome",
+        shapeLabel: "중형 돔 쉘터",
+        dimensions: "360 × 360 × 195 cm",
+        peakHeight: 195,
+        defaultJackHeight: 150,
+        defaultHorizDist: 40,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 카즈미 비바돔 플러스 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=49645625",
+        note: "입식 동계 쉘터로 인기가 높으며(높이 195cm), 측면/출입구 상단 홀잭을 통해 직상 또는 45° 경사로 배출."
+      },
+      {
+        id: "kovea_ghost_plus",
+        origin: "국내",
+        brand: "코베아 (Kovea)",
+        name: "고스트 플러스 (Ghost Plus)",
+        shape: "tunnel",
+        shapeLabel: "터널형 리빙쉘",
+        dimensions: "630 × 315 × 205 cm",
+        peakHeight: 205,
+        defaultJackHeight: 145,
+        defaultHorizDist: 70,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 코베아 고스트 플러스 제원",
+        sourceUrl: "https://camping-lab.com/tents/382",
+        note: "국내 대표 경량 터널형 패밀리 텐트(높이 205cm). 전실 측면 도어 상단 지퍼로 홀잭을 구성하여 90° 엘보 2개로 배출."
+      },
+      {
+        id: "northpeak_a5_rs",
+        origin: "국내",
+        brand: "노스피크 (Northpeak)",
+        name: "A5 RS 에어텐트",
+        shape: "tunnel",
+        shapeLabel: "에어빔 리빙쉘",
+        dimensions: "505 × 315 × 205 cm",
+        peakHeight: 205,
+        defaultJackHeight: 145,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 노스피크 A5 RS 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=27728036",
+        note: "에어빔 손상 방지를 위해 에어튜브와 연통 간 최소 30cm 이상 이격 필수. 측면 창문 홀잭 + 이중연통 + 메쉬망 2중 단열 권장."
+      },
+      {
+        id: "northpeak_a6_rs",
+        origin: "국내",
+        brand: "노스피크 (Northpeak)",
+        name: "A6 RS 에어텐트",
+        shape: "tunnel",
+        shapeLabel: "대형 에어빔 리빙쉘",
+        dimensions: "640 × 350 × 200 cm",
+        peakHeight: 200,
+        defaultJackHeight: 140,
+        defaultHorizDist: 70,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 노스피크 A6 RS 제원",
+        sourceUrl: "https://camping-lab.com/tents/499",
+        note: "640×350cm 대형 에어 거실형 텐트(높이 200cm). 측면 창문 90° 굴절 설치 시 외부 연통 지지대 필수."
+      },
+      {
+        id: "snowline_miracle_family",
+        origin: "국내",
+        brand: "스노우라인 (Snowline)",
+        name: "미라클 패밀리 텐트",
+        shape: "tunnel",
+        shapeLabel: "거실형 리빙쉘",
+        dimensions: "575 × 320 × 200 cm",
+        peakHeight: 200,
+        defaultJackHeight: 140,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 미라클 패밀리 텐트 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=17152847",
+        note: "국민 거실형 리빙쉘 텐트(높이 200cm). 전실 측면 출입구 상단 홀잭과 90° 엘보 2개를 조합하여 설치."
+      },
+      {
+        id: "kolon_odumak_7_8",
+        origin: "국내",
+        brand: "코오롱스포츠 (Kolon Sport)",
+        name: "오두막 7.8 면텐트",
+        shape: "cabin",
+        shapeLabel: "오두막형 면텐트",
+        dimensions: "설치 최고 높이 200 cm (4인용 면텐트)",
+        peakHeight: 200,
+        defaultJackHeight: 135,
+        defaultHorizDist: 55,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "코오롱몰 / 캠핑스터디 오두막 7.8 제원",
+        sourceUrl: "https://camping-study.tistory.com/4",
+        note: "감성 면텐트(최고 높이 200cm, 하위 모델 오두막 5.5는 170cm). 측면 출입구/창문 쪽으로 홀잭을 구성하여 배출."
+      }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE
+    // =========================================================================
+    const state = {
+      activeTab: "simulator",
+      tentOriginFilter: "all",
+      selectedTentId: "helsport_varanger_8_10",
+      tentShape: "dome",
+      tentHeight: 210,      // cm
+      jackHeight: 175,      // cm
+      horizDist: 0,         // cm
+      selectedStoveId: "mstove_v3",
+      stoveHeight: 35,      // cm
+      standHeight: 0,       // cm
+      pathType: "straight", // "straight" | "elbow45" | "elbow90"
+      pipeSystem: "tapered_70_73_76", // "tapered_70_73_76" | "single_70" | "single_75"
+      protectionType: "double_pipe",  // "double_pipe" | "mesh_guard" | "both_guard"
+      overlapCm: 5,         // cm per joint
+      clearanceCm: 55,      // cm above tent peak
+      showDimensions: true,
+      showPipeNodes: true,
+      productCategoryFilter: "all",
+      tentDbFilter: "all",
+      lastBomText: ""
+    };
+
+    // =========================================================================
+    // 3. INITIALIZATION & UI POPULATION
+    // =========================================================================
+    function formatKRW(num) {
+      return Number(num || 0).toLocaleString("ko-KR") + "원";
+    }
+
+    function populateStoveDropdown() {
+      const select = document.getElementById("stoveSelect");
+      select.innerHTML = "";
+      STOVE_MODELS.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.name} — 높이 ${s.stoveHeight}cm${s.price > 0 ? " (" + formatKRW(s.price) + ")" : ""}`;
+        if (s.id === state.selectedStoveId) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateTentDropdown() {
+      const select = document.getElementById("tentSelect");
+      select.innerHTML = "";
+
+      const filtered = TENT_MODELS.filter((t) => {
+        if (state.tentOriginFilter === "all" || state.tentOriginFilter === "custom") return true;
+        return t.origin === state.tentOriginFilter;
+      });
+
+      filtered.forEach((t) => {
+        const opt = document.createElement("option");
+        opt.value = t.id;
+        opt.textContent = `[${t.origin}] ${t.brand} ${t.name} (높이 ${t.peakHeight}cm)`;
+        if (t.id === state.selectedTentId) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "custom_tent";
+      customOpt.textContent = "[직접 입력] 내 텐트 치수 직접 설정하기";
+      if (state.selectedTentId === "custom_tent" || state.tentOriginFilter === "custom") {
+        customOpt.selected = true;
+      }
+      select.appendChild(customOpt);
+    }
+
+    function applyTentModel(tentId) {
+      if (tentId === "custom_tent") {
+        state.selectedTentId = "custom_tent";
+        updateUI();
+        return;
+      }
+      const tent = TENT_MODELS.find((t) => t.id === tentId);
+      if (!tent) return;
+      state.selectedTentId = tent.id;
+      state.tentShape = tent.shape;
+      state.tentHeight = tent.peakHeight;
+      state.jackHeight = tent.defaultJackHeight;
+      state.horizDist = tent.defaultHorizDist;
+      state.pathType = tent.defaultPath;
+      syncInputsFromState();
+      updateUI();
+    }
+
+    function applyStoveModel(stoveId) {
+      const stove = STOVE_MODELS.find((s) => s.id === stoveId);
+      if (!stove) return;
+      state.selectedStoveId = stove.id;
+      state.stoveHeight = stove.stoveHeight;
+      state.pipeSystem = stove.recommendedPipeSystem;
+      syncInputsFromState();
+      updateUI();
+    }
+
+    function syncInputsFromState() {
+      document.getElementById("tentHeightInput").value = state.tentHeight;
+      document.getElementById("tentHeightSlider").value = state.tentHeight;
+      document.getElementById("jackHeightInput").value = state.jackHeight;
+      document.getElementById("jackHeightSlider").value = state.jackHeight;
+      document.getElementById("horizDistInput").value = state.horizDist;
+      document.getElementById("horizDistSlider").value = state.horizDist;
+      document.getElementById("stoveHeightInput").value = state.stoveHeight;
+      document.getElementById("stoveHeightSlider").value = state.stoveHeight;
+      document.getElementById("standHeightInput").value = state.standHeight;
+      document.getElementById("standHeightSlider").value = state.standHeight;
+      document.getElementById("pipeSystemSelect").value = state.pipeSystem;
+      document.getElementById("protectionSelect").value = state.protectionType;
+      document.getElementById("overlapInput").value = state.overlapCm;
+      document.getElementById("clearanceInput").value = state.clearanceCm;
+      document.getElementById("stoveSelect").value = state.selectedStoveId;
+    }
+
+    // =========================================================================
+    // 4. CORE SIMULATION & CHIMNEY PATH CALCULATION ENGINE
+    // =========================================================================
+    function computeSimulation() {
+      const H_tent = Math.max(120, Math.min(360, Number(state.tentHeight) || 210));
+      const H_jack = Math.max(70, Math.min(340, Number(state.jackHeight) || 175));
+      const H_stove = Math.max(15, Math.min(100, Number(state.stoveHeight) || 35));
+      const H_stand = Math.max(0, Math.min(90, Number(state.standHeight) || 0));
+      const H_start = H_stove + H_stand;
+
+      const overlap = Math.max(2, Math.min(10, Number(state.overlapCm) || 5));
+      const clearance = Math.max(20, Math.min(150, Number(state.clearanceCm) || 55));
+
+      // Raw pipe length based on system
+      const rawPipeLen = state.pipeSystem === "single_75" ? 32 : 33;
+      const effPipeLen = Math.max(15, rawPipeLen - overlap); // 28cm (or 27cm for 75mm)
+      const rawDamperLen = 28;
+      const effDamperLen = Math.max(15, rawDamperLen - overlap); // 23cm
+
+      // Target minimum top height
+      const minTargetTop = Math.max(H_tent + clearance, H_jack + 70);
+
+      let D_horiz = Number(state.horizDist) || 0;
+      if (state.pathType === "straight") {
+        D_horiz = 0;
+      } else if (state.pathType === "elbow45" && D_horiz < 25) {
+        D_horiz = 45;
+      } else if (state.pathType === "elbow90" && D_horiz < 30) {
+        D_horiz = 65;
+      }
+
+      // Compute path geometry & required effective pipe length
+      let elbowAngle = 0;
+      let elbowCount = 0;
+      let indoorVertLen = 0;
+      let angledOrHorizLen = 0;
+      let outdoorVertLen = 0;
+      let totalReqEffLen = 0;
+
+      if (state.pathType === "straight") {
+        elbowAngle = 0;
+        elbowCount = 0;
+        totalReqEffLen = Math.max(60, minTargetTop - H_start);
+        indoorVertLen = Math.max(0, H_jack - H_start);
+        outdoorVertLen = Math.max(0, totalReqEffLen - indoorVertLen);
+      } else if (state.pathType === "elbow45") {
+        elbowAngle = 45;
+        elbowCount = 2;
+        const diagRise = D_horiz;
+        const elbow1Height = Math.max(H_start + effDamperLen, H_jack - diagRise);
+        indoorVertLen = Math.max(effDamperLen, elbow1Height - H_start);
+        const actualRise = Math.max(20, H_jack - (H_start + indoorVertLen));
+        angledOrHorizLen = Math.round(Math.sqrt(D_horiz * D_horiz + actualRise * actualRise));
+        outdoorVertLen = Math.max(60, minTargetTop - H_jack);
+        totalReqEffLen = indoorVertLen + angledOrHorizLen + outdoorVertLen;
+      } else {
+        // elbow90
+        elbowAngle = 90;
+        elbowCount = 2;
+        indoorVertLen = Math.max(effDamperLen, H_jack - H_start);
+        angledOrHorizLen = D_horiz + 35;
+        outdoorVertLen = Math.max(80, minTargetTop - H_jack);
+        totalReqEffLen = indoorVertLen + angledOrHorizLen + outdoorVertLen;
+      }
+
+      const elbowEffContribution = elbowCount * 12;
+      const remainingAfterDamperAndElbows = Math.max(0, totalReqEffLen - effDamperLen - elbowEffContribution);
+      const straightPipeCount = Math.max(2, Math.ceil(remainingAfterDamperAndElbows / effPipeLen));
+      const totalSegments = 1 + straightPipeCount;
+
+      const actualEffTotalLen = effDamperLen + straightPipeCount * effPipeLen + elbowEffContribution;
+      const actualRawTotalLen = rawDamperLen + straightPipeCount * rawPipeLen + elbowCount * 17;
+      const totalOverlapLost = actualRawTotalLen - actualEffTotalLen;
+
+      let actualTopHeight = H_start + actualEffTotalLen;
+      if (state.pathType === "elbow45") {
+        actualTopHeight = Math.round(H_start + indoorVertLen + (angledOrHorizLen * 0.707) + outdoorVertLen);
+      } else if (state.pathType === "elbow90") {
+        actualTopHeight = Math.round(H_start + indoorVertLen + outdoorVertLen);
+      }
+      const actualRoofClearance = actualTopHeight - H_tent;
+
+      // Safety warnings check
+      const warnings = [];
+      if (H_jack <= H_start + 20) {
+        warnings.push(
+          `현재 배기구 출발 높이(${H_start}cm)가 홀잭 높이(${H_jack}cm)와 너무 가깝거나 높습니다. 스탠드 높이를 낮추거나 홀잭 위치를 최소 ${H_start + 35}cm 이상으로 높여 주세요.`
+        );
+      }
+      if (H_jack > H_tent) {
+        warnings.push(
+          `홀잭 높이(${H_jack}cm)가 텐트 최고 높이(${H_tent}cm)보다 높게 설정되어 있습니다. 텐트 천장고 이하로 조정해 주세요.`
+        );
+      }
+      if (actualRoofClearance < 35) {
+        warnings.push(
+          `연통 최상단(${actualTopHeight}cm)이 텐트 최고 높이(${H_tent}cm)보다 +${actualRoofClearance}cm만 높습니다. 불티 낙하 및 역류 방지를 위해 직관 1~2본을 추가하여 최소 +40~50cm 이상 여유를 확보하세요.`
+        );
+      }
+
+      // Difficulty evaluation
+      let diffLevel = "easy";
+      let diffLabel = "쉬움 ★☆☆";
+      let diffBadgeClass = "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+      let diffReason = "";
+
+      if (state.pathType === "elbow90" || actualTopHeight > 430 || warnings.length > 0) {
+        diffLevel = "hard";
+        diffLabel = "고급 ★★★";
+        diffBadgeClass = "bg-rose-500/20 text-rose-300 border-rose-500/40";
+        diffReason =
+          state.pathType === "elbow90"
+            ? `90° 엘보 2개를 사용해 측면 창문(높이 ${H_jack}cm)으로 배출하는 경로입니다. 수평 관통 구간(${angledOrHorizLen}cm)의 하중 처짐을 막기 위해 외부 폴대/삼각대 지지대와 3방향 가이라인 고정이 반드시 필요하며, 초기 착화 시 예열에 신경 써야 합니다.`
+            : `총 연통 도달 높이가 ${actualTopHeight}cm로 매우 높거나 홀잭-난로 간격 제약이 있어 풍압 대비 2단 가이라인 고정이 필수적인 상급자 세팅입니다.`;
+      } else if (state.pathType === "elbow45" || totalSegments > 12 || actualTopHeight > 380) {
+        diffLevel = "medium";
+        diffLabel = "중급 ★★☆";
+        diffBadgeClass = "bg-amber-500/20 text-amber-300 border-amber-500/40";
+        diffReason =
+          state.pathType === "elbow45"
+            ? `45° 엘보 2개를 사용하여 경사면/측면 홀잭(높이 ${H_jack}cm)을 대각선으로 통과하는 구성입니다. 90° 굴절보다 배기 흐름이 훨씬 원활하며, 홀잭 통과 부위에 50cm 단열 보호와 외부 고정링 스트링 지지를 해주면 안정적으로 운용할 수 있습니다.`
+            : `수직 직상형 경로이나 텐트 천장고(${H_tent}cm)가 높아 기본 3.3m 세트(12본)에 연장 직관 ${totalSegments - 12}본을 추가한 총 ${totalSegments}본 구성입니다. 상단 흔들림 방지를 위해 3방향 가이라인을 단단히 고정하세요.`;
+      } else {
+        diffLevel = "easy";
+        diffLabel = "쉬움 ★☆☆";
+        diffBadgeClass = "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        diffReason = `엘보 없이 난로(${H_start}cm)에서 천장 홀잭(${H_jack}cm)까지 수직 직상으로 관통하는 가장 이상적이고 안전한 구성입니다. 상승 기류(드래프트)가 매우 잘 형성되어 연기 역류가 적고 초보자도 15분 내외로 설치할 수 있습니다.`;
+      }
+
+      return {
+        H_tent,
+        H_jack,
+        H_stove,
+        H_stand,
+        H_start,
+        D_horiz,
+        overlap,
+        clearance,
+        rawPipeLen,
+        effPipeLen,
+        rawDamperLen,
+        effDamperLen,
+        elbowAngle,
+        elbowCount,
+        indoorVertLen,
+        angledOrHorizLen,
+        outdoorVertLen,
+        totalReqEffLen,
+        straightPipeCount,
+        totalSegments,
+        actualEffTotalLen,
+        actualRawTotalLen,
+        totalOverlapLost,
+        actualTopHeight,
+        actualRoofClearance,
+        warnings,
+        diffLevel,
+        diffLabel,
+        diffBadgeClass,
+        diffReason
+      };
+    }
+
+    // =========================================================================
+    // 5. RENDER REAL-TIME SVG DIAGRAM
+    // =========================================================================
+    function renderSvgDiagram(sim) {
+      const svg = document.getElementById("simSvg");
+      const W = 760;
+      const H = 480;
+      const groundY = 430;
+
+      const maxCmHeight = Math.max(sim.actualTopHeight + 35, sim.H_tent + 60, 380);
+      const scale = (groundY - 45) / maxCmHeight;
+
+      const cmToY = (cm) => Math.round(groundY - cm * scale);
+      const cmToPx = (cm) => Math.round(cm * scale);
+
+      const tentCenterX = state.pathType === "straight" ? 360 : 300;
+      const tentHalfWidthCm = state.tentShape === "tunnel" ? 210 : state.tentShape === "tipi" ? 195 : 185;
+      const tentHalfW = Math.min(230, cmToPx(tentHalfWidthCm));
+      const tentLeftX = tentCenterX - tentHalfW;
+      const tentRightX = tentCenterX + tentHalfW;
+      const tentPeakY = cmToY(sim.H_tent);
+
+      let tentPathD = "";
+      let tentInnerLines = "";
+      if (state.tentShape === "tipi") {
+        tentPathD = `M ${tentLeftX},${groundY} L ${tentCenterX},${tentPeakY} L ${tentRightX},${groundY} Z`;
+        tentInnerLines = `<line x1="${tentCenterX}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${groundY}" stroke="#475569" stroke-width="2" stroke-dasharray="4,4" />`;
+      } else if (state.tentShape === "dome") {
+        const ctrlY = tentPeakY - cmToPx(sim.H_tent * 0.28);
+        tentPathD = `M ${tentLeftX},${groundY} Q ${tentLeftX + tentHalfW * 0.15},${ctrlY} ${tentCenterX},${tentPeakY} Q ${tentRightX - tentHalfW * 0.15},${ctrlY} ${tentRightX},${groundY} Z`;
+        tentInnerLines = `
+          <path d="M ${tentLeftX + 25},${groundY} Q ${tentCenterX},${tentPeakY + 15} ${tentRightX - 25},${groundY}" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+        `;
+      } else if (state.tentShape === "cabin") {
+        const wallH = cmToY(Math.min(90, sim.H_tent * 0.38));
+        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + 12},${wallH} L ${tentCenterX},${tentPeakY} L ${tentRightX - 12},${wallH} L ${tentRightX},${groundY} Z`;
+        tentInnerLines = `<line x1="${tentLeftX + 12}" y1="${wallH}" x2="${tentRightX - 12}" y2="${wallH}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+      } else {
+        const shoulderY = cmToY(sim.H_tent * 0.86);
+        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + 22},${shoulderY} Q ${tentCenterX},${tentPeakY - 12} ${tentRightX - 22},${shoulderY} L ${tentRightX},${groundY} Z`;
+        tentInnerLines = `
+          <line x1="${tentLeftX + 95}" y1="${shoulderY - 4}" x2="${tentLeftX + 85}" y2="${groundY}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="${tentRightX - 95}" y1="${shoulderY - 4}" x2="${tentRightX - 85}" y2="${groundY}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+        `;
+      }
+
+      let stoveCenterX = tentCenterX;
+      if (state.pathType === "straight") {
+        stoveCenterX = tentCenterX + Math.round(tentHalfW * 0.25);
+      } else if (state.pathType === "elbow45") {
+        stoveCenterX = tentCenterX + Math.round(tentHalfW * 0.15);
+      } else {
+        stoveCenterX = tentRightX - cmToPx(sim.D_horiz) - 18;
+      }
+
+      const stoveW = 48;
+      const standTopY = cmToY(sim.H_stand);
+      const stoveTopY = cmToY(sim.H_start);
+      const jackY = cmToY(sim.H_jack);
+      const pipeTopY = cmToY(sim.actualTopHeight);
+
+      let pipePoints = [];
+      let jackPoint = { x: stoveCenterX, y: jackY, angle: 0 };
+      let topPoint = { x: stoveCenterX, y: pipeTopY };
+
+      if (state.pathType === "straight") {
+        pipePoints = [
+          { x: stoveCenterX, y: stoveTopY },
+          { x: stoveCenterX, y: pipeTopY }
+        ];
+        jackPoint = { x: stoveCenterX, y: jackY, angle: 0 };
+        topPoint = { x: stoveCenterX, y: pipeTopY };
+      } else if (state.pathType === "elbow45") {
+        const elbow1Y = cmToY(sim.H_start + sim.indoorVertLen);
+        const jackX = stoveCenterX + cmToPx(sim.D_horiz);
+        pipePoints = [
+          { x: stoveCenterX, y: stoveTopY },
+          { x: stoveCenterX, y: elbow1Y },
+          { x: jackX, y: jackY },
+          { x: jackX, y: pipeTopY }
+        ];
+        jackPoint = { x: jackX - 8, y: jackY + 8, angle: 45 };
+        topPoint = { x: jackX, y: pipeTopY };
+      } else {
+        const outX = stoveCenterX + cmToPx(sim.angledOrHorizLen);
+        const wallJackX = stoveCenterX + cmToPx(sim.D_horiz);
+        pipePoints = [
+          { x: stoveCenterX, y: stoveTopY },
+          { x: stoveCenterX, y: jackY },
+          { x: outX, y: jackY },
+          { x: outX, y: pipeTopY }
+        ];
+        jackPoint = { x: wallJackX, y: jackY, angle: 90 };
+        topPoint = { x: outX, y: pipeTopY };
+      }
+
+      let pipeSvgMarkup = "";
+      const polyStr = pipePoints.map((p) => `${p.x},${p.y}`).join(" ");
+      pipeSvgMarkup += `<polyline points="${polyStr}" fill="none" stroke="#0f172a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />`;
+
+      if (state.pathType === "straight") {
+        let curCm = sim.H_start;
+        for (let i = 0; i < sim.totalSegments; i++) {
+          const segEff = i === 0 ? sim.effDamperLen : sim.effPipeLen;
+          const nextCm = Math.min(sim.actualTopHeight, curCm + segEff);
+          const y1 = cmToY(curCm);
+          const y2 = cmToY(nextCm);
+
+          let segColor = "#f59e0b";
+          if (state.pipeSystem === "tapered_70_73_76") {
+            if (i >= 5 && i < 10) segColor = "#f97316";
+            if (i >= 10) segColor = "#f43f5e";
+          } else if (state.pipeSystem === "single_75") {
+            segColor = "#fb923c";
+          }
+
+          pipeSvgMarkup += `<line x1="${stoveCenterX}" y1="${y1}" x2="${stoveCenterX}" y2="${y2}" stroke="${segColor}" stroke-width="8" />`;
+          if (state.showPipeNodes && i > 0) {
+            pipeSvgMarkup += `<line x1="${stoveCenterX - 7}" y1="${y1}" x2="${stoveCenterX + 7}" y2="${y1}" stroke="#fde68a" stroke-width="2" />`;
+          }
+          curCm = nextCm;
+        }
+      } else {
+        pipeSvgMarkup += `
+          <polyline points="${pipePoints[0].x},${pipePoints[0].y} ${pipePoints[1].x},${pipePoints[1].y}" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+          <polyline points="${pipePoints[1].x},${pipePoints[1].y} ${pipePoints[2].x},${pipePoints[2].y}" fill="none" stroke="#f97316" stroke-width="8" stroke-linecap="round"/>
+          <polyline points="${pipePoints[2].x},${pipePoints[2].y} ${pipePoints[3].x},${pipePoints[3].y}" fill="none" stroke="#f43f5e" stroke-width="8" stroke-linecap="round"/>
+        `;
+        if (state.showPipeNodes) {
+          const outX = pipePoints[3].x;
+          let yTick = pipePoints[2].y - cmToPx(sim.effPipeLen);
+          while (yTick > pipePoints[3].y + 10) {
+            pipeSvgMarkup += `<line x1="${outX - 7}" y1="${yTick}" x2="${outX + 7}" y2="${yTick}" stroke="#fde68a" stroke-width="2" />`;
+            yTick -= cmToPx(sim.effPipeLen);
+          }
+        }
+        pipeSvgMarkup += `
+          <circle cx="${pipePoints[1].x}" cy="${pipePoints[1].y}" r="6.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/>
+          <circle cx="${pipePoints[2].x}" cy="${pipePoints[2].y}" r="6.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/>
+          <text x="${pipePoints[1].x - 12}" y="${pipePoints[1].y - 8}" fill="#fde68a" font-size="10" font-weight="bold" text-anchor="end">${sim.elbowAngle}° 엘보</text>
+          <text x="${pipePoints[2].x + 12}" y="${pipePoints[2].y + 14}" fill="#fde68a" font-size="10" font-weight="bold">${sim.elbowAngle}° 엘보</text>
+        `;
+      }
+
+      const damperY = stoveTopY - cmToPx(sim.effDamperLen * 0.55);
+      pipeSvgMarkup += `
+        <circle cx="${stoveCenterX}" cy="${damperY}" r="4.5" fill="#10b981" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="${stoveCenterX}" y1="${damperY}" x2="${stoveCenterX + 14}" y2="${damperY}" stroke="#10b981" stroke-width="2.5"/>
+        <text x="${stoveCenterX + 18}" y="${damperY + 3}" fill="#6ee7b7" font-size="10" font-weight="bold">댐퍼(28cm)</text>
+      `;
+
+      const sleeveLenPx = Math.max(24, cmToPx(50));
+      const protLabel =
+        state.protectionType === "double_pipe"
+          ? "이중연통 50cm"
+          : state.protectionType === "mesh_guard"
+          ? "메쉬보호망 50cm"
+          : "이중연통+메쉬망 50cm";
+
+      pipeSvgMarkup += `
+        <g transform="translate(${jackPoint.x}, ${jackPoint.y}) rotate(${jackPoint.angle})">
+          <rect x="-9" y="${-sleeveLenPx / 2}" width="18" height="${sleeveLenPx}" rx="4" fill="#06b6d4" fill-opacity="0.38" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="${state.protectionType === 'mesh_guard' ? '3,2' : 'none'}"/>
+          <circle cx="0" cy="0" r="4" fill="#fde047" />
+        </g>
+        <text x="${jackPoint.x + 16}" y="${jackPoint.y - 4}" fill="#67e8f9" font-size="11" font-weight="bold">홀잭 (${sim.H_jack}cm) · ${protLabel}</text>
+      `;
+
+      const guyRingY = topPoint.y + Math.min(45, cmToPx(40));
+      const supportPoleMarkup =
+        state.pathType === "elbow90"
+          ? `
+            <line x1="${topPoint.x}" y1="${jackY + 6}" x2="${topPoint.x}" y2="${groundY}" stroke="#94a3b8" stroke-width="3" stroke-dasharray="5,3"/>
+            <polygon points="${topPoint.x - 18},${groundY} ${topPoint.x},${groundY - 22} ${topPoint.x + 18},${groundY}" fill="none" stroke="#94a3b8" stroke-width="2"/>
+            <text x="${topPoint.x + 10}" y="${groundY - 25}" fill="#cbd5e1" font-size="10" font-weight="bold">외부 연통 지지대(필수)</text>
+          `
+          : "";
+
+      const guylineMarkup = `
+        <circle cx="${topPoint.x}" cy="${guyRingY}" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"/>
+        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.min(735, topPoint.x + 95)}" y2="${groundY}" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4" stroke-opacity="0.75"/>
+        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.max(30, topPoint.x - 95)}" y2="${groundY}" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4" stroke-opacity="0.75"/>
+        <text x="${topPoint.x + 10}" y="${guyRingY + 4}" fill="#7dd3fc" font-size="10" font-weight="bold">76파이 고정링 &amp; 가이라인</text>
+      `;
+
+      const sparkCapMarkup = `
+        <rect x="${topPoint.x - 7}" y="${topPoint.y - 8}" width="14" height="10" rx="2" fill="#e11d48" stroke="#fda4af" stroke-width="1.5"/>
+        <line x1="${topPoint.x - 10}" y1="${topPoint.y - 8}" x2="${topPoint.x + 10}" y2="${topPoint.y - 8}" stroke="#fda4af" stroke-width="2.5"/>
+        <circle cx="${topPoint.x}" cy="${topPoint.y - 18}" r="5" fill="#94a3b8" class="smoke-puff-1"/>
+        <circle cx="${topPoint.x + 6}" cy="${topPoint.y - 26}" r="7" fill="#94a3b8" class="smoke-puff-2"/>
+        <circle cx="${topPoint.x - 4}" cy="${topPoint.y - 34}" r="9" fill="#94a3b8" class="smoke-puff-3"/>
+      `;
+
+      const standHeightPx = Math.max(0, groundY - standTopY);
+      const stoveHeightPx = Math.max(14, standTopY - stoveTopY);
+
+      const standMarkup =
+        sim.H_stand > 0
+          ? `
+            <rect x="${stoveCenterX - stoveW / 2 - 4}" y="${standTopY}" width="${stoveW + 8}" height="${standHeightPx}" rx="3" fill="#0284c7" fill-opacity="0.25" stroke="#38bdf8" stroke-width="2"/>
+            <line x1="${stoveCenterX - stoveW / 2}" y1="${standTopY + standHeightPx / 2}" x2="${stoveCenterX + stoveW / 2}" y2="${standTopY + standHeightPx / 2}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <text x="${stoveCenterX - stoveW / 2 - 10}" y="${standTopY + standHeightPx / 2 + 4}" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="end">스탠드 ${sim.H_stand}cm</text>
+          `
+          : "";
+
+      const stoveMarkup = `
+        <rect x="${stoveCenterX - stoveW / 2}" y="${stoveTopY}" width="${stoveW}" height="${stoveHeightPx}" rx="5" fill="#1e293b" stroke="#f97316" stroke-width="2.2"/>
+        <rect x="${stoveCenterX - stoveW / 2 + 8}" y="${stoveTopY + 5}" width="${stoveW - 16}" height="${Math.max(6, stoveHeightPx - 10)}" rx="3" fill="#431407" stroke="#fb923c" stroke-width="1"/>
+        <path d="M ${stoveCenterX - 6},${standTopY - 6} Q ${stoveCenterX},${stoveTopY + 4} ${stoveCenterX + 6},${standTopY - 6} Z" fill="#fb923c" class="flame-anim"/>
+        <text x="${stoveCenterX - stoveW / 2 - 10}" y="${stoveTopY + stoveHeightPx / 2 + 4}" fill="#fdba74" font-size="10.5" font-weight="bold" text-anchor="end">난로 ${sim.H_stove}cm</text>
+      `;
+
+      let dimMarkup = "";
+      if (state.showDimensions) {
+        const leftDimX = Math.max(48, tentLeftX - 35);
+        dimMarkup += `
+          <line x1="${leftDimX}" y1="${groundY}" x2="${leftDimX}" y2="${tentPeakY}" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="${leftDimX - 6}" y1="${groundY}" x2="${leftDimX + 6}" y2="${groundY}" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="${leftDimX - 6}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${tentPeakY}" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"/>
+          <rect x="${leftDimX - 38}" y="${(groundY + tentPeakY) / 2 - 11}" width="76" height="22" rx="5" fill="#0f172a" stroke="#475569"/>
+          <text x="${leftDimX}" y="${(groundY + tentPeakY) / 2 + 4}" fill="#e2e8f0" font-size="10.5" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
+        `;
+
+        const rightDimX = Math.min(712, Math.max(tentRightX + 45, topPoint.x + 65));
+        const clearanceColor = sim.actualRoofClearance >= 40 ? "#34d399" : "#fb7185";
+        dimMarkup += `
+          <line x1="${rightDimX}" y1="${groundY}" x2="${rightDimX}" y2="${pipeTopY}" stroke="#f97316" stroke-width="1.8"/>
+          <line x1="${topPoint.x}" y1="${pipeTopY}" x2="${rightDimX + 6}" y2="${pipeTopY}" stroke="#f97316" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <rect x="${rightDimX - 44}" y="${(groundY + pipeTopY) / 2 - 11}" width="88" height="22" rx="5" fill="#0f172a" stroke="#f97316"/>
+          <text x="${rightDimX}" y="${(groundY + pipeTopY) / 2 + 4}" fill="#fdba74" font-size="10.5" font-weight="bold" text-anchor="middle">총높이 ${sim.actualTopHeight}cm</text>
+
+          <line x1="${tentCenterX}" y1="${tentPeakY}" x2="${topPoint.x - 18}" y2="${tentPeakY}" stroke="${clearanceColor}" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <line x1="${topPoint.x - 18}" y1="${tentPeakY}" x2="${topPoint.x - 18}" y2="${pipeTopY}" stroke="${clearanceColor}" stroke-width="2"/>
+          <rect x="${topPoint.x - 108}" y="${(tentPeakY + pipeTopY) / 2 - 10}" width="84" height="20" rx="4" fill="#0f172a" stroke="${clearanceColor}"/>
+          <text x="${topPoint.x - 66}" y="${(tentPeakY + pipeTopY) / 2 + 4}" fill="${clearanceColor}" font-size="10" font-weight="bold" text-anchor="middle">상단여유 +${sim.actualRoofClearance}cm</text>
+        `;
+      }
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="tentGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#334155" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#1e293b" stop-opacity="0.75"/>
+          </linearGradient>
+        </defs>
+
+        ${[50, 100, 150, 200, 250, 300, 350, 400]
+          .filter((cm) => cm <= maxCmHeight)
+          .map(
+            (cm) => `
+            <line x1="20" y1="${cmToY(cm)}" x2="${W - 20}" y2="${cmToY(cm)}" stroke="#1e293b" stroke-width="1"/>
+            <text x="24" y="${cmToY(cm) - 3}" fill="#475569" font-size="9.5">${cm}cm</text>
+          `
+          )
+          .join("")}
+
+        <rect x="0" y="${groundY}" width="${W}" height="${H - groundY}" fill="#090d16"/>
+        <line x1="15" y1="${groundY}" x2="${W - 15}" y2="${groundY}" stroke="#475569" stroke-width="2.5"/>
+        <text x="24" y="${groundY + 18}" fill="#64748b" font-size="10.5" font-weight="bold">지면 (Ground 0cm)</text>
+
+        <path d="${tentPathD}" fill="url(#tentGrad)" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round"/>
+        ${tentInnerLines}
+
+        ${supportPoleMarkup}
+        ${standMarkup}
+        ${stoveMarkup}
+
+        ${pipeSvgMarkup}
+        ${guylineMarkup}
+        ${sparkCapMarkup}
+
+        ${dimMarkup}
+
+        <rect x="16" y="14" width="255" height="54" rx="8" fill="#0f172a" fill-opacity="0.88" stroke="#334155"/>
+        <text x="28" y="34" fill="#f8fafc" font-size="11.5" font-weight="bold">배기구 출발(${sim.H_start}cm) → 홀잭(${sim.H_jack}cm) → 최상단(${sim.actualTopHeight}cm)</text>
+        <text x="28" y="54" fill="#fb923c" font-size="11" font-weight="bold">필요 연통: 총 ${sim.totalSegments}본 (댐퍼1 + 직관·레듀셔 ${sim.straightPipeCount}${sim.elbowCount > 0 ? ` + ${sim.elbowAngle}°엘보 ${sim.elbowCount}` : ""})</text>
+      `;
+    }
+
+    // =========================================================================
+    // 6. GENERATE BOM & UPDATE FULL UI
+    // =========================================================================
+    function buildBomItems(sim) {
+      const items = [];
+      const selectedStove = STOVE_MODELS.find((s) => s.id === state.selectedStoveId) || STOVE_MODELS[0];
+
+      if (state.pipeSystem === "tapered_70_73_76") {
+        items.push({
+          category: "기본 연통 세트",
+          name: "캠핑투게더 70-73-76파이 3.3m 연통 세트 (총 12본: 댐퍼1+직관8+레듀셔2+최상단1)",
+          qty: 1,
+          unitPrice: 86000,
+          url: "https://smartstore.naver.com/camping-together/products/11196831287",
+          required: true
+        });
+
+        if (sim.totalSegments > 12) {
+          const extraCount = sim.totalSegments - 12;
+          items.push({
+            category: "추가 연장 직관",
+            name: "76파이(또는 73파이) 연장 스텐 직관 연통 (길이 33cm → 결합 시 유효 +28cm)",
+            qty: extraCount,
+            unitPrice: 6500,
+            url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+            required: true
+          });
+        }
+      } else if (state.pipeSystem === "single_70") {
+        items.push({
+          category: "하단 댐퍼",
+          name: "70파이 댐퍼 연통 (길이 28cm → 결합 시 유효 23cm)",
+          qty: 1,
+          unitPrice: 17000,
+          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          required: true
+        });
+        items.push({
+          category: "직관 연통",
+          name: "70파이 스테인리스 직관 연통 (길이 33cm → 결합 시 유효 28cm)",
+          qty: sim.straightPipeCount,
+          unitPrice: 5500,
+          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          required: true
+        });
+      } else {
+        items.push({
+          category: "구경 변환 레듀셔",
+          name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (304SS)",
+          qty: 1,
+          unitPrice: 9000,
+          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          required: true
+        });
+        items.push({
+          category: "직관 연통",
+          name: "75파이 스테인리스 직관 연통 (길이 32cm → 결합 시 유효 27cm)",
+          qty: sim.straightPipeCount,
+          unitPrice: 6000,
+          url: "https://smartstore.naver.com/camping-together/products/12692680424",
+          required: true
+        });
+        items.push({
+          category: "최상단 불티캡",
+          name: "이중 불티캡 75파이 최상단 (불티·빗물유입 방지)",
+          qty: 1,
+          unitPrice: 19500,
+          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          required: true
+        });
+      }
+
+      if (sim.elbowCount > 0) {
+        const is75 = state.pipeSystem === "single_75";
+        items.push({
+          category: "경로 굴절 엘보",
+          name: `${is75 ? "75파이" : "70파이"} 스테인리스 연통 엘보 ${sim.elbowAngle}도 (2개 1조 경로 굴절용)`,
+          qty: sim.elbowCount,
+          unitPrice: is75 ? 6500 : 6000,
+          url: is75
+            ? "https://smartstore.naver.com/camping-together/products/12692680424"
+            : "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          required: true
+        });
+      }
+
+      if (state.protectionType === "double_pipe" || state.protectionType === "both_guard") {
+        const is75 = state.pipeSystem === "single_75";
+        items.push({
+          category: "텐트 스킨 단열",
+          name: is75
+            ? "75파이(또는 80파이) 스테인리스 이중연통 (길이 50cm · 홀잭 보호)"
+            : "70파이 스테인리스 304 이중연통 (내경 70mm/외경 100mm · 길이 50cm)",
+          qty: 1,
+          unitPrice: is75 ? 27000 : 29000,
+          url: "https://smartstore.naver.com/camping-together/products/11318998547",
+          required: true
+        });
+      }
+      if (state.protectionType === "mesh_guard" || state.protectionType === "both_guard") {
+        items.push({
+          category: "텐트 스킨 단열",
+          name: "화목난로 연통용 메쉬 텐트 보호망 스텐 안전망 (외경 130mm · 길이 50cm · 60~80파이 호환)",
+          qty: 1,
+          unitPrice: 33000,
+          url: "https://smartstore.naver.com/camping-together/products/12670070982",
+          required: true
+        });
+      }
+
+      items.push({
+        category: "외부 고정 부품",
+        name: "화목난로 연통 고정링 홀더 가이드링 (티타늄 76파이 · 스테인리스 호환)",
+        qty: sim.actualTopHeight > 390 || state.pathType === "elbow90" ? 2 : 1,
+        unitPrice: 8500,
+        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        required: true
+      });
+
+      if (sim.H_stand >= 50) {
+        items.push({
+          category: "난로 스탠드",
+          name: "유니버셜 스탠드 550 IGT 원유닛 (높이 55cm · 허용하중 30kg)",
+          qty: 1,
+          unitPrice: 115000,
+          url: "https://smartstore.naver.com/camping-together/products/12412259304",
+          required: true
+        });
+      }
+
+      return { items, selectedStove };
+    }
+
+    function updateUI() {
+      const sim = computeSimulation();
+      const tent = TENT_MODELS.find((t) => t.id === state.selectedTentId);
+      const stove = STOVE_MODELS.find((s) => s.id === state.selectedStoveId) || STOVE_MODELS[0];
+
+      const tentBadge = document.getElementById("selectedTentBadge");
+      const tentSummary = document.getElementById("tentSpecSummary");
+      if (tent) {
+        tentBadge.textContent = `${tent.origin} 인기 · ${tent.shapeLabel}`;
+        tentSummary.innerHTML = `
+          <div>
+            <span class="font-bold text-white">${tent.brand} ${tent.name}</span>
+            <span class="text-slate-400 ml-1">(${tent.dimensions})</span>
+            <p class="text-[11px] text-slate-400 mt-0.5">${tent.note}</p>
+          </div>
+          <a href="${tent.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-orange-400 hover:underline whitespace-nowrap">
+            ${tent.sourceTitle} ↗
+          </a>
+        `;
+      } else {
+        tentBadge.textContent = "사용자 직접 입력";
+        tentSummary.innerHTML = `
+          <div class="text-xs text-slate-300">
+            내 텐트 최고 높이(<strong>${sim.H_tent}cm</strong>)와 홀잭 높이(<strong>${sim.H_jack}cm</strong>)를 자유롭게 조절하여 맞춤 연통을 계산합니다.
+          </div>
+        `;
+      }
+
+      document.getElementById("totalStartHeightBadge").textContent = `배기구 출발: ${sim.H_start}cm`;
+      document.getElementById("stoveSpecSummary").innerHTML = `
+        <div>
+          <span class="font-bold text-white">${stove.name}</span>
+          <p class="text-[11px] text-slate-400 mt-0.5">${stove.bodySpec} · 연통 ${stove.pipeDia}</p>
+        </div>
+        <a href="${stove.url}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-emerald-400 hover:underline whitespace-nowrap">
+          상품 상세 ↗
+        </a>
+      `;
+
+      document.querySelectorAll(".tent-shape-btn").forEach((btn) => {
+        const isMatch = btn.getAttribute("data-shape") === state.tentShape;
+        btn.className = isMatch
+          ? "tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-500 transition"
+          : "tent-shape-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+      });
+
+      document.querySelectorAll(".path-type-btn").forEach((btn) => {
+        const isMatch = btn.getAttribute("data-path") === state.pathType;
+        btn.className = isMatch
+          ? "path-type-btn text-left p-3 rounded-xl border-2 border-orange-500 bg-orange-500/15 transition flex items-start justify-between gap-2"
+          : "path-type-btn text-left p-3 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-800/60 transition flex items-start justify-between gap-2";
+      });
+
+      const horizHint = document.getElementById("horizDistHint");
+      if (state.pathType === "straight") {
+        horizHint.textContent = "수직 직상형(Type A)은 난로를 천장 홀잭 바로 아래(수평 이격 0cm)에 배치합니다.";
+      } else if (state.pathType === "elbow45") {
+        horizHint.textContent = `45° 대각선 경로: 수평 이격 ${sim.D_horiz}cm 구간을 45° 엘보 2개로 통과합니다 (대각선 길이 약 ${sim.angledOrHorizLen}cm).`;
+      } else {
+        horizHint.textContent = `90° 측면 창문 경로: 실내에서 창문까지 ${sim.D_horiz}cm + 외벽 안전 이격 35cm = 총 ${sim.angledOrHorizLen}cm 수평 관통 후 수직 상승합니다.`;
+      }
+
+      document.getElementById("kpiStartHeight").textContent = `${sim.H_start} cm`;
+      document.getElementById("kpiStartSub").textContent = `난로 ${sim.H_stove}cm + 스탠드 ${sim.H_stand}cm`;
+
+      document.getElementById("kpiTopHeight").textContent = `${sim.actualTopHeight} cm`;
+      document.getElementById("kpiTopSub").textContent = `텐트 상단(${sim.H_tent}cm) 대비 +${sim.actualRoofClearance}cm`;
+
+      document.getElementById("kpiPipeCount").textContent = `총 ${sim.totalSegments} 본${sim.elbowCount > 0 ? ` + 엘보${sim.elbowCount}` : ""}`;
+      document.getElementById("kpiPipeSub").textContent = `유효 ${sim.actualEffTotalLen}cm (단축 -${sim.totalOverlapLost}cm)`;
+
+      const kpiDiffEl = document.getElementById("kpiDifficulty");
+      kpiDiffEl.textContent = sim.diffLabel;
+      kpiDiffEl.className = `text-lg sm:text-xl font-extrabold mt-0.5 ${
+        sim.diffLevel === "easy" ? "text-emerald-400" : sim.diffLevel === "medium" ? "text-amber-400" : "text-rose-400"
+      }`;
+      document.getElementById("kpiDifficultySub").textContent =
+        state.pathType === "straight"
+          ? "수직 직상 · 엘보 0개"
+          : state.pathType === "elbow45"
+          ? "45° 경사 · 엘보 2개"
+          : "90° 측면 · 엘보 2개 + 지지대";
+
+      document.getElementById("diagramTitleBadge").textContent = tent ? `${tent.brand} ${tent.name}` : `사용자 텐트 (높이 ${sim.H_tent}cm)`;
+      document.getElementById("overlapFormulaBadge").textContent = `직관 1본 ${sim.rawPipeLen}cm - 마디 단축 ${sim.overlap}cm = 유효 ${sim.effPipeLen}cm/본`;
+
+      const alertBox = document.getElementById("safetyAlertBox");
+      if (sim.warnings.length > 0) {
+        alertBox.classList.remove("hidden");
+        alertBox.innerHTML = sim.warnings.map((w) => `<div class="flex items-start gap-2"><span>⚠️</span><span>${w}</span></div>`).join("");
+      } else {
+        alertBox.classList.add("hidden");
+        alertBox.innerHTML = "";
+      }
+
+      renderSvgDiagram(sim);
+
+      const diffBadgeLarge = document.getElementById("diffBadgeLarge");
+      diffBadgeLarge.textContent = `설치 난이도: ${sim.diffLabel}`;
+      diffBadgeLarge.className = `px-3 py-1 rounded-full text-xs font-extrabold border ${sim.diffBadgeClass}`;
+      document.getElementById("diffReasonText").textContent = sim.diffReason;
+
+      const checklistItems = [
+        {
+          title: "결속 시 5cm 단축 계산 확인",
+          desc: `단품 길이 합계는 ${sim.actualRawTotalLen}cm이나, 마디당 ${sim.overlap}cm씩 삽입되어 실제 연장 높이는 ${sim.actualEffTotalLen}cm(총 손실 -${sim.totalOverlapLost}cm)가 됩니다.`
+        },
+        {
+          title: "홀잭 관통부 50cm 단열 보호",
+          desc: `지면에서 ${sim.H_jack}cm 높이의 홀잭 구간(${sim.H_jack - 25}~${sim.H_jack + 25}cm)에 이중연통(50cm) 또는 스텐 메쉬 보호망(50cm)을 반드시 고정하세요.`
+        },
+        {
+          title: "텐트 최고점 대비 안전 이격",
+          desc: `현재 연통 최상단(${sim.actualTopHeight}cm)이 텐트 최고점(${sim.H_tent}cm)보다 +${sim.actualRoofClearance}cm 위에 위치하여 불티 낙하 및 역풍 위험을 줄입니다.`
+        },
+        {
+          title: "강풍 대비 고정링 & 일산화탄소 경보기",
+          desc: `외부 돌출 구간(${sim.outdoorVertLen}cm) 상단에 76파이 고정링 가이드링을 걸어 3방향 팩다운하고, 텐트 상·하단에 일산화탄소 경보기를 2개 이상 배치하세요.`
+        }
+      ];
+      document.getElementById("safetyChecklistGrid").innerHTML = checklistItems
+        .map(
+          (c) => `
+          <div class="rounded-xl bg-slate-950 border border-slate-800 p-3">
+            <div class="text-xs font-bold text-orange-300 flex items-center gap-1.5">
+              <span>✓</span><span>${c.title}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">${c.desc}</p>
+          </div>
+        `
+        )
+        .join("");
+
+      const { items, selectedStove } = buildBomItems(sim);
+      const calcBox = document.getElementById("pipeCalcDetailBox");
+      const extraNote =
+        state.pipeSystem === "tapered_70_73_76"
+          ? sim.totalSegments <= 12
+            ? `캠핑투게더 <strong>3.3m 기본 연통 세트(총 12본, 유효 330cm)</strong> 1세트만으로 목표 높이를 여유 있게 충족합니다${sim.totalSegments < 12 ? ` (현장 상황에 따라 직관 ${12 - sim.totalSegments}본을 빼고 ${sim.totalSegments}본만 조립 가능)` : ""}.`
+            : `텐트 천장고 및 굴절 경로가 길어 <strong>3.3m 기본 연통 세트(12본)</strong>에 <strong>연장 직관 ${sim.totalSegments - 12}본</strong>을 추가한 총 ${sim.totalSegments}본 구성을 추천합니다.`
+          : `단품 조합 기준 <strong>댐퍼/레듀셔 1본 + 직관 ${sim.straightPipeCount}본 (총 ${sim.totalSegments}본)</strong> 구성으로 유효 길이 <strong>${sim.actualEffTotalLen}cm</strong>를 확보합니다.`;
+
+      calcBox.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 text-slate-200 font-semibold">
+          <span>📐 필요 연통 유효 길이 산출식: 목표 최상단(${sim.actualTopHeight}cm) - 배기구 출발(${sim.H_start}cm) = 유효 ${sim.actualEffTotalLen}cm</span>
+          <span class="text-orange-400">단품 표기합 ${sim.actualRawTotalLen}cm - 결속단축 ${sim.totalOverlapLost}cm = 유효 ${sim.actualEffTotalLen}cm</span>
+        </div>
+        <p class="text-slate-400 leading-relaxed">${extraNote}</p>
+      `;
+
+      const tbody = document.getElementById("bomTableBody");
+      let totalAccessoriesPrice = 0;
+      let totalQtyCount = 0;
+
+      tbody.innerHTML = items
+        .map((item) => {
+          const lineTotal = item.qty * item.unitPrice;
+          totalAccessoriesPrice += lineTotal;
+          totalQtyCount += item.qty;
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-2 font-semibold text-slate-300 whitespace-nowrap">${item.category}</td>
+              <td class="py-2.5 px-2 text-white font-medium">${item.name}</td>
+              <td class="py-2.5 px-2 text-center font-bold text-orange-300">${item.qty}개</td>
+              <td class="py-2.5 px-2 text-right font-bold text-slate-200 whitespace-nowrap">${formatKRW(lineTotal)}</td>
+              <td class="py-2.5 px-2 text-center whitespace-nowrap">
+                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold">
+                  스토어↗
+                </a>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      document.getElementById("bomTotalQty").textContent = `${totalQtyCount}점`;
+      const withStoveTotal = selectedStove.price > 0 ? totalAccessoriesPrice + selectedStove.price : totalAccessoriesPrice;
+      document.getElementById("bomTotalPrice").innerHTML =
+        selectedStove.price > 0
+          ? `${formatKRW(totalAccessoriesPrice)} <span class="block text-[11px] font-normal text-slate-400">(난로 본체 포함 시 ${formatKRW(withStoveTotal)})</span>`
+          : formatKRW(totalAccessoriesPrice);
+
+      const tentTitle = tent ? `[${tent.origin}] ${tent.brand} ${tent.name} (높이 ${sim.H_tent}cm)` : `사용자 텐트 (높이 ${sim.H_tent}cm)`;
+      state.lastBomText = [
+        `[캠핑투게더 난로·연통 시뮬레이션 추천 견적]`,
+        `- 텐트: ${tentTitle} / 홀잭 높이: ${sim.H_jack}cm`,
+        `- 난로: ${selectedStove.name} (난로 ${sim.H_stove}cm + 스탠드 ${sim.H_stand}cm = 출발 ${sim.H_start}cm)`,
+        `- 경로 방식: ${state.pathType === "straight" ? "상부 홀잭 수직 직상형" : state.pathType === "elbow45" ? "45° 대각선 경사 경로" : "90° 측면 창문 굴절 경로"} (난이도: ${sim.diffLabel})`,
+        `- 연통 도달 높이: ${sim.actualTopHeight}cm (텐트 상단 대비 +${sim.actualRoofClearance}cm 여유)`,
+        `- 추천 구성품:`,
+        ...items.map((it) => `  · ${it.category}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unitPrice)})`),
+        `- 연통·부속품 합계: ${formatKRW(totalAccessoriesPrice)}${selectedStove.price > 0 ? ` (난로 포함 시 ${formatKRW(withStoveTotal)})` : ""}`,
+        `- 스마트스토어: ${STORE_URL}`
+      ].join("\n");
+    }
+
+    // =========================================================================
+    // 7. RENDER TAB 2 (PRODUCTS DB) & TAB 3 (TENTS DB)
+    // =========================================================================
+    function renderProductsTab() {
+      const grid = document.getElementById("productCardsGrid");
+      const filtered = STORE_PRODUCTS.filter((p) => {
+        if (state.productCategoryFilter === "all") return true;
+        return p.category === state.productCategoryFilter;
+      });
+
+      grid.innerHTML = filtered
+        .map((p) => {
+          const isSoldOut = p.status.includes("품절");
+          return `
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 flex flex-col justify-between gap-3 hover:border-slate-700 transition">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${
+                    p.category === "stove"
+                      ? "bg-orange-500/20 text-orange-300"
+                      : p.category === "pipe"
+                      ? "bg-amber-500/20 text-amber-300"
+                      : "bg-cyan-500/20 text-cyan-300"
+                  }">
+                    ${p.category === "stove" ? "화목·펠릿 난로" : p.category === "pipe" ? "연통 세트·직관·엘보" : "이중연통·보호망·스탠드"}
+                  </span>
+                  <span class="text-[11px] font-semibold ${isSoldOut ? "text-rose-400" : "text-emerald-400"}">${p.status}</span>
+                </div>
+                <h3 class="text-sm font-bold text-white leading-snug">${p.name}</h3>
+                <p class="text-xs text-slate-300">${p.spec}</p>
+                <p class="text-[11px] text-slate-400">${p.note}</p>
+              </div>
+              <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                <span class="text-base font-extrabold text-orange-400">${formatKRW(p.price)}</span>
+                <a href="${p.url}" target="_blank" rel="noopener noreferrer"
+                   class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">
+                  스마트스토어 상세 ↗
+                </a>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderTentsTab() {
+      const tbody = document.getElementById("tentDbTableBody");
+      const filtered = TENT_MODELS.filter((t) => {
+        if (state.tentDbFilter === "all") return true;
+        return t.origin === state.tentDbFilter;
+      });
+
+      tbody.innerHTML = filtered
+        .map((t) => {
+          const pathLabel =
+            t.defaultPath === "straight"
+              ? `<span class="text-emerald-400 font-bold">천장 직상 (쉬움)</span>`
+              : t.defaultPath === "elbow45"
+              ? `<span class="text-amber-400 font-bold">45° 경사 (중급)</span>`
+              : `<span class="text-rose-400 font-bold">측면 90° (고급)</span>`;
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-3 px-3">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${
+                  t.origin === "국내" ? "bg-sky-500/20 text-sky-300" : "bg-purple-500/20 text-purple-300"
+                }">${t.origin}</span>
+              </td>
+              <td class="py-3 px-3">
+                <div class="font-bold text-white">${t.brand} ${t.name}</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">${t.note}</div>
+              </td>
+              <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${t.shapeLabel}</td>
+              <td class="py-3 px-3 text-slate-200 font-medium whitespace-nowrap">${t.dimensions}</td>
+              <td class="py-3 px-3 text-center font-extrabold text-orange-400 whitespace-nowrap">${t.peakHeight} cm</td>
+              <td class="py-3 px-3 text-center font-bold text-amber-300 whitespace-nowrap">${t.defaultJackHeight} cm</td>
+              <td class="py-3 px-3 whitespace-nowrap">${pathLabel}</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <a href="${t.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-300 underline hover:text-orange-400">
+                  제원확인↗
+                </a>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <button type="button" data-apply-tent="${t.id}" class="apply-tent-db-btn px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">
+                  시뮬레이터 적용
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    // =========================================================================
+    // 8. EVENT LISTENERS
+    // =========================================================================
+    function showToast(msg) {
+      const banner = document.getElementById("toastBanner");
+      document.getElementById("toastMessage").textContent = msg;
+      banner.classList.remove("hidden");
+      setTimeout(() => {
+        banner.classList.add("hidden");
+      }, 2600);
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      ["simulator", "products", "tents", "rules"].forEach((id) => {
+        const panel = document.getElementById(`tabPanel-${id}`);
+        const btn = document.getElementById(`tabBtn-${id}`);
+        if (id === tabId) {
+          panel.classList.remove("hidden");
+          btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap bg-orange-600 text-white shadow-sm transition";
+        } else {
+          panel.classList.add("hidden");
+          btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition";
+        }
+      });
+    }
+
+    function bindEvents() {
+      document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          switchTab(btn.getAttribute("data-tab"));
+        });
+      });
+
+      document.querySelectorAll(".scenario-preset-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const preset = btn.getAttribute("data-preset");
+          state.tentOriginFilter = "all";
+          populateTentDropdown();
+
+          if (preset === "varanger_mstove") {
+            state.standHeight = 0;
+            applyStoveModel("mstove_v3");
+            applyTentModel("helsport_varanger_8_10");
+          } else if (preset === "orison_mstove_stand") {
+            state.standHeight = 55;
+            applyStoveModel("mstove_v3");
+            applyTentModel("backcountry_orison");
+          } else if (preset === "alfheim_lumora") {
+            state.standHeight = 0;
+            applyStoveModel("lumora_ti_legs");
+            applyTentModel("nordisk_alfheim_12_6");
+          } else if (preset === "landlock_mstove") {
+            state.standHeight = 0;
+            applyStoveModel("mstove_v3");
+            applyTentModel("snowpeak_landlock");
+          } else if (preset === "ghost_dweller") {
+            state.standHeight = 0;
+            applyStoveModel("dweller_max3_legs");
+            applyTentModel("kovea_ghost_plus");
+          }
+          document.getElementById("tentSelect").value = state.selectedTentId;
+          syncInputsFromState();
+          updateUI();
+        });
+      });
+
+      document.querySelectorAll(".tent-origin-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const origin = btn.getAttribute("data-origin");
+          state.tentOriginFilter = origin;
+          document.querySelectorAll(".tent-origin-btn").forEach((b) => {
+            b.className =
+              b.getAttribute("data-origin") === origin
+                ? "tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition"
+                : "tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+          });
+          populateTentDropdown();
+          if (origin === "custom") {
+            applyTentModel("custom_tent");
+          } else {
+            const firstMatch = TENT_MODELS.find((t) => origin === "all" || t.origin === origin);
+            if (firstMatch) applyTentModel(firstMatch.id);
+          }
+        });
+      });
+
+      document.getElementById("tentSelect").addEventListener("change", (e) => {
+        applyTentModel(e.target.value);
+      });
+
+      document.querySelectorAll(".tent-shape-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.tentShape = btn.getAttribute("data-shape");
+          updateUI();
+        });
+      });
+
+      document.getElementById("stoveSelect").addEventListener("change", (e) => {
+        applyStoveModel(e.target.value);
+      });
+
+      document.querySelectorAll(".stand-preset-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.standHeight = Number(btn.getAttribute("data-stand")) || 0;
+          syncInputsFromState();
+          updateUI();
+        });
+      });
+
+      document.querySelectorAll(".path-type-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const pType = btn.getAttribute("data-path");
+          state.pathType = pType;
+          if (pType === "straight") {
+            state.horizDist = 0;
+          } else if (pType === "elbow45" && state.horizDist === 0) {
+            state.horizDist = 50;
+          } else if (pType === "elbow90" && state.horizDist === 0) {
+            state.horizDist = 65;
+          }
+          syncInputsFromState();
+          updateUI();
+        });
+      });
+
+      const linkInputPair = (numId, rangeId, stateKey) => {
+        const numEl = document.getElementById(numId);
+        const rangeEl = document.getElementById(rangeId);
+        numEl.addEventListener("input", () => {
+          state[stateKey] = Number(numEl.value) || 0;
+          rangeEl.value = state[stateKey];
+          updateUI();
+        });
+        rangeEl.addEventListener("input", () => {
+          state[stateKey] = Number(rangeEl.value) || 0;
+          numEl.value = state[stateKey];
+          updateUI();
+        });
+      };
+
+      linkInputPair("tentHeightInput", "tentHeightSlider", "tentHeight");
+      linkInputPair("jackHeightInput", "jackHeightSlider", "jackHeight");
+      linkInputPair("horizDistInput", "horizDistSlider", "horizDist");
+      linkInputPair("stoveHeightInput", "stoveHeightSlider", "stoveHeight");
+      linkInputPair("standHeightInput", "standHeightSlider", "standHeight");
+
+      document.getElementById("pipeSystemSelect").addEventListener("change", (e) => {
+        state.pipeSystem = e.target.value;
+        updateUI();
+      });
+      document.getElementById("protectionSelect").addEventListener("change", (e) => {
+        state.protectionType = e.target.value;
+        updateUI();
+      });
+      document.getElementById("overlapInput").addEventListener("input", (e) => {
+        state.overlapCm = Number(e.target.value) || 5;
+        updateUI();
+      });
+      document.getElementById("clearanceInput").addEventListener("input", (e) => {
+        state.clearanceCm = Number(e.target.value) || 55;
+        updateUI();
+      });
+
+      document.getElementById("toggleDimBtn").addEventListener("click", (e) => {
+        state.showDimensions = !state.showDimensions;
+        e.currentTarget.textContent = `📏 치수선 표시: ${state.showDimensions ? "ON" : "OFF"}`;
+        updateUI();
+      });
+      document.getElementById("toggleNodeBtn").addEventListener("click", (e) => {
+        state.showPipeNodes = !state.showPipeNodes;
+        e.currentTarget.textContent = `🔩 마디 경계: ${state.showPipeNodes ? "ON" : "OFF"}`;
+        updateUI();
+      });
+
+      document.getElementById("copyBomBtn").addEventListener("click", () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(state.lastBomText).then(
+            () => showToast("추천 연통 구성 견적서가 클립보드에 복사되었습니다!"),
+            () => fallbackCopy(state.lastBomText)
+          );
+        } else {
+          fallbackCopy(state.lastBomText);
+        }
+      });
+
+      document.querySelectorAll(".prod-cat-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cat = btn.getAttribute("data-pcat");
+          state.productCategoryFilter = cat;
+          document.querySelectorAll(".prod-cat-btn").forEach((b) => {
+            b.className =
+              b.getAttribute("data-pcat") === cat
+                ? "prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white"
+                : "prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700";
+          });
+          renderProductsTab();
+        });
+      });
+
+      document.querySelectorAll(".tent-db-filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tf = btn.getAttribute("data-tfilter");
+          state.tentDbFilter = tf;
+          document.querySelectorAll(".tent-db-filter-btn").forEach((b) => {
+            b.className =
+              b.getAttribute("data-tfilter") === tf
+                ? "tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white"
+                : "tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700";
+          });
+          renderTentsTab();
+        });
+      });
+
+      document.getElementById("tentDbTableBody").addEventListener("click", (e) => {
+        const btn = e.target.closest(".apply-tent-db-btn");
+        if (!btn) return;
+        const tentId = btn.getAttribute("data-apply-tent");
+        state.tentOriginFilter = "all";
+        populateTentDropdown();
+        applyTentModel(tentId);
+        document.getElementById("tentSelect").value = tentId;
+        switchTab("simulator");
+        showToast("선택하신 텐트 제원이 시뮬레이터에 적용되었습니다.");
+      });
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("추천 연통 구성 견적서가 클립보드에 복사되었습니다!");
+      } catch (err) {
+        showToast("복사에 실패했습니다.");
+      }
+      document.body.removeChild(ta);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      populateStoveDropdown();
+      populateTentDropdown();
+      renderProductsTab();
+      renderTentsTab();
+      bindEvents();
+      syncInputsFromState();
+      updateUI();
+    });
+  </script>
+</body>
+</html>
