@@ -11,23 +11,137 @@
   <style>
     body {
       font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
+      background-color: #f8fafc;
+      color: #0f172a;
+      line-height: 1.55;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1e293b;
+      background: #f1f5f9;
       border-radius: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #475569;
+      background: #cbd5e1;
       border-radius: 4px;
     }
     input[type="range"] {
-      accent-color: #f97316;
+      accent-color: #ea580c;
+    }
+    /* High-readability Light Theme Overrides */
+    body.light-theme {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    body.light-theme header {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    body.light-theme .bg-slate-950,
+    body.light-theme .bg-slate-950\/90,
+    body.light-theme .bg-slate-950\/80,
+    body.light-theme .bg-slate-950\/70,
+    body.light-theme .bg-slate-950\/60 {
+      background-color: #f8fafc !important;
+    }
+    body.light-theme .bg-slate-900,
+    body.light-theme .bg-slate-900\/90,
+    body.light-theme .bg-slate-900\/95 {
+      background-color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    body.light-theme .bg-slate-800,
+    body.light-theme .bg-slate-800\/60,
+    body.light-theme .bg-slate-800\/40 {
+      background-color: #f1f5f9 !important;
+    }
+    body.light-theme .hover\:bg-slate-800:hover,
+    body.light-theme .hover\:bg-slate-700:hover {
+      background-color: #e2e8f0 !important;
+    }
+    body.light-theme .border-slate-800,
+    body.light-theme .border-slate-800\/90,
+    body.light-theme .border-slate-800\/80,
+    body.light-theme .border-slate-800\/70,
+    body.light-theme .border-slate-700 {
+      border-color: #cbd5e1 !important;
+    }
+    body.light-theme .divide-slate-800\/70 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme .text-white {
+      color: #0f172a !important;
+    }
+    body.light-theme .bg-orange-600.text-white,
+    body.light-theme .bg-emerald-600.text-white,
+    body.light-theme .bg-indigo-600.text-white,
+    body.light-theme .bg-slate-900.text-white {
+      color: #ffffff !important;
+    }
+    body.light-theme .bg-orange-600 .text-white,
+    body.light-theme .bg-emerald-600 .text-white,
+    body.light-theme .from-orange-500.text-white {
+      color: #ffffff !important;
+    }
+    body.light-theme .text-slate-100,
+    body.light-theme .text-slate-200 {
+      color: #1e293b !important;
+    }
+    body.light-theme .text-slate-300 {
+      color: #334155 !important;
+    }
+    body.light-theme .text-slate-400,
+    body.light-theme .text-slate-500 {
+      color: #475569 !important;
+    }
+    body.light-theme .text-orange-400,
+    body.light-theme .text-orange-300 {
+      color: #c2410c !important;
+    }
+    body.light-theme .text-amber-300,
+    body.light-theme .text-amber-400 {
+      color: #b45309 !important;
+    }
+    body.light-theme .text-emerald-400,
+    body.light-theme .text-emerald-300 {
+      color: #047857 !important;
+    }
+    body.light-theme .text-sky-300,
+    body.light-theme .text-sky-400,
+    body.light-theme .text-cyan-300,
+    body.light-theme .text-cyan-400 {
+      color: #0369a1 !important;
+    }
+    body.light-theme .text-rose-300,
+    body.light-theme .text-rose-400 {
+      color: #be123c !important;
+    }
+    body.light-theme .text-purple-300 {
+      color: #6d28d9 !important;
+    }
+    body.light-theme .text-indigo-300 {
+      color: #4338ca !important;
+    }
+    body.light-theme .bg-rose-950\/70 {
+      background-color: #fff1f2 !important;
+      color: #9f1239 !important;
+      border-color: #fda4af !important;
+    }
+    body.light-theme .text-rose-200 {
+      color: #9f1239 !important;
+    }
+    body.light-theme select,
+    body.light-theme input[type="number"],
+    body.light-theme input[type="url"],
+    body.light-theme input[type="password"],
+    body.light-theme input[type="text"] {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
+      font-weight: 600;
     }
     @keyframes smokeRise {
       0% { transform: translateY(0) scale(0.85); opacity: 0.65; }
@@ -47,7 +161,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 selection:bg-orange-500 selection:text-white">
+<body class="light-theme min-h-screen bg-slate-50 text-slate-900 selection:bg-orange-500 selection:text-white">
 
   <!-- Top Header -->
   <header class="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
@@ -88,6 +202,15 @@
         </button>
         <button id="tabBtn-rules" data-tab="rules" class="nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition">
           📘 설치 규칙·난이도 기준
+        </button>
+        <button id="tabBtn-embed" data-tab="embed" class="hidden nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-300 transition">
+          📦 판매페이지 탑재·배포
+        </button>
+        <button id="toggleCustomerModeBtn" type="button" class="hidden px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-100 hover:bg-slate-200 text-amber-700 border border-amber-300 transition">
+          👁️ 고객용 심플뷰: OFF
+        </button>
+        <button id="adminToggleHeaderBtn" type="button" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+          🔒 관리자
         </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
            class="hidden md:inline-flex items-center gap-1.5 ml-2 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold whitespace-nowrap shadow-sm transition">
@@ -451,7 +574,7 @@
             </div>
 
             <!-- Interactive SVG Canvas Container -->
-            <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-800">
+            <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-sky-50/70 via-slate-50 to-slate-100 border border-slate-300 shadow-inner">
               <svg id="simSvg" viewBox="0 0 760 480" class="w-full h-auto block select-none"></svg>
             </div>
 
@@ -493,9 +616,14 @@
                   <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">캠핑투게더 스마트스토어</a> 실판매 상품 규격과 단가를 기준으로 산출된 맞춤형 구성표입니다.
                 </p>
               </div>
-              <button id="copyBomBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow transition">
-                <span>📋 추천 구성 견적 복사</span>
-              </button>
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="copyShareUrlBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs font-bold transition">
+                  <span>🔗 현재 세팅 링크 복사</span>
+                </button>
+                <button id="copyBomBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold shadow transition">
+                  <span>📋 추천 구성 견적 복사</span>
+                </button>
+              </div>
             </div>
 
             <!-- Pipe Length Breakdown Bar -->
@@ -617,34 +745,34 @@
           <!-- Visual SVG explaining the 5cm overlap rule -->
           <div class="rounded-xl bg-slate-950 border border-slate-800 p-4">
             <svg viewBox="0 0 560 190" class="w-full h-auto">
-              <rect x="10" y="10" width="540" height="170" rx="10" fill="#0f172a" stroke="#1e293b" />
-              <text x="25" y="34" fill="#f8fafc" font-size="13" font-weight="bold">캠핑투게더 70-73-76파이 3.3m 연통 세트 (12본) 결속 단축 계산</text>
+              <rect x="10" y="10" width="540" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" />
+              <text x="25" y="34" fill="#0f172a" font-size="13" font-weight="bold">캠핑투게더 70-73-76파이 3.3m 연통 세트 (12본) 결속 단축 계산</text>
 
               <!-- Pipe 1 -->
               <rect x="30" y="65" width="160" height="36" rx="4" fill="#f59e0b" fill-opacity="0.25" stroke="#f59e0b" stroke-width="2" />
-              <text x="110" y="88" fill="#fde68a" font-size="12" font-weight="bold" text-anchor="middle">직관 1본 표기: 33cm</text>
+              <text x="110" y="88" fill="#92400e" font-size="12" font-weight="bold" text-anchor="middle">직관 1본 표기: 33cm</text>
 
               <!-- Overlap Zone -->
               <rect x="160" y="61" width="35" height="44" rx="3" fill="#f43f5e" fill-opacity="0.35" stroke="#f43f5e" stroke-width="2" stroke-dasharray="3,2" />
-              <text x="177" y="54" fill="#fda4af" font-size="11" font-weight="bold" text-anchor="middle">겹침 -5cm</text>
+              <text x="177" y="54" fill="#be123c" font-size="11" font-weight="bold" text-anchor="middle">겹침 -5cm</text>
 
               <!-- Pipe 2 -->
               <rect x="160" y="65" width="160" height="36" rx="4" fill="#f97316" fill-opacity="0.25" stroke="#f97316" stroke-width="2" />
-              <text x="255" y="88" fill="#fed7aa" font-size="12" font-weight="bold" text-anchor="middle">직관 2본 표기: 33cm</text>
+              <text x="255" y="88" fill="#9a3412" font-size="12" font-weight="bold" text-anchor="middle">직관 2본 표기: 33cm</text>
 
               <!-- Dimension Line -->
-              <line x1="30" y1="125" x2="160" y2="125" stroke="#34d399" stroke-width="2" />
-              <line x1="30" y1="118" x2="30" y2="132" stroke="#34d399" stroke-width="2" />
-              <line x1="160" y1="118" x2="160" y2="132" stroke="#34d399" stroke-width="2" />
-              <text x="95" y="145" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">실제 연장 유효길이: 28cm</text>
+              <line x1="30" y1="125" x2="160" y2="125" stroke="#059669" stroke-width="2" />
+              <line x1="30" y1="118" x2="30" y2="132" stroke="#059669" stroke-width="2" />
+              <line x1="160" y1="118" x2="160" y2="132" stroke="#059669" stroke-width="2" />
+              <text x="95" y="145" fill="#047857" font-size="12" font-weight="bold" text-anchor="middle">실제 연장 유효길이: 28cm</text>
 
               <!-- Summary Box on Right -->
-              <rect x="345" y="50" width="190" height="115" rx="8" fill="#1e293b" stroke="#334155" />
-              <text x="358" y="72" fill="#94a3b8" font-size="11">• 댐퍼 1개 (28cm) → 유효 <tspan fill="#f8fafc" font-weight="bold">23cm</tspan></text>
-              <text x="358" y="92" fill="#94a3b8" font-size="11">• 직관·레듀셔 11개 (33cm×11)</text>
-              <text x="368" y="108" fill="#94a3b8" font-size="11">→ 개당 유효 28cm × 11 = <tspan fill="#f8fafc" font-weight="bold">308cm</tspan></text>
-              <text x="358" y="130" fill="#fb923c" font-size="11" font-weight="bold">• 단품 총합: 391cm (12본)</text>
-              <text x="358" y="150" fill="#34d399" font-size="12" font-weight="bold">• 결합 후 실제 높이: 약 330cm</text>
+              <rect x="345" y="50" width="190" height="115" rx="8" fill="#ffffff" stroke="#cbd5e1" />
+              <text x="358" y="72" fill="#334155" font-size="11">• 댐퍼 1개 (28cm) → 유효 <tspan fill="#0f172a" font-weight="bold">23cm</tspan></text>
+              <text x="358" y="92" fill="#334155" font-size="11">• 직관·레듀셔 11개 (33cm×11)</text>
+              <text x="368" y="108" fill="#334155" font-size="11">→ 개당 유효 28cm × 11 = <tspan fill="#0f172a" font-weight="bold">308cm</tspan></text>
+              <text x="358" y="130" fill="#c2410c" font-size="11" font-weight="bold">• 단품 총합: 391cm (12본)</text>
+              <text x="358" y="150" fill="#047857" font-size="12" font-weight="bold">• 결합 후 실제 높이: 약 330cm</text>
             </svg>
           </div>
 
@@ -705,11 +833,11 @@
             </div>
             <h3 class="text-sm font-bold text-white">천장 홀잭 수직 직상형 (Type A)</h3>
             <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
-              <polygon points="20,115 110,25 200,115" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <polygon points="20,115 110,25 200,115" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
               <rect x="92" y="88" width="26" height="20" rx="2" fill="#f97316"/>
               <line x1="105" y1="88" x2="105" y2="10" stroke="#34d399" stroke-width="5"/>
               <rect x="100" y="34" width="10" height="18" rx="2" fill="#22d3ee"/>
-              <text x="115" y="20" fill="#34d399" font-size="10" font-weight="bold">수직 직상 (엘보 0)</text>
+              <text x="115" y="20" fill="#047857" font-size="10" font-weight="bold">수직 직상 (엘보 0)</text>
             </svg>
             <ul class="text-xs text-slate-300 space-y-1">
               <li>• <strong>조건:</strong> 엘보 0개, 수직 직상 관통, 총 높이 3.8m 이하</li>
@@ -726,14 +854,14 @@
             </div>
             <h3 class="text-sm font-bold text-white">경사 홀잭 45° 대각선 경로 (Type B)</h3>
             <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
-              <polygon points="20,115 110,20 200,115" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <polygon points="20,115 110,20 200,115" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
               <line x1="110" y1="20" x2="110" y2="115" stroke="#64748b" stroke-width="2" stroke-dasharray="3,3"/>
               <rect x="97" y="88" width="26" height="20" rx="2" fill="#f97316"/>
               <polyline points="110,88 110,72 150,42 150,10" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linejoin="round"/>
               <circle cx="110" cy="72" r="4" fill="#f59e0b"/>
               <circle cx="150" cy="42" r="4" fill="#f59e0b"/>
               <rect x="132" y="46" width="12" height="12" rx="2" fill="#22d3ee"/>
-              <text x="155" y="25" fill="#fbbf24" font-size="10" font-weight="bold">45° 엘보×2</text>
+              <text x="155" y="25" fill="#b45309" font-size="10" font-weight="bold">45° 엘보×2</text>
             </svg>
             <ul class="text-xs text-slate-300 space-y-1">
               <li>• <strong>조건:</strong> 45° 엘보 2개 사용 또는 수직 3.8m 초과 장연통</li>
@@ -750,14 +878,14 @@
             </div>
             <h3 class="text-sm font-bold text-white">측면 창문 90° 굴절 경로 (Type C)</h3>
             <svg viewBox="0 0 220 130" class="w-full h-auto rounded-lg bg-slate-900 border border-slate-800">
-              <path d="M 20,115 L 35,45 L 155,45 L 170,115 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <path d="M 20,115 L 35,45 L 155,45 L 170,115 Z" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
               <rect x="95" y="88" width="26" height="20" rx="2" fill="#f97316"/>
               <polyline points="108,88 108,65 188,65 188,12" fill="none" stroke="#fb7185" stroke-width="5" stroke-linejoin="round"/>
               <circle cx="108" cy="65" r="4" fill="#f43f5e"/>
               <circle cx="188" cy="65" r="4" fill="#f43f5e"/>
               <rect x="155" y="59" width="16" height="12" rx="2" fill="#22d3ee"/>
               <line x1="188" y1="65" x2="188" y2="115" stroke="#94a3b8" stroke-width="2" stroke-dasharray="2,2"/>
-              <text x="122" y="32" fill="#fb7185" font-size="10" font-weight="bold">90° 엘보×2 + 지지대</text>
+              <text x="122" y="32" fill="#be123c" font-size="10" font-weight="bold">90° 엘보×2 + 지지대</text>
             </svg>
             <ul class="text-xs text-slate-300 space-y-1">
               <li>• <strong>조건:</strong> 90° 엘보 2개 측면 배출 또는 총 길이 4.5m 초과</li>
@@ -769,6 +897,182 @@
         </div>
       </div>
 
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ADMIN PASSWORD MODAL & COLLAPSIBLE BAR     -->
+    <!-- ========================================== -->
+    <div id="adminAccessBar" class="mt-8 rounded-2xl bg-white border border-slate-300 p-4 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span id="adminStatusIcon" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-sm">🔒</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900">관리자 전용: 판매페이지 탑재 · 배너 · 배포 설정</h3>
+              <span id="adminUnlockBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300">잠금 상태 (고객에게 숨김)</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5">관리자 비밀번호를 입력하면 판매페이지 탑재용 배너·코드 및 배포 도구를 펼치거나 숨길 수 있습니다.</p>
+          </div>
+        </div>
+
+        <!-- Password Input Form (Shown when locked) -->
+        <div id="adminPasswordBox" class="flex flex-wrap items-center gap-2">
+          <input id="adminPasswordInput" type="password" inputmode="numeric" placeholder="관리자 비밀번호 입력"
+                 class="w-44 rounded-xl bg-white border border-slate-300 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none" />
+          <button id="adminUnlockSubmitBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow-sm transition">
+            🔓 확인 및 펼치기
+          </button>
+        </div>
+
+        <!-- Expand / Collapse & Lock Controls (Shown when unlocked) -->
+        <div id="adminExpandCollapseControls" class="hidden flex flex-wrap items-center gap-2">
+          <button id="adminCollapseExpandBtn" type="button" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold shadow-sm transition">
+            🔼 판매페이지 탑재·배포 도구 접기 (숨김)
+          </button>
+          <button id="adminLockBtn" type="button" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold transition">
+            🔒 관리자 잠금
+          </button>
+        </div>
+      </div>
+      <p id="adminPasswordError" class="hidden text-xs font-bold text-rose-600 mt-2">
+        ⚠️ 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.
+      </p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5 / ADMIN DRAWER: SALES PAGE EMBED KIT -->
+    <!-- ========================================== -->
+    <section id="tabPanel-embed" class="hidden mt-4 space-y-6">
+
+      <!-- Top Intro Banner -->
+      <div class="rounded-2xl bg-gradient-to-r from-indigo-50 via-white to-orange-50 border-2 border-indigo-200 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            ✓ 무설치 · 무로그인 · 서버/DB 비용 0원 · 100% 브라우저 즉시 작동
+          </div>
+          <h2 class="text-base sm:text-lg font-extrabold text-white mt-1">
+            📦 판매페이지(스마트스토어 · 카페24 · 아임웹 · 자사몰) 탑재 및 배포 키트
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            이 시뮬레이터는 외부 서버나 로그인 없이 단일 HTML 파일 하나로 모든 기기(모바일·PC)에서 즉시 작동합니다. 아래 <strong>1단계 파일 다운로드</strong>로 무료 웹 주소(URL)를 만든 뒤, <strong>2단계 판매페이지용 배너 이미지 또는 임베드 코드</strong>를 상세페이지에 넣어 주세요.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button id="downloadStandaloneHtmlBtn" type="button" class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-extrabold shadow-lg shadow-orange-600/25 transition flex items-center gap-2">
+            <span>⬇️ 고객 배포용 index.html 다운로드</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2-Step Deployment & URL Configuration -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left 5 Cols: 1분 무료 호스팅 & URL 설정 -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+              <span class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-extrabold flex items-center justify-center">1</span>
+              <h3 class="text-sm sm:text-base font-bold text-white">무료 웹 주소(URL) 생성 및 상품별 초기값 설정</h3>
+            </div>
+
+            <div class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 text-xs text-slate-300 space-y-2">
+              <div class="font-bold text-indigo-300">🚀 1분 만에 고객 접속용 무료 URL 만드는 법 (택1)</div>
+              <p class="text-slate-400 leading-relaxed">
+                1) 상단 <strong>[고객 배포용 index.html 다운로드]</strong> 버튼을 눌러 파일을 저장합니다.<br/>
+                2) <a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline font-semibold">Netlify Drop (app.netlify.com/drop)</a>에 접속해 다운로드한 파일이 담긴 폴더를 마우스로 끌어다 놓거나, 사용 중이신 <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline font-semibold">Vercel</a> / <a href="https://pages.github.com" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline font-semibold">GitHub Pages</a> 프로젝트에 업로드하면 즉시 <code>https://...</code> 접속 주소가 생성됩니다.
+              </p>
+            </div>
+
+            <div>
+              <label for="deployUrlInput" class="block text-xs font-semibold text-slate-300 mb-1">배포된 시뮬레이터 웹 주소 (URL 입력)</label>
+              <input id="deployUrlInput" type="url" value="https://camping-together-sim.vercel.app"
+                     placeholder="https://camping-together-sim.vercel.app"
+                     class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-xs sm:text-sm text-white focus:border-orange-500 focus:outline-none" />
+              <p class="text-[11px] text-slate-400 mt-1">입력하신 주소에 맞춰 우측의 스마트스토어 배너, 링크, iframe 코드가 실시간으로 자동 변환됩니다.</p>
+            </div>
+
+            <div>
+              <label for="embedPresetSelect" class="block text-xs font-semibold text-slate-300 mb-1">어떤 상품 상세페이지에 넣으시나요? (초기 자동 세팅)</label>
+              <select id="embedPresetSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-xs sm:text-sm text-white focus:border-orange-500 focus:outline-none">
+                <option value="?embed=1">전체 상품 공용 (고객용 심플뷰 기본 실행)</option>
+                <option value="?embed=1&stove=mstove_v3">엠스토브 v3 상세페이지용 (엠스토브 v3 35cm 자동 선택)</option>
+                <option value="?embed=1&stove=lumora_ti_legs">포몰리 루모라 Ti 상세페이지용 (루모라 Ti 49cm 자동 선택)</option>
+                <option value="?embed=1&stove=dweller_max3_legs">포몰리 드웰러 맥스 3 상세페이지용 (드웰러 맥스 3 자동 선택)</option>
+                <option value="?embed=1&stove=mstove_v3&stand=55">유니버셜 스탠드 550 상세페이지용 (스탠드 55cm 자동 적용)</option>
+                <option value="">상단 탭 전체 노출 모드 (스토어DB·텐트DB·설치규칙 모두 표시)</option>
+              </select>
+            </div>
+
+            <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">생성된 고객 접속 전용 링크:</span>
+                <button id="copyTargetUrlBtn" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-orange-400 text-[11px] font-bold">
+                  주소 복사
+                </button>
+              </div>
+              <div id="generatedFullUrlDisplay" class="text-xs font-mono text-emerald-400 break-all">
+                https://camping-together-sim.vercel.app/?embed=1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 7 Cols: Method A (Naver Smartstore Banner) & Method B (Cafe24/Self-Mall Iframe) -->
+        <div class="lg:col-span-7 space-y-5">
+
+          <!-- Method A: Naver Smartstore Banner Image + Link -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">방법 A · 네이버 스마트스토어 전용</span>
+                <h3 class="text-sm sm:text-base font-bold text-white mt-1">스마트스토어 상세페이지용 클릭 배너 이미지 (860px 표준 폭)</h3>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  네이버 스마트스토어 에디터(스마트에디터 ONE)는 보안상 외부 스크립트 태그를 차단하므로, 아래 <strong>860px 배너 이미지를 다운로드하여 상세페이지 상단에 넣고 [링크 삽입] 기능으로 위 주소를 연결</strong>하면 고객이 클릭 즉시 무설치 계산기를 사용할 수 있습니다.
+                </p>
+              </div>
+              <button id="downloadBannerPngBtn" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold whitespace-nowrap shadow transition">
+                🖼️ 배너 이미지 다운로드 (PNG)
+              </button>
+            </div>
+
+            <!-- Live Canvas Banner Preview -->
+            <div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-2">
+              <canvas id="smartstoreBannerCanvas" width="860" height="280" class="w-full h-auto rounded-lg block"></canvas>
+            </div>
+          </div>
+
+          <!-- Method B: Direct Iframe Embed for Self-Hosted Malls (Cafe24, Imweb, Vercel, WordPress) -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30">방법 B · 카페24 / 아임웹 / 자체 쇼핑몰 전용</span>
+                <h3 class="text-sm sm:text-base font-bold text-white mt-1">판매페이지 내부 직접 작동용 반응형 Iframe 삽입 코드</h3>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  HTML 코드 삽입을 지원하는 쇼핑몰 상세페이지(카페24, 아임웹, 고도몰, 자체 구축 사이트 등)의 코드 편집기에 아래 코드를 붙여넣으면 <strong>상세페이지 화면 안에서 페이지 이동이나 로그인 없이 시뮬레이터가 바로 작동</strong>합니다.
+                </p>
+              </div>
+              <button id="copyIframeCodeBtn" type="button" class="px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold whitespace-nowrap shadow transition">
+                📋 Iframe 삽입 코드 복사
+              </button>
+            </div>
+
+            <pre id="iframeCodePreview" class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 text-xs font-mono text-slate-300 overflow-x-auto custom-scrollbar leading-relaxed"></pre>
+
+            <!-- Method C: HTML CTA Button Banner -->
+            <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-white">방법 C · HTML 버튼 배너 코드 (팝업/새창 열기 방식)</h4>
+                <p class="text-xs text-slate-400">상세페이지가 좁을 때 깔끔한 안내 박스와 새창 실행 버튼을 넣는 HTML 코드입니다.</p>
+              </div>
+              <button id="copyHtmlBannerBtn" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold whitespace-nowrap transition">
+                📋 HTML 배너 코드 복사
+              </button>
+            </div>
+            <pre id="htmlBannerCodePreview" class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 text-xs font-mono text-slate-300 overflow-x-auto custom-scrollbar leading-relaxed"></pre>
+          </div>
+
+        </div>
+      </div>
     </section>
 
   </main>
@@ -1325,7 +1629,12 @@
       showPipeNodes: true,
       productCategoryFilter: "all",
       tentDbFilter: "all",
-      lastBomText: ""
+      lastBomText: "",
+      customerSimpleMode: false,
+      adminUnlocked: false,
+      adminDrawerOpen: false,
+      deployBaseUrl: "https://camping-together-sim.vercel.app",
+      embedQueryPreset: "?embed=1"
     };
 
     // =========================================================================
@@ -1680,7 +1989,7 @@
 
       let pipeSvgMarkup = "";
       const polyStr = pipePoints.map((p) => `${p.x},${p.y}`).join(" ");
-      pipeSvgMarkup += `<polyline points="${polyStr}" fill="none" stroke="#0f172a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />`;
+      pipeSvgMarkup += `<polyline points="${polyStr}" fill="none" stroke="#334155" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />`;
 
       if (state.pathType === "straight") {
         let curCm = sim.H_start;
@@ -1719,18 +2028,18 @@
           }
         }
         pipeSvgMarkup += `
-          <circle cx="${pipePoints[1].x}" cy="${pipePoints[1].y}" r="6.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/>
-          <circle cx="${pipePoints[2].x}" cy="${pipePoints[2].y}" r="6.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/>
-          <text x="${pipePoints[1].x - 12}" y="${pipePoints[1].y - 8}" fill="#fde68a" font-size="10" font-weight="bold" text-anchor="end">${sim.elbowAngle}° 엘보</text>
-          <text x="${pipePoints[2].x + 12}" y="${pipePoints[2].y + 14}" fill="#fde68a" font-size="10" font-weight="bold">${sim.elbowAngle}° 엘보</text>
+          <circle cx="${pipePoints[1].x}" cy="${pipePoints[1].y}" r="6.5" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+          <circle cx="${pipePoints[2].x}" cy="${pipePoints[2].y}" r="6.5" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+          <text x="${pipePoints[1].x - 12}" y="${pipePoints[1].y - 8}" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="end">${sim.elbowAngle}° 엘보</text>
+          <text x="${pipePoints[2].x + 12}" y="${pipePoints[2].y + 14}" fill="#b45309" font-size="10.5" font-weight="bold">${sim.elbowAngle}° 엘보</text>
         `;
       }
 
       const damperY = stoveTopY - cmToPx(sim.effDamperLen * 0.55);
       pipeSvgMarkup += `
-        <circle cx="${stoveCenterX}" cy="${damperY}" r="4.5" fill="#10b981" stroke="#0f172a" stroke-width="1.5"/>
-        <line x1="${stoveCenterX}" y1="${damperY}" x2="${stoveCenterX + 14}" y2="${damperY}" stroke="#10b981" stroke-width="2.5"/>
-        <text x="${stoveCenterX + 18}" y="${damperY + 3}" fill="#6ee7b7" font-size="10" font-weight="bold">댐퍼(28cm)</text>
+        <circle cx="${stoveCenterX}" cy="${damperY}" r="4.5" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+        <line x1="${stoveCenterX}" y1="${damperY}" x2="${stoveCenterX + 14}" y2="${damperY}" stroke="#059669" stroke-width="2.5"/>
+        <text x="${stoveCenterX + 18}" y="${damperY + 3}" fill="#047857" font-size="10.5" font-weight="bold">댐퍼(28cm)</text>
       `;
 
       const sleeveLenPx = Math.max(24, cmToPx(50));
@@ -1743,35 +2052,35 @@
 
       pipeSvgMarkup += `
         <g transform="translate(${jackPoint.x}, ${jackPoint.y}) rotate(${jackPoint.angle})">
-          <rect x="-9" y="${-sleeveLenPx / 2}" width="18" height="${sleeveLenPx}" rx="4" fill="#06b6d4" fill-opacity="0.38" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="${state.protectionType === 'mesh_guard' ? '3,2' : 'none'}"/>
-          <circle cx="0" cy="0" r="4" fill="#fde047" />
+          <rect x="-9" y="${-sleeveLenPx / 2}" width="18" height="${sleeveLenPx}" rx="4" fill="#0ea5e9" fill-opacity="0.32" stroke="#0284c7" stroke-width="2.2" stroke-dasharray="${state.protectionType === 'mesh_guard' ? '3,2' : 'none'}"/>
+          <circle cx="0" cy="0" r="4" fill="#ea580c" />
         </g>
-        <text x="${jackPoint.x + 16}" y="${jackPoint.y - 4}" fill="#67e8f9" font-size="11" font-weight="bold">홀잭 (${sim.H_jack}cm) · ${protLabel}</text>
+        <text x="${jackPoint.x + 16}" y="${jackPoint.y - 4}" fill="#0369a1" font-size="11" font-weight="bold">홀잭 (${sim.H_jack}cm) · ${protLabel}</text>
       `;
 
       const guyRingY = topPoint.y + Math.min(45, cmToPx(40));
       const supportPoleMarkup =
         state.pathType === "elbow90"
           ? `
-            <line x1="${topPoint.x}" y1="${jackY + 6}" x2="${topPoint.x}" y2="${groundY}" stroke="#94a3b8" stroke-width="3" stroke-dasharray="5,3"/>
-            <polygon points="${topPoint.x - 18},${groundY} ${topPoint.x},${groundY - 22} ${topPoint.x + 18},${groundY}" fill="none" stroke="#94a3b8" stroke-width="2"/>
-            <text x="${topPoint.x + 10}" y="${groundY - 25}" fill="#cbd5e1" font-size="10" font-weight="bold">외부 연통 지지대(필수)</text>
+            <line x1="${topPoint.x}" y1="${jackY + 6}" x2="${topPoint.x}" y2="${groundY}" stroke="#475569" stroke-width="3" stroke-dasharray="5,3"/>
+            <polygon points="${topPoint.x - 18},${groundY} ${topPoint.x},${groundY - 22} ${topPoint.x + 18},${groundY}" fill="none" stroke="#475569" stroke-width="2"/>
+            <text x="${topPoint.x + 10}" y="${groundY - 25}" fill="#1e293b" font-size="10.5" font-weight="bold">외부 연통 지지대(필수)</text>
           `
           : "";
 
       const guylineMarkup = `
-        <circle cx="${topPoint.x}" cy="${guyRingY}" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"/>
-        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.min(735, topPoint.x + 95)}" y2="${groundY}" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4" stroke-opacity="0.75"/>
-        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.max(30, topPoint.x - 95)}" y2="${groundY}" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,4" stroke-opacity="0.75"/>
-        <text x="${topPoint.x + 10}" y="${guyRingY + 4}" fill="#7dd3fc" font-size="10" font-weight="bold">76파이 고정링 &amp; 가이라인</text>
+        <circle cx="${topPoint.x}" cy="${guyRingY}" r="5" fill="#0284c7" stroke="#ffffff" stroke-width="1.5"/>
+        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.min(735, topPoint.x + 95)}" y2="${groundY}" stroke="#0284c7" stroke-width="1.4" stroke-dasharray="4,4" stroke-opacity="0.8"/>
+        <line x1="${topPoint.x}" y1="${guyRingY}" x2="${Math.max(30, topPoint.x - 95)}" y2="${groundY}" stroke="#0284c7" stroke-width="1.4" stroke-dasharray="4,4" stroke-opacity="0.8"/>
+        <text x="${topPoint.x + 10}" y="${guyRingY + 4}" fill="#0369a1" font-size="10.5" font-weight="bold">76파이 고정링 &amp; 가이라인</text>
       `;
 
       const sparkCapMarkup = `
-        <rect x="${topPoint.x - 7}" y="${topPoint.y - 8}" width="14" height="10" rx="2" fill="#e11d48" stroke="#fda4af" stroke-width="1.5"/>
-        <line x1="${topPoint.x - 10}" y1="${topPoint.y - 8}" x2="${topPoint.x + 10}" y2="${topPoint.y - 8}" stroke="#fda4af" stroke-width="2.5"/>
-        <circle cx="${topPoint.x}" cy="${topPoint.y - 18}" r="5" fill="#94a3b8" class="smoke-puff-1"/>
-        <circle cx="${topPoint.x + 6}" cy="${topPoint.y - 26}" r="7" fill="#94a3b8" class="smoke-puff-2"/>
-        <circle cx="${topPoint.x - 4}" cy="${topPoint.y - 34}" r="9" fill="#94a3b8" class="smoke-puff-3"/>
+        <rect x="${topPoint.x - 7}" y="${topPoint.y - 8}" width="14" height="10" rx="2" fill="#e11d48" stroke="#be123c" stroke-width="1.5"/>
+        <line x1="${topPoint.x - 10}" y1="${topPoint.y - 8}" x2="${topPoint.x + 10}" y2="${topPoint.y - 8}" stroke="#be123c" stroke-width="2.5"/>
+        <circle cx="${topPoint.x}" cy="${topPoint.y - 18}" r="5" fill="#64748b" class="smoke-puff-1"/>
+        <circle cx="${topPoint.x + 6}" cy="${topPoint.y - 26}" r="7" fill="#64748b" class="smoke-puff-2"/>
+        <circle cx="${topPoint.x - 4}" cy="${topPoint.y - 34}" r="9" fill="#64748b" class="smoke-puff-3"/>
       `;
 
       const standHeightPx = Math.max(0, groundY - standTopY);
@@ -1780,41 +2089,41 @@
       const standMarkup =
         sim.H_stand > 0
           ? `
-            <rect x="${stoveCenterX - stoveW / 2 - 4}" y="${standTopY}" width="${stoveW + 8}" height="${standHeightPx}" rx="3" fill="#0284c7" fill-opacity="0.25" stroke="#38bdf8" stroke-width="2"/>
-            <line x1="${stoveCenterX - stoveW / 2}" y1="${standTopY + standHeightPx / 2}" x2="${stoveCenterX + stoveW / 2}" y2="${standTopY + standHeightPx / 2}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2"/>
-            <text x="${stoveCenterX - stoveW / 2 - 10}" y="${standTopY + standHeightPx / 2 + 4}" fill="#7dd3fc" font-size="10" font-weight="bold" text-anchor="end">스탠드 ${sim.H_stand}cm</text>
+            <rect x="${stoveCenterX - stoveW / 2 - 4}" y="${standTopY}" width="${stoveW + 8}" height="${standHeightPx}" rx="3" fill="#bae6fd" fill-opacity="0.7" stroke="#0284c7" stroke-width="2"/>
+            <line x1="${stoveCenterX - stoveW / 2}" y1="${standTopY + standHeightPx / 2}" x2="${stoveCenterX + stoveW / 2}" y2="${standTopY + standHeightPx / 2}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <text x="${stoveCenterX - stoveW / 2 - 10}" y="${standTopY + standHeightPx / 2 + 4}" fill="#0369a1" font-size="10.5" font-weight="bold" text-anchor="end">스탠드 ${sim.H_stand}cm</text>
           `
           : "";
 
       const stoveMarkup = `
-        <rect x="${stoveCenterX - stoveW / 2}" y="${stoveTopY}" width="${stoveW}" height="${stoveHeightPx}" rx="5" fill="#1e293b" stroke="#f97316" stroke-width="2.2"/>
-        <rect x="${stoveCenterX - stoveW / 2 + 8}" y="${stoveTopY + 5}" width="${stoveW - 16}" height="${Math.max(6, stoveHeightPx - 10)}" rx="3" fill="#431407" stroke="#fb923c" stroke-width="1"/>
+        <rect x="${stoveCenterX - stoveW / 2}" y="${stoveTopY}" width="${stoveW}" height="${stoveHeightPx}" rx="5" fill="#334155" stroke="#ea580c" stroke-width="2.2"/>
+        <rect x="${stoveCenterX - stoveW / 2 + 8}" y="${stoveTopY + 5}" width="${stoveW - 16}" height="${Math.max(6, stoveHeightPx - 10)}" rx="3" fill="#7c2d12" stroke="#fb923c" stroke-width="1"/>
         <path d="M ${stoveCenterX - 6},${standTopY - 6} Q ${stoveCenterX},${stoveTopY + 4} ${stoveCenterX + 6},${standTopY - 6} Z" fill="#fb923c" class="flame-anim"/>
-        <text x="${stoveCenterX - stoveW / 2 - 10}" y="${stoveTopY + stoveHeightPx / 2 + 4}" fill="#fdba74" font-size="10.5" font-weight="bold" text-anchor="end">난로 ${sim.H_stove}cm</text>
+        <text x="${stoveCenterX - stoveW / 2 - 10}" y="${stoveTopY + stoveHeightPx / 2 + 4}" fill="#c2410c" font-size="10.5" font-weight="bold" text-anchor="end">난로 ${sim.H_stove}cm</text>
       `;
 
       let dimMarkup = "";
       if (state.showDimensions) {
         const leftDimX = Math.max(48, tentLeftX - 35);
         dimMarkup += `
-          <line x1="${leftDimX}" y1="${groundY}" x2="${leftDimX}" y2="${tentPeakY}" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="${leftDimX - 6}" y1="${groundY}" x2="${leftDimX + 6}" y2="${groundY}" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="${leftDimX - 6}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${tentPeakY}" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"/>
-          <rect x="${leftDimX - 38}" y="${(groundY + tentPeakY) / 2 - 11}" width="76" height="22" rx="5" fill="#0f172a" stroke="#475569"/>
-          <text x="${leftDimX}" y="${(groundY + tentPeakY) / 2 + 4}" fill="#e2e8f0" font-size="10.5" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
+          <line x1="${leftDimX}" y1="${groundY}" x2="${leftDimX}" y2="${tentPeakY}" stroke="#475569" stroke-width="1.8"/>
+          <line x1="${leftDimX - 6}" y1="${groundY}" x2="${leftDimX + 6}" y2="${groundY}" stroke="#475569" stroke-width="1.8"/>
+          <line x1="${leftDimX - 6}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${tentPeakY}" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <rect x="${leftDimX - 40}" y="${(groundY + tentPeakY) / 2 - 11}" width="80" height="22" rx="5" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+          <text x="${leftDimX}" y="${(groundY + tentPeakY) / 2 + 4}" fill="#0f172a" font-size="10.5" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
         `;
 
         const rightDimX = Math.min(712, Math.max(tentRightX + 45, topPoint.x + 65));
-        const clearanceColor = sim.actualRoofClearance >= 40 ? "#34d399" : "#fb7185";
+        const clearanceColor = sim.actualRoofClearance >= 40 ? "#059669" : "#e11d48";
         dimMarkup += `
-          <line x1="${rightDimX}" y1="${groundY}" x2="${rightDimX}" y2="${pipeTopY}" stroke="#f97316" stroke-width="1.8"/>
-          <line x1="${topPoint.x}" y1="${pipeTopY}" x2="${rightDimX + 6}" y2="${pipeTopY}" stroke="#f97316" stroke-width="1.2" stroke-dasharray="3,3"/>
-          <rect x="${rightDimX - 44}" y="${(groundY + pipeTopY) / 2 - 11}" width="88" height="22" rx="5" fill="#0f172a" stroke="#f97316"/>
-          <text x="${rightDimX}" y="${(groundY + pipeTopY) / 2 + 4}" fill="#fdba74" font-size="10.5" font-weight="bold" text-anchor="middle">총높이 ${sim.actualTopHeight}cm</text>
+          <line x1="${rightDimX}" y1="${groundY}" x2="${rightDimX}" y2="${pipeTopY}" stroke="#ea580c" stroke-width="1.8"/>
+          <line x1="${topPoint.x}" y1="${pipeTopY}" x2="${rightDimX + 6}" y2="${pipeTopY}" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <rect x="${rightDimX - 45}" y="${(groundY + pipeTopY) / 2 - 11}" width="90" height="22" rx="5" fill="#ffffff" stroke="#ea580c" stroke-width="1.5"/>
+          <text x="${rightDimX}" y="${(groundY + pipeTopY) / 2 + 4}" fill="#c2410c" font-size="10.5" font-weight="bold" text-anchor="middle">총높이 ${sim.actualTopHeight}cm</text>
 
           <line x1="${tentCenterX}" y1="${tentPeakY}" x2="${topPoint.x - 18}" y2="${tentPeakY}" stroke="${clearanceColor}" stroke-width="1.2" stroke-dasharray="3,3"/>
           <line x1="${topPoint.x - 18}" y1="${tentPeakY}" x2="${topPoint.x - 18}" y2="${pipeTopY}" stroke="${clearanceColor}" stroke-width="2"/>
-          <rect x="${topPoint.x - 108}" y="${(tentPeakY + pipeTopY) / 2 - 10}" width="84" height="20" rx="4" fill="#0f172a" stroke="${clearanceColor}"/>
+          <rect x="${topPoint.x - 108}" y="${(tentPeakY + pipeTopY) / 2 - 10}" width="84" height="20" rx="4" fill="#ffffff" stroke="${clearanceColor}" stroke-width="1.5"/>
           <text x="${topPoint.x - 66}" y="${(tentPeakY + pipeTopY) / 2 + 4}" fill="${clearanceColor}" font-size="10" font-weight="bold" text-anchor="middle">상단여유 +${sim.actualRoofClearance}cm</text>
         `;
       }
@@ -1822,8 +2131,8 @@
       svg.innerHTML = `
         <defs>
           <linearGradient id="tentGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#334155" stop-opacity="0.45"/>
-            <stop offset="100%" stop-color="#1e293b" stop-opacity="0.75"/>
+            <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.72"/>
+            <stop offset="100%" stop-color="#fde68a" stop-opacity="0.45"/>
           </linearGradient>
         </defs>
 
@@ -1831,17 +2140,17 @@
           .filter((cm) => cm <= maxCmHeight)
           .map(
             (cm) => `
-            <line x1="20" y1="${cmToY(cm)}" x2="${W - 20}" y2="${cmToY(cm)}" stroke="#1e293b" stroke-width="1"/>
-            <text x="24" y="${cmToY(cm) - 3}" fill="#475569" font-size="9.5">${cm}cm</text>
+            <line x1="20" y1="${cmToY(cm)}" x2="${W - 20}" y2="${cmToY(cm)}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="24" y="${cmToY(cm) - 3}" fill="#475569" font-size="9.5" font-weight="600">${cm}cm</text>
           `
           )
           .join("")}
 
-        <rect x="0" y="${groundY}" width="${W}" height="${H - groundY}" fill="#090d16"/>
+        <rect x="0" y="${groundY}" width="${W}" height="${H - groundY}" fill="#e2e8f0"/>
         <line x1="15" y1="${groundY}" x2="${W - 15}" y2="${groundY}" stroke="#475569" stroke-width="2.5"/>
-        <text x="24" y="${groundY + 18}" fill="#64748b" font-size="10.5" font-weight="bold">지면 (Ground 0cm)</text>
+        <text x="24" y="${groundY + 18}" fill="#334155" font-size="10.5" font-weight="bold">지면 (Ground 0cm)</text>
 
-        <path d="${tentPathD}" fill="url(#tentGrad)" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="${tentPathD}" fill="url(#tentGrad)" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
         ${tentInnerLines}
 
         ${supportPoleMarkup}
@@ -1854,9 +2163,9 @@
 
         ${dimMarkup}
 
-        <rect x="16" y="14" width="255" height="54" rx="8" fill="#0f172a" fill-opacity="0.88" stroke="#334155"/>
-        <text x="28" y="34" fill="#f8fafc" font-size="11.5" font-weight="bold">배기구 출발(${sim.H_start}cm) → 홀잭(${sim.H_jack}cm) → 최상단(${sim.actualTopHeight}cm)</text>
-        <text x="28" y="54" fill="#fb923c" font-size="11" font-weight="bold">필요 연통: 총 ${sim.totalSegments}본 (댐퍼1 + 직관·레듀셔 ${sim.straightPipeCount}${sim.elbowCount > 0 ? ` + ${sim.elbowAngle}°엘보 ${sim.elbowCount}` : ""})</text>
+        <rect x="16" y="14" width="265" height="54" rx="8" fill="#ffffff" fill-opacity="0.95" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="28" y="34" fill="#0f172a" font-size="11.5" font-weight="bold">배기구 출발(${sim.H_start}cm) → 홀잭(${sim.H_jack}cm) → 최상단(${sim.actualTopHeight}cm)</text>
+        <text x="28" y="54" fill="#ea580c" font-size="11" font-weight="bold">필요 연통: 총 ${sim.totalSegments}본 (댐퍼1 + 직관·레듀셔 ${sim.straightPipeCount}${sim.elbowCount > 0 ? ` + ${sim.elbowAngle}°엘보 ${sim.elbowCount}` : ""})</text>
       `;
     }
 
@@ -2295,6 +2604,14 @@
     }
 
     function switchTab(tabId) {
+      if (tabId === "embed" && !state.adminUnlocked) {
+        const bar = document.getElementById("adminAccessBar");
+        if (bar) bar.scrollIntoView({ behavior: "smooth", block: "center" });
+        const pwInput = document.getElementById("adminPasswordInput");
+        if (pwInput) pwInput.focus();
+        showToast("관리자 비밀번호(07160818)를 입력하면 판매페이지 탑재·배포 도구가 열립니다.");
+        return;
+      }
       state.activeTab = tabId;
       ["simulator", "products", "tents", "rules"].forEach((id) => {
         const panel = document.getElementById(`tabPanel-${id}`);
@@ -2307,6 +2624,83 @@
           btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition";
         }
       });
+      if (tabId === "embed" && state.adminUnlocked) {
+        state.adminDrawerOpen = true;
+        renderAdminDrawerState();
+        const embedPanel = document.getElementById("tabPanel-embed");
+        if (embedPanel) embedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function renderAdminDrawerState() {
+      const embedPanel = document.getElementById("tabPanel-embed");
+      const tabEmbedBtn = document.getElementById("tabBtn-embed");
+      const custModeBtn = document.getElementById("toggleCustomerModeBtn");
+      const pwBox = document.getElementById("adminPasswordBox");
+      const ctrlBox = document.getElementById("adminExpandCollapseControls");
+      const collapseBtn = document.getElementById("adminCollapseExpandBtn");
+      const badge = document.getElementById("adminUnlockBadge");
+      const icon = document.getElementById("adminStatusIcon");
+      const headerAdminBtn = document.getElementById("adminToggleHeaderBtn");
+      const errEl = document.getElementById("adminPasswordError");
+
+      if (errEl) errEl.classList.add("hidden");
+
+      if (!state.adminUnlocked) {
+        if (embedPanel) embedPanel.classList.add("hidden");
+        if (tabEmbedBtn) tabEmbedBtn.classList.add("hidden");
+        if (custModeBtn) custModeBtn.classList.add("hidden");
+        if (pwBox) pwBox.classList.remove("hidden");
+        if (ctrlBox) ctrlBox.classList.add("hidden");
+        if (badge) {
+          badge.textContent = "잠금 상태 (고객에게 숨김)";
+          badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300";
+        }
+        if (icon) icon.textContent = "🔒";
+        if (headerAdminBtn) headerAdminBtn.textContent = "🔒 관리자";
+      } else {
+        if (pwBox) pwBox.classList.add("hidden");
+        if (ctrlBox) ctrlBox.classList.remove("hidden");
+        if (tabEmbedBtn && !state.customerSimpleMode) tabEmbedBtn.classList.remove("hidden");
+        if (custModeBtn) custModeBtn.classList.remove("hidden");
+        if (icon) icon.textContent = "🔓";
+        if (headerAdminBtn) headerAdminBtn.textContent = state.adminDrawerOpen ? "🔓 관리자 (열림)" : "🔓 관리자 (접힘)";
+
+        if (state.adminDrawerOpen) {
+          if (embedPanel) embedPanel.classList.remove("hidden");
+          if (collapseBtn) collapseBtn.textContent = "🔼 판매페이지 탑재·배포 도구 접기 (숨김)";
+          if (badge) {
+            badge.textContent = "관리자 인증 완료 · 펼침 상태";
+            badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+          }
+        } else {
+          if (embedPanel) embedPanel.classList.add("hidden");
+          if (collapseBtn) collapseBtn.textContent = "🔽 판매페이지 탑재·배포 도구 펼치기";
+          if (badge) {
+            badge.textContent = "관리자 인증 완료 · 숨김(접힘) 상태";
+            badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+          }
+        }
+      }
+    }
+
+    function tryAdminUnlock() {
+      const pwInput = document.getElementById("adminPasswordInput");
+      const errEl = document.getElementById("adminPasswordError");
+      const val = (pwInput ? pwInput.value : "").trim();
+      if (val === "07160818") {
+        state.adminUnlocked = true;
+        state.adminDrawerOpen = true;
+        if (pwInput) pwInput.value = "";
+        renderAdminDrawerState();
+        updateEmbedCodeGenerator();
+        showToast("관리자 인증이 완료되어 판매페이지 탑재·배포 도구가 펼쳐졌습니다.");
+        const embedPanel = document.getElementById("tabPanel-embed");
+        if (embedPanel) embedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        if (errEl) errEl.classList.remove("hidden");
+        showToast("비밀번호가 올바르지 않습니다.");
+      }
     }
 
     function bindEvents() {
@@ -2525,14 +2919,386 @@
       document.body.removeChild(ta);
     }
 
+    function buildCustomerShareUrl() {
+      const base = (state.deployBaseUrl || window.location.href.split("?")[0]).replace(/\/+$/, "");
+      const params = new URLSearchParams();
+      params.set("embed", "1");
+      params.set("tent", state.selectedTentId);
+      params.set("shape", state.tentShape);
+      params.set("th", String(state.tentHeight));
+      params.set("jh", String(state.jackHeight));
+      params.set("hd", String(state.horizDist));
+      params.set("stove", state.selectedStoveId);
+      params.set("sh", String(state.stoveHeight));
+      params.set("st", String(state.standHeight));
+      params.set("path", state.pathType);
+      params.set("pipe", state.pipeSystem);
+      params.set("prot", state.protectionType);
+      return `${base}/?${params.toString()}`;
+    }
+
+    function applyUrlQueryParams() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("stove")) {
+          const stId = params.get("stove");
+          const foundStove = STOVE_MODELS.find((s) => s.id === stId);
+          if (foundStove) {
+            state.selectedStoveId = foundStove.id;
+            state.stoveHeight = foundStove.stoveHeight;
+            state.pipeSystem = foundStove.recommendedPipeSystem;
+          }
+        }
+        if (params.get("tent")) {
+          const tId = params.get("tent");
+          const foundTent = TENT_MODELS.find((t) => t.id === tId);
+          if (foundTent) {
+            state.selectedTentId = foundTent.id;
+            state.tentShape = foundTent.shape;
+            state.tentHeight = foundTent.peakHeight;
+            state.jackHeight = foundTent.defaultJackHeight;
+            state.horizDist = foundTent.defaultHorizDist;
+            state.pathType = foundTent.defaultPath;
+          } else if (tId === "custom_tent") {
+            state.selectedTentId = "custom_tent";
+          }
+        }
+        if (params.get("shape")) state.tentShape = params.get("shape");
+        if (params.get("th")) state.tentHeight = Number(params.get("th")) || state.tentHeight;
+        if (params.get("jh")) state.jackHeight = Number(params.get("jh")) || state.jackHeight;
+        if (params.get("hd")) state.horizDist = Number(params.get("hd")) || 0;
+        if (params.get("sh")) state.stoveHeight = Number(params.get("sh")) || state.stoveHeight;
+        if (params.get("st")) state.standHeight = Number(params.get("st")) || 0;
+        if (params.get("path")) state.pathType = params.get("path");
+        if (params.get("pipe")) state.pipeSystem = params.get("pipe");
+        if (params.get("prot")) state.protectionType = params.get("prot");
+        if (params.get("embed") === "1") {
+          setCustomerSimpleMode(true);
+        }
+      } catch (err) {
+        // Ignore URL parsing errors in restricted environments
+      }
+    }
+
+    function setCustomerSimpleMode(enabled) {
+      state.customerSimpleMode = Boolean(enabled);
+      const toggleBtn = document.getElementById("toggleCustomerModeBtn");
+      if (toggleBtn) {
+        toggleBtn.textContent = `👁️ 고객용 심플뷰: ${state.customerSimpleMode ? "ON" : "OFF"}`;
+        toggleBtn.className = state.customerSimpleMode
+          ? "px-3 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap bg-amber-500 text-slate-950 shadow transition"
+          : "px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 transition";
+      }
+      ["products", "tents", "rules"].forEach((id) => {
+        const b = document.getElementById(`tabBtn-${id}`);
+        if (b) {
+          if (state.customerSimpleMode) {
+            b.classList.add("hidden");
+          } else {
+            b.classList.remove("hidden");
+          }
+        }
+      });
+      const adminBar = document.getElementById("adminAccessBar");
+      if (adminBar) {
+        if (state.customerSimpleMode && !state.adminUnlocked) {
+          adminBar.classList.add("hidden");
+        } else {
+          adminBar.classList.remove("hidden");
+        }
+      }
+      renderAdminDrawerState();
+      if (state.customerSimpleMode && state.activeTab !== "simulator") {
+        switchTab("simulator");
+      }
+    }
+
+    function updateEmbedCodeGenerator() {
+      const baseInput = document.getElementById("deployUrlInput");
+      const presetSelect = document.getElementById("embedPresetSelect");
+      if (!baseInput || !presetSelect) return;
+
+      const rawBase = (baseInput.value || "https://camping-together-sim.vercel.app").trim().replace(/\/+$/, "");
+      state.deployBaseUrl = rawBase;
+      state.embedQueryPreset = presetSelect.value;
+
+      const targetUrl = `${rawBase}/${state.embedQueryPreset}`;
+      document.getElementById("generatedFullUrlDisplay").textContent = targetUrl;
+
+      const iframeCode = [
+        `<!-- 캠핑투게더 난로·연통 자동 추천 시뮬레이터 (무설치·무로그인 임베드) -->`,
+        `<div style="width:100%;max-width:1180px;margin:24px auto;border-radius:16px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 10px 30px rgba(0,0,0,0.25);">`,
+        `  <iframe`,
+        `    src="${targetUrl}"`,
+        `    width="100%"`,
+        `    height="1150"`,
+        `    style="border:0;display:block;width:100%;"`,
+        `    loading="lazy"`,
+        `    title="캠핑투게더 화목난로 연통 경로 시뮬레이터"`,
+        `  ></iframe>`,
+        `</div>`
+      ].join("\n");
+
+      const htmlBannerCode = [
+        `<!-- 캠핑투게더 판매페이지용 연통 계산기 실행 배너 -->`,
+        `<div style="max-width:860px;margin:20px auto;padding:28px 24px;border-radius:16px;background:#0f172a;color:#f8fafc;text-align:center;font-family:'Noto Sans KR',sans-serif;border:2px solid #f97316;">`,
+        `  <div style="display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(249,115,22,0.18);color:#fb923c;font-size:13px;font-weight:700;margin-bottom:10px;">`,
+        `    🔥 로그인 · 앱 설치 없이 10초 만에 자동 계산`,
+        `  </div>`,
+        `  <h3 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#ffffff;">`,
+        `    내 텐트에 딱 맞는 화목난로 연통, 몇 본을 사야 할까요?`,
+        `  </h3>`,
+        `  <p style="margin:0 0 18px;font-size:14px;color:#cbd5e1;line-height:1.6;">`,
+        `    텐트 모델(또는 천장·홀잭 높이)과 난로·스탠드 높이를 입력하면<br/>`,
+        `    <strong>마디당 5cm 결속 단축</strong>을 반영한 연통 경로 도면과 필요한 구성을 바로 추천해 드립니다.`,
+        `  </p>`,
+        `  <a href="${targetUrl}" target="_blank" rel="noopener noreferrer"`,
+        `     style="display:inline-block;padding:14px 28px;border-radius:12px;background:#ea580c;color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;">`,
+        `    📐 내 텐트 맞춤 연통 시뮬레이터 실행하기 ↗`,
+        `  </a>`,
+        `</div>`
+      ].join("\n");
+
+      document.getElementById("iframeCodePreview").textContent = iframeCode;
+      document.getElementById("htmlBannerCodePreview").textContent = htmlBannerCode;
+      drawSmartstoreBannerCanvas(targetUrl);
+    }
+
+    function drawSmartstoreBannerCanvas(targetUrl) {
+      const canvas = document.getElementById("smartstoreBannerCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Background Gradient
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, "#0f172a");
+      grad.addColorStop(0.6, "#1e293b");
+      grad.addColorStop(1, "#431407");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Border
+      ctx.strokeStyle = "#f97316";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(2, 2, W - 4, H - 4);
+
+      // Decorative Tent & Chimney Illustration on Right Side
+      ctx.save();
+      ctx.translate(615, 36);
+      ctx.fillStyle = "rgba(15, 23, 42, 0.78)";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 210, 208, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      // Tent triangle
+      ctx.fillStyle = "rgba(51, 65, 85, 0.65)";
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(25, 175);
+      ctx.lineTo(105, 55);
+      ctx.lineTo(185, 175);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Stove & Chimney inside illustration
+      ctx.fillStyle = "#f97316";
+      ctx.fillRect(108, 142, 28, 28);
+      ctx.strokeStyle = "#34d399";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(122, 142);
+      ctx.lineTo(122, 24);
+      ctx.stroke();
+
+      // Double pipe highlight
+      ctx.fillStyle = "#22d3ee";
+      ctx.fillRect(116, 75, 12, 24);
+
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("실시간 단면도 & BOM 자동 산출", 105, 196);
+      ctx.restore();
+
+      // Text Content on Left
+      ctx.fillStyle = "rgba(249, 115, 22, 0.2)";
+      ctx.beginPath();
+      ctx.roundRect(36, 32, 330, 30, 15);
+      ctx.fill();
+      ctx.fillStyle = "#fb923c";
+      ctx.font = "bold 14px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("🔥 캠핑투게더 공식 · 무설치 · 무로그인 웹 프로그램", 50, 52);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText("내 텐트에 맞는 연통, 몇 본이 필요할까?", 36, 102);
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "16px sans-serif";
+      ctx.fillText("국내·해외 인기 텐트 15종 선택 또는 내 텐트·난로·스탠드·홀잭 높이 입력!", 36, 138);
+      ctx.fillText("마디당 5cm 결속 단축까지 계산해 추천 연통 구성과 도면을 바로 보여드립니다.", 36, 164);
+
+      // CTA Button on Banner
+      ctx.fillStyle = "#ea580c";
+      ctx.beginPath();
+      ctx.roundRect(36, 192, 390, 54, 12);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 18px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("👆 여기를 클릭해 연통 시뮬레이터 바로 실행하기", 231, 225);
+    }
+
+    function downloadBannerPng() {
+      const canvas = document.getElementById("smartstoreBannerCanvas");
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = "camping_together_smartstore_banner.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("스마트스토어 상세페이지용 배너 이미지(PNG)가 다운로드되었습니다!");
+    }
+
+    function downloadStandaloneHtml() {
+      const docClone = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([docClone], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "index.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("고객 배포용 index.html 파일이 다운로드되었습니다!");
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       populateStoveDropdown();
       populateTentDropdown();
       renderProductsTab();
       renderTentsTab();
       bindEvents();
+
+      // Bind new Embed & Customer Mode controls
+      const custBtn = document.getElementById("toggleCustomerModeBtn");
+      if (custBtn) {
+        custBtn.addEventListener("click", () => {
+          setCustomerSimpleMode(!state.customerSimpleMode);
+        });
+      }
+      const shareUrlBtn = document.getElementById("copyShareUrlBtn");
+      if (shareUrlBtn) {
+        shareUrlBtn.addEventListener("click", () => {
+          const shareUrl = buildCustomerShareUrl();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl).then(
+              () => showToast("현재 텐트·난로 세팅 공유 링크가 복사되었습니다!"),
+              () => fallbackCopy(shareUrl)
+            );
+          } else {
+            fallbackCopy(shareUrl);
+          }
+        });
+      }
+      const deployInput = document.getElementById("deployUrlInput");
+      const presetSel = document.getElementById("embedPresetSelect");
+      if (deployInput) deployInput.addEventListener("input", updateEmbedCodeGenerator);
+      if (presetSel) presetSel.addEventListener("change", updateEmbedCodeGenerator);
+
+      const copyTargetBtn = document.getElementById("copyTargetUrlBtn");
+      if (copyTargetBtn) {
+        copyTargetBtn.addEventListener("click", () => {
+          const txt = document.getElementById("generatedFullUrlDisplay").textContent.trim();
+          fallbackCopy(txt);
+          showToast("고객 접속 전용 링크가 복사되었습니다!");
+        });
+      }
+      const copyIframeBtn = document.getElementById("copyIframeCodeBtn");
+      if (copyIframeBtn) {
+        copyIframeBtn.addEventListener("click", () => {
+          const txt = document.getElementById("iframeCodePreview").textContent;
+          fallbackCopy(txt);
+          showToast("판매페이지 삽입용 Iframe 코드가 복사되었습니다!");
+        });
+      }
+      const copyHtmlBannerBtn = document.getElementById("copyHtmlBannerBtn");
+      if (copyHtmlBannerBtn) {
+        copyHtmlBannerBtn.addEventListener("click", () => {
+          const txt = document.getElementById("htmlBannerCodePreview").textContent;
+          fallbackCopy(txt);
+          showToast("판매페이지용 HTML 배너 코드가 복사되었습니다!");
+        });
+      }
+      const dlBannerBtn = document.getElementById("downloadBannerPngBtn");
+      if (dlBannerBtn) dlBannerBtn.addEventListener("click", downloadBannerPng);
+
+      const dlHtmlBtn = document.getElementById("downloadStandaloneHtmlBtn");
+      if (dlHtmlBtn) dlHtmlBtn.addEventListener("click", downloadStandaloneHtml);
+
+      const adminHeaderBtn = document.getElementById("adminToggleHeaderBtn");
+      if (adminHeaderBtn) {
+        adminHeaderBtn.addEventListener("click", () => {
+          const bar = document.getElementById("adminAccessBar");
+          if (bar) bar.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (!state.adminUnlocked) {
+            const pwInput = document.getElementById("adminPasswordInput");
+            if (pwInput) pwInput.focus();
+          } else {
+            state.adminDrawerOpen = !state.adminDrawerOpen;
+            renderAdminDrawerState();
+          }
+        });
+      }
+
+      const unlockBtn = document.getElementById("adminUnlockSubmitBtn");
+      if (unlockBtn) unlockBtn.addEventListener("click", tryAdminUnlock);
+
+      const pwInput = document.getElementById("adminPasswordInput");
+      if (pwInput) {
+        pwInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            tryAdminUnlock();
+          }
+        });
+      }
+
+      const collapseExpandBtn = document.getElementById("adminCollapseExpandBtn");
+      if (collapseExpandBtn) {
+        collapseExpandBtn.addEventListener("click", () => {
+          state.adminDrawerOpen = !state.adminDrawerOpen;
+          renderAdminDrawerState();
+        });
+      }
+
+      const lockBtn = document.getElementById("adminLockBtn");
+      if (lockBtn) {
+        lockBtn.addEventListener("click", () => {
+          state.adminUnlocked = false;
+          state.adminDrawerOpen = false;
+          renderAdminDrawerState();
+          showToast("관리자 도구가 숨김(잠금) 처리되었습니다.");
+        });
+      }
+
+      applyUrlQueryParams();
+      renderAdminDrawerState();
       syncInputsFromState();
       updateUI();
+      updateEmbedCodeGenerator();
     });
   </script>
 </body>
