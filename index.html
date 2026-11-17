@@ -479,9 +479,9 @@
             <div class="space-y-2 pt-2 border-t border-slate-800/80">
               <label for="pipeSystemSelect" class="block text-xs font-semibold text-slate-300">연통 직경 및 결합 규격 선택</label>
               <select id="pipeSystemSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:border-orange-500 focus:outline-none">
-                <option value="tapered_70_73_76">캠핑투게더 70-73-76파이 3.3m 세트 규격 (직관 33cm → 5cm 단축 시 유효 28cm)</option>
-                <option value="single_70">70파이 단일 규격 (직관 33cm → 5cm 단축 시 유효 28cm / 포몰리·엠스토브 호환)</option>
-                <option value="single_75">75파이 단일 규격 (직관 32cm → 5cm 단축 시 유효 27cm / 레듀셔 Ø70-75 호환)</option>
+                <option value="tapered_70_73_76">캠핑투게더 70-73-76파이 3.3m 세트 규격 (기본 33cm + 추가 연결 시 마디당 5cm 단축 · N-1마디)</option>
+                <option value="single_70">70파이 단일 규격 (기본 33cm + 추가 연결 시 마디당 5cm 단축 / 포몰리·엠스토브 호환)</option>
+                <option value="single_75">75파이 단일 규격 (기본 32cm + 추가 연결 시 마디당 5cm 단축 / 레듀셔 Ø70-75 호환)</option>
               </select>
             </div>
 
@@ -588,7 +588,7 @@
                 <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-500 inline-block"></span>스탠드(받침대)</span>
               </div>
               <span id="overlapFormulaBadge" class="text-slate-300 font-medium">
-                1본 33cm - 겹침 5cm = 유효 28cm/본
+                기본 33cm + 추가 연결 시 마디당 5cm 단축 (연통 N본 연결 시 N-1개 마디 단축)
               </span>
             </div>
           </div>
@@ -739,40 +739,46 @@
             <h2 class="text-base font-bold text-white">연통 직경·길이 및 연결 시 5cm 단축 원리</h2>
           </div>
           <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            화목난로 분절형 직관 연통은 마디와 마디를 끼울 때 약 <strong class="text-orange-400">5cm(50mm)</strong>씩 겹쳐서 삽입됩니다. 따라서 단품 길이가 33cm인 직관 1본을 추가할 때마다 실제 연장되는 유효 높이는 <strong class="text-emerald-400">28cm (33cm - 5cm)</strong>입니다.
+            화목난로 분절형 연통은 <strong class="text-orange-400">첫 기본 연통(33cm)은 단축 없이 그대로 유지</strong>되고, 그 위에 연통을 추가로 연결할 때마다 연결 마디당 <strong class="text-orange-400">5cm(50mm)</strong>씩 겹쳐서 단축됩니다. 즉 <strong>연통 N본을 연결하면 (N - 1)개의 연결 마디에서 각 5cm씩 단축</strong>되어, 추가되는 연통은 본당 <strong class="text-emerald-400">+28cm (33cm - 5cm)</strong>씩 길이가 늘어납니다.
           </p>
 
-          <!-- Visual SVG explaining the 5cm overlap rule -->
+          <!-- Visual SVG explaining the N-1 joints 5cm overlap rule -->
           <div class="rounded-xl bg-slate-950 border border-slate-800 p-4">
-            <svg viewBox="0 0 560 190" class="w-full h-auto">
-              <rect x="10" y="10" width="540" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" />
-              <text x="25" y="34" fill="#0f172a" font-size="13" font-weight="bold">캠핑투게더 70-73-76파이 3.3m 연통 세트 (12본) 결속 단축 계산</text>
+            <svg viewBox="0 0 560 195" class="w-full h-auto">
+              <rect x="10" y="10" width="540" height="175" rx="10" fill="#f8fafc" stroke="#cbd5e1" />
+              <text x="25" y="34" fill="#0f172a" font-size="12.5" font-weight="bold">기본 33cm + 추가 연결 시 마디당 5cm 단축 (연통 N본 연결 시 N-1개 마디 단축)</text>
 
-              <!-- Pipe 1 -->
-              <rect x="30" y="65" width="160" height="36" rx="4" fill="#f59e0b" fill-opacity="0.25" stroke="#f59e0b" stroke-width="2" />
-              <text x="110" y="88" fill="#92400e" font-size="12" font-weight="bold" text-anchor="middle">직관 1본 표기: 33cm</text>
+              <!-- Pipe 1 (Full 33cm) -->
+              <rect x="28" y="65" width="155" height="36" rx="4" fill="#f59e0b" fill-opacity="0.25" stroke="#f59e0b" stroke-width="2" />
+              <text x="95" y="88" fill="#92400e" font-size="11.5" font-weight="bold" text-anchor="middle">기본 1본: 33cm (단축 없음)</text>
 
-              <!-- Overlap Zone -->
-              <rect x="160" y="61" width="35" height="44" rx="3" fill="#f43f5e" fill-opacity="0.35" stroke="#f43f5e" stroke-width="2" stroke-dasharray="3,2" />
-              <text x="177" y="54" fill="#be123c" font-size="11" font-weight="bold" text-anchor="middle">겹침 -5cm</text>
+              <!-- Overlap Zone (1st Joint between Pipe 1 and Pipe 2) -->
+              <rect x="153" y="61" width="30" height="44" rx="3" fill="#f43f5e" fill-opacity="0.35" stroke="#f43f5e" stroke-width="2" stroke-dasharray="3,2" />
+              <text x="168" y="54" fill="#be123c" font-size="10.5" font-weight="bold" text-anchor="middle">마디 -5cm</text>
 
-              <!-- Pipe 2 -->
-              <rect x="160" y="65" width="160" height="36" rx="4" fill="#f97316" fill-opacity="0.25" stroke="#f97316" stroke-width="2" />
-              <text x="255" y="88" fill="#9a3412" font-size="12" font-weight="bold" text-anchor="middle">직관 2본 표기: 33cm</text>
+              <!-- Pipe 2 (+28cm effective) -->
+              <rect x="153" y="65" width="155" height="36" rx="4" fill="#f97316" fill-opacity="0.25" stroke="#f97316" stroke-width="2" />
+              <text x="242" y="88" fill="#9a3412" font-size="11.5" font-weight="bold" text-anchor="middle">추가 연결: +28cm (33-5)</text>
 
-              <!-- Dimension Line -->
-              <line x1="30" y1="125" x2="160" y2="125" stroke="#059669" stroke-width="2" />
-              <line x1="30" y1="118" x2="30" y2="132" stroke="#059669" stroke-width="2" />
-              <line x1="160" y1="118" x2="160" y2="132" stroke="#059669" stroke-width="2" />
-              <text x="95" y="145" fill="#047857" font-size="12" font-weight="bold" text-anchor="middle">실제 연장 유효길이: 28cm</text>
+              <!-- Dimension Lines -->
+              <line x1="28" y1="122" x2="183" y2="122" stroke="#059669" stroke-width="2" />
+              <line x1="28" y1="115" x2="28" y2="129" stroke="#059669" stroke-width="2" />
+              <line x1="183" y1="115" x2="183" y2="129" stroke="#059669" stroke-width="2" />
+              <text x="105" y="140" fill="#047857" font-size="11" font-weight="bold" text-anchor="middle">1본 단독: 33cm</text>
+
+              <line x1="183" y1="122" x2="308" y2="122" stroke="#0284c7" stroke-width="2" />
+              <line x1="308" y1="115" x2="308" y2="129" stroke="#0284c7" stroke-width="2" />
+              <text x="245" y="140" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">2본 연결(1마디): 33+28 = 61cm</text>
+              <text x="168" y="162" fill="#334155" font-size="11" font-weight="bold" text-anchor="middle">공식: N본 연결 유효길이 = 33cm + (N - 1) × 28cm</text>
 
               <!-- Summary Box on Right -->
-              <rect x="345" y="50" width="190" height="115" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-              <text x="358" y="72" fill="#334155" font-size="11">• 댐퍼 1개 (28cm) → 유효 <tspan fill="#0f172a" font-weight="bold">23cm</tspan></text>
-              <text x="358" y="92" fill="#334155" font-size="11">• 직관·레듀셔 11개 (33cm×11)</text>
-              <text x="368" y="108" fill="#334155" font-size="11">→ 개당 유효 28cm × 11 = <tspan fill="#0f172a" font-weight="bold">308cm</tspan></text>
-              <text x="358" y="130" fill="#c2410c" font-size="11" font-weight="bold">• 단품 총합: 391cm (12본)</text>
-              <text x="358" y="150" fill="#047857" font-size="12" font-weight="bold">• 결합 후 실제 높이: 약 330cm</text>
+              <rect x="330" y="48" width="208" height="124" rx="8" fill="#ffffff" stroke="#cbd5e1" />
+              <text x="342" y="68" fill="#0f172a" font-size="11" font-weight="bold">[연통 N본 연결 시 N-1마디 단축]</text>
+              <text x="342" y="88" fill="#334155" font-size="10.5">• 1본째 기본 연통: <tspan fill="#0f172a" font-weight="bold">단축 없음 (0cm)</tspan></text>
+              <text x="342" y="106" fill="#334155" font-size="10.5">• 추가 (N-1)본 연결: <tspan fill="#0f172a" font-weight="bold">마디당 -5cm 단축</tspan></text>
+              <text x="342" y="126" fill="#c2410c" font-size="10.5" font-weight="bold">• 총 단축 길이 = (N - 1) × 5cm</text>
+              <text x="342" y="146" fill="#047857" font-size="10.5" font-weight="bold">• 12본(댐퍼1+직관11) 연결 시:</text>
+              <text x="350" y="162" fill="#047857" font-size="10.5" font-weight="bold">11개 마디(-55cm) → 유효 336cm</text>
             </svg>
           </div>
 
@@ -1231,13 +1237,13 @@
         price: 86000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/11196831287",
-        note: "단품 총합 391cm → 마디당 5cm 결속 단축 시 실제 설치 길이 330cm (3.3m)"
+        note: "단품 총합 391cm → 12본 연결 시 11개 마디(N-1) × 5cm = 55cm 단축 (유효 길이 약 336cm / 공칭 3.3m 세트)"
       },
       {
         id: "p_pipe_70",
         category: "pipe",
         name: "70파이 연통 직관 (33cm / 스테인리스)",
-        spec: "직경 Ø70mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.3~0.4mm",
+        spec: "직경 Ø70mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.3~0.4mm",
         price: 5500,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
@@ -1247,7 +1253,7 @@
         id: "p_pipe_73",
         category: "pipe",
         name: "73파이 연통 직관 (33cm / 스테인리스)",
-        spec: "직경 Ø73mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.5mm",
+        spec: "직경 Ø73mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.5mm",
         price: 6000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
@@ -1257,7 +1263,7 @@
         id: "p_pipe_76",
         category: "pipe",
         name: "76파이 연통 직관 (33cm / 스테인리스)",
-        spec: "직경 Ø76mm · 표기 길이 330mm (결합 시 유효 연장 28cm) · 두께 0.3mm",
+        spec: "직경 Ø76mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.3mm",
         price: 6500,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
@@ -1267,7 +1273,7 @@
         id: "p_pipe_75_elbow",
         category: "pipe",
         name: "75파이 연통 직관(32cm) 및 엘보 45° / 90°",
-        spec: "직경 Ø75mm · 직관 길이 320mm (유효 27cm) · 두께 0.3mm 스테인리스",
+        spec: "직경 Ø75mm · 기본 32cm (추가 연결 시 마디당 5cm 단축 → +27cm 연장) · 두께 0.3mm 스테인리스",
         price: 6000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/12692680424",
@@ -1741,11 +1747,12 @@
       const overlap = Math.max(2, Math.min(10, Number(state.overlapCm) || 5));
       const clearance = Math.max(20, Math.min(150, Number(state.clearanceCm) || 55));
 
-      // Raw pipe length based on system
+      // 기본 33cm(또는 75파이 32cm) + 추가 연결 시 마디당 5cm 단축 (연통 N본 연결 시 N-1개 마디 단축)
       const rawPipeLen = state.pipeSystem === "single_75" ? 32 : 33;
-      const effPipeLen = Math.max(15, rawPipeLen - overlap); // 28cm (or 27cm for 75mm)
+      const effPipeLen = Math.max(15, rawPipeLen - overlap); // 추가 연결 1본당 유효 연장 (+28cm 또는 +27cm)
       const rawDamperLen = 28;
-      const effDamperLen = Math.max(15, rawDamperLen - overlap); // 23cm
+      // 첫 번째 기본 연통(하단 1본)은 마디 단축 없음 (N본 연결 시 N-1개 마디만 단축)
+      const effDamperLen = rawDamperLen;
 
       // Target minimum top height
       const minTargetTop = Math.max(H_tent + clearance, H_jack + 70);
@@ -1793,14 +1800,16 @@
         totalReqEffLen = indoorVertLen + angledOrHorizLen + outdoorVertLen;
       }
 
-      const elbowEffContribution = elbowCount * 12;
-      const remainingAfterDamperAndElbows = Math.max(0, totalReqEffLen - effDamperLen - elbowEffContribution);
-      const straightPipeCount = Math.max(2, Math.ceil(remainingAfterDamperAndElbows / effPipeLen));
-      const totalSegments = 1 + straightPipeCount;
+      // N본 연결 시 (N - 1)개 마디에서 마디당 overlap(5cm) 단축 반영
+      const elbowEffContribution = elbowCount * (17 - overlap);
+      const remainingAfterFirstAndElbows = Math.max(0, totalReqEffLen - effDamperLen - elbowEffContribution);
+      const straightPipeCount = Math.max(2, Math.ceil(remainingAfterFirstAndElbows / effPipeLen));
+      const totalSegments = 1 + straightPipeCount; // 총 직선 연통 본수 N (댐퍼 1 + 직관 N-1)
+      const jointCount = Math.max(0, totalSegments - 1) + elbowCount; // N-1개 직관 마디 (+ 엘보 마디)
 
-      const actualEffTotalLen = effDamperLen + straightPipeCount * effPipeLen + elbowEffContribution;
       const actualRawTotalLen = rawDamperLen + straightPipeCount * rawPipeLen + elbowCount * 17;
-      const totalOverlapLost = actualRawTotalLen - actualEffTotalLen;
+      const totalOverlapLost = jointCount * overlap; // (N - 1)개 마디 × 5cm 단축
+      const actualEffTotalLen = actualRawTotalLen - totalOverlapLost;
 
       let actualTopHeight = H_start + actualEffTotalLen;
       if (state.pathType === "elbow45") {
@@ -1878,6 +1887,7 @@
         totalReqEffLen,
         straightPipeCount,
         totalSegments,
+        jointCount,
         actualEffTotalLen,
         actualRawTotalLen,
         totalOverlapLost,
@@ -2190,7 +2200,7 @@
           const extraCount = sim.totalSegments - 12;
           items.push({
             category: "추가 연장 직관",
-            name: "76파이(또는 73파이) 연장 스텐 직관 연통 (길이 33cm → 결합 시 유효 +28cm)",
+            name: `76파이(또는 73파이) 연장 스텐 직관 연통 (기본 33cm + 연결 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
             qty: extraCount,
             unitPrice: 6500,
             url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
@@ -2199,16 +2209,16 @@
         }
       } else if (state.pipeSystem === "single_70") {
         items.push({
-          category: "하단 댐퍼",
-          name: "70파이 댐퍼 연통 (길이 28cm → 결합 시 유효 23cm)",
+          category: "하단 기본 댐퍼",
+          name: "70파이 댐퍼 연통 (1번째 기본관 · 길이 28cm · 자체 마디 단축 없음)",
           qty: 1,
           unitPrice: 17000,
           url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
           required: true
         });
         items.push({
-          category: "직관 연통",
-          name: "70파이 스테인리스 직관 연통 (길이 33cm → 결합 시 유효 28cm)",
+          category: "추가 연결 직관",
+          name: `70파이 스테인리스 직관 연통 (기본 33cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
           qty: sim.straightPipeCount,
           unitPrice: 5500,
           url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
@@ -2217,15 +2227,15 @@
       } else {
         items.push({
           category: "구경 변환 레듀셔",
-          name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (304SS)",
+          name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (1번째 기본관 · 304SS)",
           qty: 1,
           unitPrice: 9000,
           url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
           required: true
         });
         items.push({
-          category: "직관 연통",
-          name: "75파이 스테인리스 직관 연통 (길이 32cm → 결합 시 유효 27cm)",
+          category: "추가 연결 직관",
+          name: `75파이 스테인리스 직관 연통 (기본 32cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
           qty: sim.straightPipeCount,
           unitPrice: 6000,
           url: "https://smartstore.naver.com/camping-together/products/12692680424",
@@ -2371,7 +2381,7 @@
       document.getElementById("kpiTopSub").textContent = `텐트 상단(${sim.H_tent}cm) 대비 +${sim.actualRoofClearance}cm`;
 
       document.getElementById("kpiPipeCount").textContent = `총 ${sim.totalSegments} 본${sim.elbowCount > 0 ? ` + 엘보${sim.elbowCount}` : ""}`;
-      document.getElementById("kpiPipeSub").textContent = `유효 ${sim.actualEffTotalLen}cm (단축 -${sim.totalOverlapLost}cm)`;
+      document.getElementById("kpiPipeSub").textContent = `유효 ${sim.actualEffTotalLen}cm (${sim.jointCount}마디 -${sim.totalOverlapLost}cm)`;
 
       const kpiDiffEl = document.getElementById("kpiDifficulty");
       kpiDiffEl.textContent = sim.diffLabel;
@@ -2386,7 +2396,7 @@
           : "90° 측면 · 엘보 2개 + 지지대";
 
       document.getElementById("diagramTitleBadge").textContent = tent ? `${tent.brand} ${tent.name}` : `사용자 텐트 (높이 ${sim.H_tent}cm)`;
-      document.getElementById("overlapFormulaBadge").textContent = `직관 1본 ${sim.rawPipeLen}cm - 마디 단축 ${sim.overlap}cm = 유효 ${sim.effPipeLen}cm/본`;
+      document.getElementById("overlapFormulaBadge").textContent = `기본 ${sim.rawPipeLen}cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 (연통 ${sim.totalSegments}본 연결 시 ${sim.totalSegments - 1}개 마디 단축)`;
 
       const alertBox = document.getElementById("safetyAlertBox");
       if (sim.warnings.length > 0) {
@@ -2406,8 +2416,8 @@
 
       const checklistItems = [
         {
-          title: "결속 시 5cm 단축 계산 확인",
-          desc: `단품 길이 합계는 ${sim.actualRawTotalLen}cm이나, 마디당 ${sim.overlap}cm씩 삽입되어 실제 연장 높이는 ${sim.actualEffTotalLen}cm(총 손실 -${sim.totalOverlapLost}cm)가 됩니다.`
+          title: "연통 N본 연결 시 (N-1)개 마디 5cm 단축 확인",
+          desc: `기본 1본은 단축이 없고 추가 연결되는 ${sim.jointCount}개 마디(N-1${sim.elbowCount > 0 ? `+엘보${sim.elbowCount}` : ""})에서 마디당 ${sim.overlap}cm씩 총 -${sim.totalOverlapLost}cm가 단축되어 유효 길이는 ${sim.actualEffTotalLen}cm(단품 합 ${sim.actualRawTotalLen}cm)가 됩니다.`
         },
         {
           title: "홀잭 관통부 50cm 단열 보호",
@@ -2446,8 +2456,8 @@
 
       calcBox.innerHTML = `
         <div class="flex flex-wrap items-center justify-between gap-2 text-slate-200 font-semibold">
-          <span>📐 필요 연통 유효 길이 산출식: 목표 최상단(${sim.actualTopHeight}cm) - 배기구 출발(${sim.H_start}cm) = 유효 ${sim.actualEffTotalLen}cm</span>
-          <span class="text-orange-400">단품 표기합 ${sim.actualRawTotalLen}cm - 결속단축 ${sim.totalOverlapLost}cm = 유효 ${sim.actualEffTotalLen}cm</span>
+          <span>📐 기본 ${sim.rawPipeLen}cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 (연통 ${sim.totalSegments}본 연결 → ${sim.jointCount}개 마디 단축)</span>
+          <span class="text-orange-400">단품 합 ${sim.actualRawTotalLen}cm - (${sim.jointCount}마디 × ${sim.overlap}cm = ${sim.totalOverlapLost}cm) = 유효 ${sim.actualEffTotalLen}cm</span>
         </div>
         <p class="text-slate-400 leading-relaxed">${extraNote}</p>
       `;
