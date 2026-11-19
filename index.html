@@ -244,20 +244,20 @@
           <p class="text-xs text-slate-400 mt-0.5">대표적인 텐트 + 난로 + 스탠드 조합을 원클릭으로 불러와 바로 비교해 보세요.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button type="button" data-preset="varanger_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
-            🟢 바랑에르돔 8-10 + 엠스토브 v3 (천장 직상·쉬움)
+          <button type="button" data-preset="shelterg_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🟡 미니멀웍스 쉘터G + 엠스토브 v3
+          </button>
+          <button type="button" data-preset="valhall_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🟢 헬스포츠 발할 + 엠스토브 v3 (순정 홀잭·쉬움)
           </button>
           <button type="button" data-preset="orison_mstove_stand" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
             🟢 백컨트리 오리손 + 엠스토브 v3 + 스탠드550
           </button>
-          <button type="button" data-preset="alfheim_lumora" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
-            🟡 알페임 12.6 + 포몰리 루모라 Ti (45° 경사·중급)
+          <button type="button" data-preset="a7ex_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🔴 노스피크 A7 EX + 엠스토브 v3 (측면 90°·고급)
           </button>
-          <button type="button" data-preset="landlock_mstove" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
-            🔴 랜드락 리빙쉘 + 엠스토브 v3 (측면 90°·고급)
-          </button>
-          <button type="button" data-preset="ghost_dweller" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
-            🔴 코베아 고스트 플러스 + 드웰러 맥스 3 (측면 90°)
+          <button type="button" data-preset="cocoon3_lumora" class="scenario-preset-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+            🔴 콜맨 코쿤3 + 포몰리 루모라 Ti (측면 90°)
           </button>
         </div>
       </div>
@@ -282,9 +282,9 @@
             <div>
               <label class="block text-xs font-semibold text-slate-400 mb-1.5">텐트 목록 필터</label>
               <div class="grid grid-cols-4 gap-1.5">
-                <button type="button" data-origin="all" class="tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition">전체 (15)</button>
-                <button type="button" data-origin="국내" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">국내 인기 (8)</button>
-                <button type="button" data-origin="해외" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">해외 인기 (7)</button>
+                <button type="button" data-origin="all" class="tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition">전체 (28)</button>
+                <button type="button" data-origin="국내" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">국내 인기 (18)</button>
+                <button type="button" data-origin="해외" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">해외 인기 (10)</button>
                 <button type="button" data-origin="custom" class="tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">직접 입력</button>
               </div>
             </div>
@@ -559,12 +559,21 @@
                   입력하신 난로·스탠드·홀잭·텐트 높이와 마디당 5cm 결속 단축이 축척대로 실시간 반영됩니다.
                 </p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button id="viewFrontBtn" type="button" class="section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-500 transition">
+                  📐 정면 단면도
+                </button>
+                <button id="viewSideBtn" type="button" class="section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                  📐 측면 종단면도
+                </button>
+                <button id="openBlueprintModalBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 transition">
+                  🔍 실측 단면도 상세
+                </button>
                 <button id="toggleDimBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-                  📏 치수선 표시: ON
+                  📏 치수선: ON
                 </button>
                 <button id="toggleNodeBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-                  🔩 마디 경계: ON
+                  🔩 마디: ON
                 </button>
               </div>
             </div>
@@ -576,6 +585,10 @@
             <!-- Interactive SVG Canvas Container -->
             <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-sky-50/70 via-slate-50 to-slate-100 border border-slate-300 shadow-inner">
               <svg id="simSvg" viewBox="0 0 760 480" class="w-full h-auto block select-none"></svg>
+            </div>
+
+            <!-- Real Cross-Section Dimensions Bar -->
+            <div id="crossSectionMetricsBar" class="rounded-xl bg-slate-50 border border-slate-200 p-3 grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
             </div>
 
             <!-- Legend -->
@@ -693,13 +706,18 @@
         <div>
           <h2 class="text-base sm:text-lg font-extrabold text-white">⛺ 국내 인기 텐트 & 국내 사용 빈도 높은 해외 텐트 제원 DB</h2>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            국내 동계 캠핑에서 화목·펠릿난로와 함께 가장 많이 사용되는 국내 텐트 8종 및 해외 텐트 7종의 설치 크기, 최고 높이, 권장 홀잭 위치 및 연통 경로입니다. 원하는 텐트의 <strong class="text-orange-400">[시뮬레이터 적용]</strong> 버튼을 누르면 즉시 계산됩니다.
+            국내 동계 캠핑에서 화목·펠릿난로와 함께 가장 많이 사용되는 현재 국내 캠핑장에서 가장 많이 사용되는 국내 텐트 18종 및 해외 텐트 10종(총 28종)의 실측 설치 크기와 정면·측면 단면도, 최고 높이, 권장 홀잭 위치 및 연통 경로입니다. 원하는 텐트의 <strong class="text-orange-400">[시뮬레이터 적용]</strong> 버튼을 누르면 즉시 계산됩니다.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" data-tfilter="all" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 (15종)</button>
-          <button type="button" data-tfilter="국내" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">국내 인기 텐트 (8종)</button>
-          <button type="button" data-tfilter="해외" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">해외 인기 텐트 (7종)</button>
+          <input id="tentDbSearchInput" type="text" placeholder="텐트명·브랜드 검색 (예: 쿠디, 아티카, 쉘터G)"
+                 class="w-56 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs text-slate-900 focus:border-orange-500 focus:outline-none" />
+          <button type="button" data-tfilter="all" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 (28종)</button>
+          <button type="button" data-tfilter="국내" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">국내 인기 텐트 (18종)</button>
+          <button type="button" data-tfilter="해외" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">해외 인기 텐트 (10종)</button>
+          <button id="toggleDbMiniViewBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 transition">
+            📐 단면 미리보기: 정면
+          </button>
         </div>
       </div>
 
@@ -710,13 +728,13 @@
               <tr class="border-b border-slate-800 bg-slate-950 text-slate-400 text-xs">
                 <th class="py-3 px-3 font-semibold">구분</th>
                 <th class="py-3 px-3 font-semibold">브랜드 · 모델명</th>
+                <th class="py-3 px-3 font-semibold text-center">실측 단면도</th>
                 <th class="py-3 px-3 font-semibold">텐트 형태</th>
                 <th class="py-3 px-3 font-semibold">설치 크기 (가로×세로×높이)</th>
                 <th class="py-3 px-3 font-semibold text-center">최고 높이</th>
-                <th class="py-3 px-3 font-semibold text-center">권장 홀잭 높이</th>
-                <th class="py-3 px-3 font-semibold">권장 연통 경로 · 난이도</th>
-                <th class="py-3 px-3 font-semibold text-center">제원 출처</th>
-                <th class="py-3 px-3 font-semibold text-center">시뮬레이션</th>
+                <th class="py-3 px-3 font-semibold text-center">권장 홀잭</th>
+                <th class="py-3 px-3 font-semibold">권장 연통 경로</th>
+                <th class="py-3 px-3 font-semibold text-center">제원·단면도</th>
               </tr>
             </thead>
             <tbody id="tentDbTableBody" class="divide-y divide-slate-800/70">
@@ -1083,6 +1101,56 @@
 
   </main>
 
+  <!-- ========================================== -->
+  <!-- TENT ARCHITECTURAL CROSS-SECTION MODAL     -->
+  <!-- ========================================== -->
+  <div id="blueprintModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar rounded-2xl bg-white border border-slate-300 shadow-2xl p-5 sm:p-6 space-y-4">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="bpModalOriginBadge" class="px-2 py-0.5 rounded text-xs font-bold bg-sky-100 text-sky-800">국내 인기</span>
+            <h3 id="bpModalTitle" class="text-base sm:text-lg font-extrabold text-slate-900">텐트 실측 단면도</h3>
+          </div>
+          <p id="bpModalSubtitle" class="text-xs text-slate-600 mt-1"></p>
+        </div>
+        <button id="closeBlueprintModalBtn" type="button" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 transition">
+          ✕ 닫기
+        </button>
+      </div>
+
+      <!-- Side-by-side Front & Side Architectural Blueprint SVGs -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-xl bg-slate-50 border border-slate-300 p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800">📐 정면 단면도 (Front Cross-Section · 폭 × 높이)</span>
+            <span id="bpFrontDimLabel" class="text-[11px] font-bold text-orange-700"></span>
+          </div>
+          <svg id="bpFrontSvg" viewBox="0 0 420 260" class="w-full h-auto bg-white rounded-lg border border-slate-200"></svg>
+        </div>
+        <div class="rounded-xl bg-slate-50 border border-slate-300 p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800">📐 측면 종단면도 (Side Longitudinal Section · 길이 × 높이)</span>
+            <span id="bpSideDimLabel" class="text-[11px] font-bold text-indigo-700"></span>
+          </div>
+          <svg id="bpSideSvg" viewBox="0 0 420 260" class="w-full h-auto bg-white rounded-lg border border-slate-200"></svg>
+        </div>
+      </div>
+
+      <!-- Detailed Structural Specs Grid -->
+      <div id="bpSpecGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
+        <a id="bpSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-slate-600 underline hover:text-orange-600">
+          공식/다나와/캠핑연구소 제원 출처 확인 ↗
+        </a>
+        <button id="bpApplyToSimBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow transition">
+          📐 이 텐트 단면도로 연통 시뮬레이션 적용
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // 1. GROUNDED DATA: 캠핑투게더 스마트스토어 제품 및 국내·해외 인기 텐트 DB
@@ -1352,7 +1420,546 @@
     ];
 
     const TENT_MODELS = [
-      // 해외 인기 텐트 (7종)
+      // ===================================================
+      // 국내 인기 텐트 10종 (현재 국내 동계·사계절 최다 사용 모델)
+      // ===================================================
+      {
+        id: "minimalworks_shelter_g",
+        origin: "국내",
+        brand: "미니멀웍스 (Minimal Works)",
+        name: "쉘터 G / GH (Shelter G · GH)",
+        shape: "dome",
+        shapeLabel: "자립형 돔 쉘터",
+        dimensions: "350 × 300 × 170 cm",
+        peakHeight: 170,
+        defaultJackHeight: 135,
+        defaultHorizDist: 45,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 쉘터G 제원",
+        sourceUrl: "https://camping-lab.com/tents/526",
+        note: "국내 최다 사용 미니멀 돔 쉘터(350×300×170cm). 대칭 아치형 더블 크로스 폴 구조로 측면 도어 상단 지퍼 홀잭(약 135cm)을 통해 45° 경사 배출을 많이 사용.",
+        section: {
+          profile: "shelter_g",
+          widthCm: 300,
+          lengthCm: 350,
+          peakHeightCm: 170,
+          sideWallCm: 88,
+          doorHeightCm: 145,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "더블 크로스 알루미늄 아치 폴 · 양측 대칭 광폭 출입문"
+        }
+      },
+      {
+        id: "minimalworks_shelter_ghe",
+        origin: "국내",
+        brand: "미니멀웍스 (Minimal Works)",
+        name: "쉘터 GHE (대형 확장형 TC면)",
+        shape: "dome",
+        shapeLabel: "중대형 TC면 돔 쉘터",
+        dimensions: "380 × 400 × 185 cm",
+        peakHeight: 185,
+        defaultJackHeight: 145,
+        defaultHorizDist: 45,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 쉘터 GHE 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=93020258",
+        note: "쉘터 GH의 확장 버전(380×400×185cm, TC면 혼방). 천장고가 185cm로 높아져 동계 화목난로 세팅 여유가 크게 개선됨.",
+        section: {
+          profile: "shelter_g",
+          widthCm: 380,
+          lengthCm: 400,
+          peakHeightCm: 185,
+          sideWallCm: 98,
+          doorHeightCm: 158,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "확장형 더블 크로스 폴 · 75D TC면 립스탑 원단"
+        }
+      },
+      {
+        id: "minimalworks_jack_shelter_plus",
+        origin: "국내",
+        brand: "미니멀웍스 (Minimal Works)",
+        name: "잭 쉘터 플러스 (Jack Shelter Plus)",
+        shape: "cabin",
+        shapeLabel: "육각 아치형 쉘터",
+        dimensions: "300 × 300 × 190 cm",
+        peakHeight: 190,
+        defaultJackHeight: 150,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 잭 쉘터 플러스 제원",
+        sourceUrl: "https://camping-lab.com/tents/540",
+        note: "사이드 폴 6개로 측벽을 직각에 가깝게 세워 공간 활용도가 뛰어난 300×300×190cm 육각 쉘터. 커스텀 상부 홀잭 또는 출입문 지퍼 활용.",
+        section: {
+          profile: "jack_hex",
+          widthCm: 300,
+          lengthCm: 300,
+          peakHeightCm: 190,
+          sideWallCm: 125,
+          doorHeightCm: 160,
+          innerW: 130,
+          innerH: 182,
+          structureNote: "아치 메인폴 + 6면 사이드 수직폴 · 높은 측벽(125cm)"
+        }
+      },
+      {
+        id: "minimalworks_vhouse_m",
+        origin: "국내",
+        brand: "미니멀웍스 (Minimal Works)",
+        name: "브이하우스 M (V-House M)",
+        shape: "tunnel",
+        shapeLabel: "전천후 터널형 쉘터",
+        dimensions: "540 × 305 × 190 cm (이너 290×150×185cm)",
+        peakHeight: 190,
+        defaultJackHeight: 140,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 브이하우스 M 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=15978245",
+        note: "4면 전면 개방 및 2중 메쉬 구조의 인기 쉘터(540×305×190cm). 측면 패널 상단 지퍼로 홀잭을 빼내 90° 엘보 2개로 외부 수직 상승.",
+        section: {
+          profile: "vhouse_ridge",
+          widthCm: 305,
+          lengthCm: 540,
+          peakHeightCm: 190,
+          sideWallCm: 120,
+          doorHeightCm: 165,
+          innerW: 150,
+          innerH: 185,
+          structureNote: "3열 아치형 릿지 프레임 · 전/후/측면 풀개방 구조"
+        }
+      },
+      {
+        id: "minimalworks_vhouse_l",
+        origin: "국내",
+        brand: "미니멀웍스 (Minimal Works)",
+        name: "브이하우스 L (V-House L)",
+        shape: "tunnel",
+        shapeLabel: "대형 터널형 리빙쉘",
+        dimensions: "700 × 305 × 205 cm",
+        peakHeight: 205,
+        defaultJackHeight: 150,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 브이하우스 L 제원",
+        sourceUrl: "https://camping-lab.com/tents/536",
+        note: "길이 700cm·천장고 205cm의 대형 쉘터. 전실이 매우 넓어 화목난로와 대형 테이블 동시 배치가 여유로움.",
+        section: {
+          profile: "vhouse_ridge",
+          widthCm: 305,
+          lengthCm: 700,
+          peakHeightCm: 205,
+          sideWallCm: 130,
+          doorHeightCm: 175,
+          innerW: 220,
+          innerH: 190,
+          structureNote: "4열 대형 아치 프레임 · 700cm 롱 리빙 공간"
+        }
+      },
+      {
+        id: "backcountry_orison",
+        origin: "국내",
+        brand: "백컨트리 (Backcountry)",
+        name: "오리손 얼티메이트 (Orison Ultimate)",
+        shape: "dome",
+        shapeLabel: "경량 동계 돔 쉘터",
+        dimensions: "320 × 310 × 190 cm",
+        peakHeight: 190,
+        defaultJackHeight: 155,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 오리손 얼티메이트 제원",
+        sourceUrl: "https://camping-lab.com/tents/615",
+        note: "국내 화목난로 돔 쉘터의 정석(320×310×190cm). 상부 연통 홀잭을 통해 3.3m 기본 연통 세트만으로 엘보 없이 간편하게 수직 직상 설치.",
+        section: {
+          profile: "dome_geo",
+          widthCm: 310,
+          lengthCm: 320,
+          peakHeightCm: 190,
+          sideWallCm: 95,
+          doorHeightCm: 155,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "DAC 11.1/9.5mm 4폴 지오데식 돔 · 상부 연통구 대응"
+        }
+      },
+      {
+        id: "northpeak_a7_ex",
+        origin: "국내",
+        brand: "노스피크 (Northpeak)",
+        name: "A7 EX 플러스 에어텐트",
+        shape: "tunnel",
+        shapeLabel: "대형 에어빔 리빙쉘",
+        dimensions: "610 × 380 × 215 cm (이너 320×220×195cm)",
+        peakHeight: 215,
+        defaultJackHeight: 150,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 노스피크 A7 EX 플러스 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=79408193",
+        note: "국내 가족 캠퍼 최다 인기 대형 에어텐트(610×380×215cm). 에어빔 열손상 방지를 위해 측면 창문 홀잭 + 이중연통·메쉬망 2중 보호 권장.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 380,
+          lengthCm: 610,
+          peakHeightCm: 215,
+          sideWallCm: 150,
+          doorHeightCm: 185,
+          innerW: 220,
+          innerH: 195,
+          structureNote: "4열 대형 에어빔 아치 · 전실 천장고 215cm · 이너 195cm"
+        }
+      },
+      {
+        id: "northpeak_pacific_ocean_ex",
+        origin: "국내",
+        brand: "노스피크 (Northpeak)",
+        name: "퍼시픽오션 EX (Pacific Ocean EX)",
+        shape: "tunnel",
+        shapeLabel: "초대형 거실형 리빙쉘",
+        dimensions: "630 × 420 × 215 cm (이너 370×215×205cm)",
+        peakHeight: 215,
+        defaultJackHeight: 150,
+        defaultHorizDist: 80,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 퍼시픽오션 EX 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=76157102",
+        note: "폭 420cm·천장고 215cm의 국내 대표 장박용 초대형 리빙쉘. 측면 도어 지퍼를 통한 90° 배출 시 수평 구간 지지대 필수.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 420,
+          lengthCm: 630,
+          peakHeightCm: 215,
+          sideWallCm: 155,
+          doorHeightCm: 190,
+          innerW: 215,
+          innerH: 205,
+          structureNote: "스틸 메인 프레임 · 광폭 420cm 전실 · 이너 205cm"
+        }
+      },
+      {
+        id: "kovea_ghost_plus",
+        origin: "국내",
+        brand: "코베아 (Kovea)",
+        name: "고스트 플러스 (Ghost Plus)",
+        shape: "tunnel",
+        shapeLabel: "터널형 리빙쉘",
+        dimensions: "630 × 315 × 205 cm (이너 280×240×185cm)",
+        peakHeight: 205,
+        defaultJackHeight: 145,
+        defaultHorizDist: 70,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 코베아 고스트 플러스 제원",
+        sourceUrl: "https://camping-lab.com/tents/382",
+        note: "국내 스테디셀러 터널형 패밀리 텐트(630×315×205cm). 전실 측면 창문 지퍼로 홀잭을 구성하여 90° 엘보 2개로 배출.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 315,
+          lengthCm: 630,
+          peakHeightCm: 205,
+          sideWallCm: 140,
+          doorHeightCm: 175,
+          innerW: 240,
+          innerH: 185,
+          structureNote: "4열 터널 아치 듀랄루민 폴 · 전실 205cm / 이너 185cm"
+        }
+      },
+      {
+        id: "kzm_vivadome_plus",
+        origin: "국내",
+        brand: "카즈미 (KZM)",
+        name: "비바돔 쉘터 플러스 (Viva Dome Plus)",
+        shape: "dome",
+        shapeLabel: "입식형 돔 쉘터",
+        dimensions: "360 × 360 × 195 cm",
+        peakHeight: 195,
+        defaultJackHeight: 150,
+        defaultHorizDist: 45,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 카즈미 비바돔 플러스 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=49645625",
+        note: "국민 동계 입식 돔 쉘터(360×360×195cm). 4면 대칭 라운드 도어 상단 지퍼를 활용해 45° 경사 배출 또는 커스텀 홀잭 사용.",
+        section: {
+          profile: "dome_geo",
+          widthCm: 360,
+          lengthCm: 360,
+          peakHeightCm: 195,
+          sideWallCm: 105,
+          doorHeightCm: 162,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "4폴 크로스 돔 구조 · 4면 우레탄창/메쉬 대응"
+        }
+      },
+
+      {
+        id: "coody_13_6",
+        origin: "국내",
+        brand: "쿠디 (Coody)",
+        name: "에어텐트 13.6 (면 에어텐트)",
+        shape: "cabin",
+        shapeLabel: "박공 캐빈형 면 에어텐트",
+        dimensions: "360 × 380 × 220 cm",
+        peakHeight: 220,
+        defaultJackHeight: 165,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 쿠디 13.6 제원",
+        sourceUrl: "https://camping-lab.com/tents/479",
+        note: "국내 최다 인기 동계 T/C면 에어텐트(360×380×220cm). 천장/측면 화목난로 홀잭 대응으로 3.3m 기본 세트+연장관 1본 또는 스탠드 조합 추천.",
+        section: {
+          profile: "cabin_ridge",
+          widthCm: 360,
+          lengthCm: 380,
+          peakHeightCm: 220,
+          sideWallCm: 140,
+          doorHeightCm: 185,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "고압 에어빔 박공 캐빈 · T/C면 원단 · 높은 측벽(140cm)"
+        }
+      },
+      {
+        id: "kzm_attica_x",
+        origin: "국내",
+        brand: "카즈미 (KZM)",
+        name: "아티카 X / NEW 아티카",
+        shape: "tunnel",
+        shapeLabel: "대형 거실형 리빙쉘",
+        dimensions: "620 × 375 × 210 cm (이너 320×220×185cm)",
+        peakHeight: 210,
+        defaultJackHeight: 148,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 카즈미 아티카 X 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=79385966",
+        note: "국내 패밀리 리빙쉘 최다 판매 베스트셀러(620×375×210cm). 넓은 전실 측면 도어 지퍼를 통해 90° 엘보 2개로 외부 수직 배출.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 375,
+          lengthCm: 620,
+          peakHeightCm: 210,
+          sideWallCm: 148,
+          doorHeightCm: 182,
+          innerW: 220,
+          innerH: 185,
+          structureNote: "X자 크로스 메인 알루미늄 폴 · 광폭 375cm 전실"
+        }
+      },
+      {
+        id: "zed_tmax_ex",
+        origin: "국내",
+        brand: "제드코리아 (ZED)",
+        name: "티맥스 EX (T-MAX EX 3룸 리빙쉘)",
+        shape: "tunnel",
+        shapeLabel: "초대형 3룸 리빙쉘",
+        dimensions: "680 × 400 × 225 cm",
+        peakHeight: 225,
+        defaultJackHeight: 155,
+        defaultHorizDist: 80,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 제드 티맥스 EX 제원",
+        sourceUrl: "https://camping-lab.com/tents/1187",
+        note: "최고 높이 225cm·길이 680cm의 초대형 3룸 리빙쉘. 높은 천장고로 인해 측면 90° 배출 시 연장 직관 1~2본 추가 및 외부 지지대 필수.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 400,
+          lengthCm: 680,
+          peakHeightCm: 225,
+          sideWallCm: 160,
+          doorHeightCm: 192,
+          innerW: 230,
+          innerH: 195,
+          structureNote: "알루미늄 메인폴 5개 아치 · 최고 천장고 225cm"
+        }
+      },
+      {
+        id: "kovea_nest_w",
+        origin: "국내",
+        brand: "코베아 (Kovea)",
+        name: "네스트 W (Nest W)",
+        shape: "tunnel",
+        shapeLabel: "대형 거실형 리빙쉘",
+        dimensions: "620 × 330 × 210 cm (이너 310×240×180cm)",
+        peakHeight: 210,
+        defaultJackHeight: 145,
+        defaultHorizDist: 70,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 코베아 네스트 W 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=16190849",
+        note: "국내 국민 거실형 리빙쉘(620×330×210cm). 전실 측면 창문/도어 상단 지퍼로 홀잭을 구성해 90° 엘보 2개로 배출.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 330,
+          lengthCm: 620,
+          peakHeightCm: 210,
+          sideWallCm: 145,
+          doorHeightCm: 180,
+          innerW: 240,
+          innerH: 180,
+          structureNote: "Ø16 알루미늄 메인 아치 폴 · 이너 천장 180cm"
+        }
+      },
+      {
+        id: "snowline_miracle_family",
+        origin: "국내",
+        brand: "스노우라인 (Snowline)",
+        name: "미라클 패밀리 텐트",
+        shape: "tunnel",
+        shapeLabel: "국민 거실형 리빙쉘",
+        dimensions: "575 × 320 × 200 cm",
+        peakHeight: 200,
+        defaultJackHeight: 140,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 미라클 패밀리 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=17152847",
+        note: "입문·패밀리 캠퍼 최다 사용 난연 리빙쉘(575×320×200cm). 측면 도어 상단 홀잭 + 90° 엘보 2개 조합으로 설치.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 320,
+          lengthCm: 575,
+          peakHeightCm: 200,
+          sideWallCm: 138,
+          doorHeightCm: 172,
+          innerW: 240,
+          innerH: 180,
+          structureNote: "방염(FR) 가공 리빙쉘 · 표준 200cm 천장고"
+        }
+      },
+      {
+        id: "jeep_grand_sylvester",
+        origin: "국내",
+        brand: "지프 (JEEP)",
+        name: "그랜드 실베스터 / 실베스터 2",
+        shape: "tunnel",
+        shapeLabel: "대형 거실형 리빙쉘",
+        dimensions: "670 × 370 × 220 cm",
+        peakHeight: 220,
+        defaultJackHeight: 155,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 지프 그랜드 실베스터 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=59920895",
+        note: "국내 장박·동계 가족캠핑 스테디셀러(670×370×220cm). 천장고가 220cm로 높아 측면 90° 배출 시 연장관 여유 확보 필요.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 370,
+          lengthCm: 670,
+          peakHeightCm: 220,
+          sideWallCm: 155,
+          doorHeightCm: 188,
+          innerW: 220,
+          innerH: 185,
+          structureNote: "알루미늄 4아치 리빙쉘 · 670cm 대형 전실"
+        }
+      },
+      {
+        id: "durango_r2",
+        origin: "국내",
+        brand: "듀랑고 (Durango)",
+        name: "R2 코튼 캔버스 면텐트",
+        shape: "cabin",
+        shapeLabel: "캐빈형 코튼 면텐트",
+        dimensions: "420 × 300 × 200 cm",
+        peakHeight: 200,
+        defaultJackHeight: 145,
+        defaultHorizDist: 55,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 듀랑고 R2 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=19446620",
+        note: "국내 동계 장박 감성 면텐트의 정석(420×300×200cm). 강철 폴 기반 박공 캐빈 구조로 측면 창문/베스티블 홀잭 배출에 적합.",
+        section: {
+          profile: "cabin_ridge",
+          widthCm: 300,
+          lengthCm: 420,
+          peakHeightCm: 200,
+          sideWallCm: 135,
+          doorHeightCm: 175,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "스틸 캐빈 프레임 · 100% 코튼 캔버스 원단"
+        }
+      },
+      {
+        id: "backcountry_280",
+        origin: "국내",
+        brand: "백컨트리 (Backcountry)",
+        name: "280 쉘터 얼티메이트 (SE / DAC)",
+        shape: "dome",
+        shapeLabel: "경량 동계 돔 쉘터",
+        dimensions: "280 × 280 × 190 cm",
+        peakHeight: 190,
+        defaultJackHeight: 155,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 백컨트리 280 쉘터 제원",
+        sourceUrl: "https://camping-lab.com/tents/611",
+        note: "솔캠·듀오 동계 화목난로 최다 사용 경량 쉘터(280×280×190cm). 천장 홀잭 수직 직상 설치로 초보자 입문에 최적화.",
+        section: {
+          profile: "dome_geo",
+          widthCm: 280,
+          lengthCm: 280,
+          peakHeightCm: 190,
+          sideWallCm: 95,
+          doorHeightCm: 155,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "DAC 9.5mm 크로스 돔 · 상부 연통구 직상 대응"
+        }
+      },
+
+      // ===================================================
+      // 국내 사용 빈도 높은 해외 인기 텐트 10종
+      // ===================================================
+      {
+        id: "helsport_valhall",
+        origin: "해외",
+        brand: "헬스포츠 (Helsport)",
+        name: "발할 (Valhall 8인용 터널 쉘터)",
+        shape: "tunnel",
+        shapeLabel: "대형 동계 터널 쉘터",
+        dimensions: "780 × 300 × 210 cm (이너 265×210×180cm)",
+        peakHeight: 210,
+        defaultJackHeight: 180,
+        defaultHorizDist: 0,
+        defaultPath: "straight",
+        hasBuiltInJack: true,
+        sourceTitle: "캠핑연구소 헬스포츠 발할 제원",
+        sourceUrl: "https://camping-lab.com/tents/144",
+        note: "동계 화목난로 끝판왕 터널 텐트(780×300×210cm). 천장 순정 연통구가 기본 내장되어 엘보 없이 수직 직상으로 깔끔하게 설치 가능.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 300,
+          lengthCm: 780,
+          peakHeightCm: 210,
+          sideWallCm: 135,
+          doorHeightCm: 180,
+          innerW: 210,
+          innerH: 180,
+          structureNote: "5열 터널 아치 · 중앙 천장 순정 화목난로 연통구 내장"
+        }
+      },
       {
         id: "helsport_varanger_8_10",
         origin: "해외",
@@ -1368,7 +1975,18 @@
         hasBuiltInJack: true,
         sourceTitle: "캠핑연구소 바랑에르 돔 8-10 제원",
         sourceUrl: "https://camping-lab.com/tents/147",
-        note: "천장 순정 연통 홀잭 내장. 엠스토브 v3 + 3.3m 기본 연통 세트로 엘보 없이 가장 이상적인 수직 직상 설치 가능."
+        note: "천장 순정 연통 홀잭 기본 내장(435×470×210cm). 엠스토브 v3 + 3.3m 기본 연통 세트로 가장 이상적인 수직 직상 설치.",
+        section: {
+          profile: "dome_geo",
+          widthCm: 435,
+          lengthCm: 470,
+          peakHeightCm: 210,
+          sideWallCm: 115,
+          doorHeightCm: 170,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "난연 원단 지오데식 돔 · 천장 순정 연통 홀잭 기본 제공"
+        }
       },
       {
         id: "snowpeak_landlock",
@@ -1377,7 +1995,7 @@
         name: "랜드락 (Land Lock TP-671R)",
         shape: "tunnel",
         shapeLabel: "거실형 리빙쉘",
-        dimensions: "625 × 405 × 205 cm",
+        dimensions: "625 × 405 × 205 cm (이너 천장 190cm)",
         peakHeight: 205,
         defaultJackHeight: 145,
         defaultHorizDist: 75,
@@ -1385,7 +2003,74 @@
         hasBuiltInJack: false,
         sourceTitle: "캠핑리스트 / 텐트핏 랜드락 제원",
         sourceUrl: "https://campinglist.co.kr/product/%EC%8A%A4%EB%85%B8%EC%9A%B0%ED%94%BC%ED%81%AC-%EB%9E%9C%EB%93%9C%EB%9D%BDr-tp-671r-kr2026-%EB%9E%9C%EB%93%9C%EB%A1%9D-%EA%B1%B0%EC%8B%A4%ED%98%95-%ED%85%90%ED%8A%B8/64/",
-        note: "순정 천장 홀잭이 없어 측면 출입문 상단 지퍼에 방염 홀잭을 끼우고 90° 엘보 2개로 빼내는 방식이 주로 사용됨."
+        note: "국내 장박·패밀리 리빙쉘의 기준(625×405×205cm). 전실 측면 출입문 지퍼에 방염 홀잭을 끼우고 90° 엘보 2개로 외부 수직 상승.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 405,
+          lengthCm: 625,
+          peakHeightCm: 205,
+          sideWallCm: 145,
+          doorHeightCm: 180,
+          innerW: 230,
+          innerH: 190,
+          structureNote: "크로스 프레임 리빙쉘 · 405cm 광폭 거실 / 이너 190cm"
+        }
+      },
+      {
+        id: "coleman_cocoon3",
+        origin: "해외",
+        brand: "콜맨 (Coleman)",
+        name: "웨더마스터 4S 와이드 2룸 코쿤 3",
+        shape: "tunnel",
+        shapeLabel: "대형 4계절 리빙쉘",
+        dimensions: "670 × 400 × 220 cm (이너 360×240×195cm)",
+        peakHeight: 220,
+        defaultJackHeight: 155,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "캠핑연구소 콜맨 코쿤3 제원",
+        sourceUrl: "https://camping-lab.com/tents/832",
+        note: "천장고 220cm·길이 670cm의 초대형 4계절 리빙쉘. 높은 천장고 때문에 측면 90° 배출 시 연장 직관 1~2본 추가가 필요할 수 있음.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 400,
+          lengthCm: 670,
+          peakHeightCm: 220,
+          sideWallCm: 158,
+          doorHeightCm: 190,
+          innerW: 240,
+          innerH: 195,
+          structureNote: "웨더마스터 4S 알루미늄 프레임 · 최고 높이 220cm"
+        }
+      },
+      {
+        id: "nordisk_asgard_12_6",
+        origin: "해외",
+        brand: "노르디스크 (Nordisk)",
+        name: "아스가르드 12.6 (Asgard 12.6)",
+        shape: "cabin",
+        shapeLabel: "벨형(Bell) 면텐트",
+        dimensions: "400 × 375 × 250 cm (측벽 높이 75cm)",
+        peakHeight: 250,
+        defaultJackHeight: 175,
+        defaultHorizDist: 55,
+        defaultPath: "elbow45",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 아스가르드 12.6 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=27478145",
+        note: "국내 감성 면텐트 대표 모델(400×375×250cm, 수직 측벽 75cm). 중앙 메인폴을 피해 45° 엘보 2개로 경사면/출입구 상단 배출.",
+        section: {
+          profile: "bell_wall",
+          widthCm: 375,
+          lengthCm: 400,
+          peakHeightCm: 250,
+          sideWallCm: 75,
+          doorHeightCm: 165,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "중앙 스틸 원폴 + A형 출입구 폴 · 수직 측벽 75cm 벨텐트"
+        }
       },
       {
         id: "nordisk_alfheim_12_6",
@@ -1394,7 +2079,7 @@
         name: "알페임 12.6 (Alfheim 12.6)",
         shape: "tipi",
         shapeLabel: "티피·원폴 면텐트",
-        dimensions: "400 × 400 × 275 cm",
+        dimensions: "400 × 400 × 275 cm (이너 400×180×190cm)",
         peakHeight: 275,
         defaultJackHeight: 190,
         defaultHorizDist: 55,
@@ -1402,24 +2087,18 @@
         hasBuiltInJack: false,
         sourceTitle: "캠핑연구소 알페임 12.6 제원",
         sourceUrl: "https://camping-lab.com/tents/183",
-        note: "최고 높이 275cm의 원폴 티피 텐트. 중앙 폴대를 피해 45° 엘보 2개로 경사면 또는 출입구 지퍼 상단으로 배출."
-      },
-      {
-        id: "nordisk_utgard_13_2",
-        origin: "해외",
-        brand: "노르디스크 (Nordisk)",
-        name: "우트가르드 13.2 (Utgard 13.2)",
-        shape: "cabin",
-        shapeLabel: "가옥형(캐빈) 면텐트",
-        dimensions: "430 × 295 × 240 cm (측고 65cm)",
-        peakHeight: 240,
-        defaultJackHeight: 150,
-        defaultHorizDist: 65,
-        defaultPath: "elbow90",
-        hasBuiltInJack: false,
-        sourceTitle: "다나와 우트가르드 13.2 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=19529870",
-        note: "박공지붕 형태의 면텐트(최고 240cm). 측면 창문이나 출입구 쪽으로 90° 또는 45° 엘보를 사용해 연통 배출."
+        note: "최고 높이 275cm의 원뿔형 면 티피 텐트. 중앙 폴대를 피해 45° 엘보 2개로 경사면 상단으로 배출하며 추가 연장관 1~2본 권장.",
+        section: {
+          profile: "tipi_cone",
+          widthCm: 400,
+          lengthCm: 400,
+          peakHeightCm: 275,
+          sideWallCm: 0,
+          doorHeightCm: 175,
+          innerW: 180,
+          innerH: 190,
+          structureNote: "원뿔형 중앙 원폴(275cm) · 테크니컬 코튼(TC) 원단"
+        }
       },
       {
         id: "hilleberg_atlas",
@@ -1436,179 +2115,102 @@
         hasBuiltInJack: false,
         sourceTitle: "캠핑연구소 힐레베르그 아틀라스 제원",
         sourceUrl: "https://camping-lab.com/tents/81",
-        note: "극동계 대표 돔텐트(높이 200cm). 커스텀 홀잭 또는 베스티블/도어 홀잭을 통해 직상 또는 45° 경사로 설치."
+        note: "극동계 원정용 대형 돔텐트(435×420×200cm). 강풍에 강한 완전 자립 지오데식 구조로 도어/베스티블 홀잭을 통한 45° 배출 권장.",
+        section: {
+          profile: "dome_geo",
+          widthCm: 420,
+          lengthCm: 435,
+          peakHeightCm: 200,
+          sideWallCm: 110,
+          doorHeightCm: 165,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "6폴 완전 자립 지오데식 돔 · 컬론 2500 고강도 원단"
+        }
       },
       {
-        id: "robens_klondike",
+        id: "naturehike_village_13",
         origin: "해외",
-        brand: "로벤스 (Robens)",
-        name: "클론다이크 (Klondike 6인용)",
-        shape: "tipi",
-        shapeLabel: "티피·벨 면텐트",
-        dimensions: "400 × 400 × 270 cm",
-        peakHeight: 270,
-        defaultJackHeight: 200,
-        defaultHorizDist: 0,
-        defaultPath: "straight",
-        hasBuiltInJack: true,
-        sourceTitle: "캠핑연구소 로벤스 클론다이크 제원",
-        sourceUrl: "https://camping-lab.com/tents/301",
-        note: "순정 연통 포트(홀잭)가 천장 경사면에 기본 적용되어 있어 수직 직상 설치가 수월함 (천장고 270cm로 연장관 1~2본 추가 권장)."
-      },
-      {
-        id: "robens_klondike_grande",
-        origin: "해외",
-        brand: "로벤스 (Robens)",
-        name: "클론다이크 그랜드 (Klondike Grande 9인용)",
-        shape: "tipi",
-        shapeLabel: "대형 티피·벨 면텐트",
-        dimensions: "460 × 460 × 300 cm",
-        peakHeight: 300,
-        defaultJackHeight: 220,
-        defaultHorizDist: 0,
-        defaultPath: "straight",
-        hasBuiltInJack: true,
-        sourceTitle: "다나와 클론다이크 그랜드 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=9871704",
-        note: "최고 높이 300cm의 초대형 티피 텐트. 기본 3.3m 세트만으로는 텐트 상단 여유가 부족하므로 스탠드(55cm) 또는 추가 직관 2본 이상 필수."
-      },
-
-      // 국내 인기 텐트 (8종)
-      {
-        id: "backcountry_orison",
-        origin: "국내",
-        brand: "백컨트리 (Backcountry)",
-        name: "오리손 얼티메이트 (Orison Ultimate)",
-        shape: "dome",
-        shapeLabel: "경량 동계 돔 쉘터",
-        dimensions: "320 × 310 × 190 cm",
-        peakHeight: 190,
-        defaultJackHeight: 155,
-        defaultHorizDist: 0,
-        defaultPath: "straight",
-        hasBuiltInJack: true,
-        sourceTitle: "캠핑연구소 오리손 얼티메이트 제원",
-        sourceUrl: "https://camping-lab.com/tents/615",
-        note: "상부 연통 홀잭 기본 제공(높이 190cm). 3.3m 기본 연통 세트 1세트만으로 충분한 여유 높이가 나오는 입문 추천 조합."
-      },
-      {
-        id: "backcountry_280",
-        origin: "국내",
-        brand: "백컨트리 (Backcountry)",
-        name: "280 쉘터 얼티메이트 (SE / DAC)",
-        shape: "dome",
-        shapeLabel: "경량 돔 쉘터",
-        dimensions: "280 × 280 × 190 cm",
-        peakHeight: 190,
-        defaultJackHeight: 155,
-        defaultHorizDist: 0,
-        defaultPath: "straight",
-        hasBuiltInJack: true,
-        sourceTitle: "캠핑연구소 백컨트리 280 쉘터 제원",
-        sourceUrl: "https://camping-lab.com/tents/611",
-        note: "솔캠·듀오 동계 화목난로 캠핑의 대표 쉘터(높이 190cm). 수직 직상 설치로 초보자도 쉽게 세팅 가능."
-      },
-      {
-        id: "kzm_vivadome_plus",
-        origin: "국내",
-        brand: "카즈미 (KZM)",
-        name: "비바돔 쉘터 플러스 (Viva Dome Plus)",
-        shape: "dome",
-        shapeLabel: "중형 돔 쉘터",
-        dimensions: "360 × 360 × 195 cm",
-        peakHeight: 195,
-        defaultJackHeight: 150,
-        defaultHorizDist: 40,
-        defaultPath: "elbow45",
-        hasBuiltInJack: false,
-        sourceTitle: "다나와 카즈미 비바돔 플러스 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=49645625",
-        note: "입식 동계 쉘터로 인기가 높으며(높이 195cm), 측면/출입구 상단 홀잭을 통해 직상 또는 45° 경사로 배출."
-      },
-      {
-        id: "kovea_ghost_plus",
-        origin: "국내",
-        brand: "코베아 (Kovea)",
-        name: "고스트 플러스 (Ghost Plus)",
-        shape: "tunnel",
-        shapeLabel: "터널형 리빙쉘",
-        dimensions: "630 × 315 × 205 cm",
-        peakHeight: 205,
-        defaultJackHeight: 145,
-        defaultHorizDist: 70,
-        defaultPath: "elbow90",
-        hasBuiltInJack: false,
-        sourceTitle: "캠핑연구소 코베아 고스트 플러스 제원",
-        sourceUrl: "https://camping-lab.com/tents/382",
-        note: "국내 대표 경량 터널형 패밀리 텐트(높이 205cm). 전실 측면 도어 상단 지퍼로 홀잭을 구성하여 90° 엘보 2개로 배출."
-      },
-      {
-        id: "northpeak_a5_rs",
-        origin: "국내",
-        brand: "노스피크 (Northpeak)",
-        name: "A5 RS 에어텐트",
-        shape: "tunnel",
-        shapeLabel: "에어빔 리빙쉘",
-        dimensions: "505 × 315 × 205 cm",
-        peakHeight: 205,
-        defaultJackHeight: 145,
-        defaultHorizDist: 65,
-        defaultPath: "elbow90",
-        hasBuiltInJack: false,
-        sourceTitle: "다나와 노스피크 A5 RS 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=27728036",
-        note: "에어빔 손상 방지를 위해 에어튜브와 연통 간 최소 30cm 이상 이격 필수. 측면 창문 홀잭 + 이중연통 + 메쉬망 2중 단열 권장."
-      },
-      {
-        id: "northpeak_a6_rs",
-        origin: "국내",
-        brand: "노스피크 (Northpeak)",
-        name: "A6 RS 에어텐트",
-        shape: "tunnel",
-        shapeLabel: "대형 에어빔 리빙쉘",
-        dimensions: "640 × 350 × 200 cm",
-        peakHeight: 200,
-        defaultJackHeight: 140,
-        defaultHorizDist: 70,
-        defaultPath: "elbow90",
-        hasBuiltInJack: false,
-        sourceTitle: "캠핑연구소 노스피크 A6 RS 제원",
-        sourceUrl: "https://camping-lab.com/tents/499",
-        note: "640×350cm 대형 에어 거실형 텐트(높이 200cm). 측면 창문 90° 굴절 설치 시 외부 연통 지지대 필수."
-      },
-      {
-        id: "snowline_miracle_family",
-        origin: "국내",
-        brand: "스노우라인 (Snowline)",
-        name: "미라클 패밀리 텐트",
-        shape: "tunnel",
-        shapeLabel: "거실형 리빙쉘",
-        dimensions: "575 × 320 × 200 cm",
-        peakHeight: 200,
-        defaultJackHeight: 140,
-        defaultHorizDist: 65,
-        defaultPath: "elbow90",
-        hasBuiltInJack: false,
-        sourceTitle: "다나와 미라클 패밀리 텐트 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=17152847",
-        note: "국민 거실형 리빙쉘 텐트(높이 200cm). 전실 측면 출입구 상단 홀잭과 90° 엘보 2개를 조합하여 설치."
-      },
-      {
-        id: "kolon_odumak_7_8",
-        origin: "국내",
-        brand: "코오롱스포츠 (Kolon Sport)",
-        name: "오두막 7.8 면텐트",
+        brand: "네이처하이크 (Naturehike)",
+        name: "빌리지 13 릿지 자동 텐트 (Village 13)",
         shape: "cabin",
-        shapeLabel: "오두막형 면텐트",
-        dimensions: "설치 최고 높이 200 cm (4인용 면텐트)",
-        peakHeight: 200,
+        shapeLabel: "원터치 캐빈형",
+        dimensions: "395 × 270 × 183 cm",
+        peakHeight: 183,
         defaultJackHeight: 135,
         defaultHorizDist: 55,
         defaultPath: "elbow90",
         hasBuiltInJack: false,
-        sourceTitle: "코오롱몰 / 캠핑스터디 오두막 7.8 제원",
-        sourceUrl: "https://camping-study.tistory.com/4",
-        note: "감성 면텐트(최고 높이 200cm, 하위 모델 오두막 5.5는 170cm). 측면 출입구/창문 쪽으로 홀잭을 구성하여 배출."
+        sourceTitle: "다나와 네이처하이크 빌리지 13 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=71010875",
+        note: "국내 입문·가족 캠퍼 최다 판매 가성비 캐빈형 자동 텐트(395×270×183cm). 수직 측벽이 높아 측면 창문 90° 배출 시 공간 간섭이 적음.",
+        section: {
+          profile: "cabin_ridge",
+          widthCm: 270,
+          lengthCm: 395,
+          peakHeightCm: 183,
+          sideWallCm: 145,
+          doorHeightCm: 160,
+          innerW: 0,
+          innerH: 0,
+          structureNote: "원터치 릿지 캐빈 프레임 · 높은 수직 측벽(145cm)"
+        }
+      },
+      {
+        id: "dod_kamaboko_3m",
+        origin: "해외",
+        brand: "도플갱어아웃도어 (DOD)",
+        name: "가마보코 텐트 3M (Kamaboko 3M)",
+        shape: "tunnel",
+        shapeLabel: "터널형 리빙쉘",
+        dimensions: "640 × 300 × 195 cm (이너 280×220×170cm)",
+        peakHeight: 195,
+        defaultJackHeight: 140,
+        defaultHorizDist: 65,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 DOD 가마보코 3M 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=77461808",
+        note: "국내 캠퍼들이 가장 많이 애용하는 일본 대표 터널형 텐트(640×300×195cm). 측면 패널 지퍼를 활용해 90° 엘보 2개로 외부 배출.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 300,
+          lengthCm: 640,
+          peakHeightCm: 195,
+          sideWallCm: 130,
+          doorHeightCm: 168,
+          innerW: 220,
+          innerH: 170,
+          structureNote: "4열 알루미늄 터널 아치 · 전실 195cm / 이너 170cm"
+        }
+      },
+      {
+        id: "dod_kamaboko_3l",
+        origin: "해외",
+        brand: "도플갱어아웃도어 (DOD)",
+        name: "가마보코 텐트 3L (Kamaboko 3L)",
+        shape: "tunnel",
+        shapeLabel: "초대형 터널형 리빙쉘",
+        dimensions: "760 × 380 × 218 cm",
+        peakHeight: 218,
+        defaultJackHeight: 155,
+        defaultHorizDist: 75,
+        defaultPath: "elbow90",
+        hasBuiltInJack: false,
+        sourceTitle: "다나와 DOD 가마보코 3L 제원",
+        sourceUrl: "https://prod.danawa.com/info/?pcode=71777594",
+        note: "길이 760cm·높이 218cm의 대형 터널 쉘터. 넓은 내부 공간으로 동계 장박 화목난로 세팅 시 연장관 1~2본 및 외부 지지대 권장.",
+        section: {
+          profile: "tunnel_living",
+          widthCm: 380,
+          lengthCm: 760,
+          peakHeightCm: 218,
+          sideWallCm: 152,
+          doorHeightCm: 186,
+          innerW: 240,
+          innerH: 185,
+          structureNote: "5열 대형 터널 아치 · 760cm 초대형 전실"
+        }
       }
     ];
 
@@ -1618,11 +2220,13 @@
     const state = {
       activeTab: "simulator",
       tentOriginFilter: "all",
-      selectedTentId: "helsport_varanger_8_10",
-      tentShape: "dome",
+      selectedTentId: "helsport_valhall",
+      tentShape: "tunnel",
       tentHeight: 210,      // cm
-      jackHeight: 175,      // cm
+      jackHeight: 180,      // cm
       horizDist: 0,         // cm
+      sectionViewMode: "front", // "front" (폭×높이) | "side" (길이×높이)
+      blueprintModalTentId: "helsport_valhall",
       selectedStoveId: "mstove_v3",
       stoveHeight: 35,      // cm
       standHeight: 0,       // cm
@@ -1635,6 +2239,8 @@
       showPipeNodes: true,
       productCategoryFilter: "all",
       tentDbFilter: "all",
+      tentDbSearch: "",
+      tentDbMiniView: "front",
       lastBomText: "",
       customerSimpleMode: false,
       adminUnlocked: false,
@@ -1916,36 +2522,103 @@
       const cmToY = (cm) => Math.round(groundY - cm * scale);
       const cmToPx = (cm) => Math.round(cm * scale);
 
-      const tentCenterX = state.pathType === "straight" ? 360 : 300;
-      const tentHalfWidthCm = state.tentShape === "tunnel" ? 210 : state.tentShape === "tipi" ? 195 : 185;
-      const tentHalfW = Math.min(230, cmToPx(tentHalfWidthCm));
+      const activeTent = TENT_MODELS.find((t) => t.id === state.selectedTentId);
+      const sec = activeTent && activeTent.section ? activeTent.section : {
+        profile: state.tentShape === "tipi" ? "tipi_cone" : state.tentShape === "cabin" ? "cabin_ridge" : state.tentShape === "tunnel" ? "tunnel_living" : "dome_geo",
+        widthCm: state.tentShape === "tunnel" ? 360 : 340,
+        lengthCm: state.tentShape === "tunnel" ? 580 : 340,
+        peakHeightCm: sim.H_tent,
+        sideWallCm: state.tentShape === "tipi" ? 0 : state.tentShape === "cabin" ? 110 : 100,
+        doorHeightCm: Math.round(sim.H_tent * 0.8),
+        innerW: 0,
+        innerH: 0,
+        structureNote: "사용자 직접 입력 단면"
+      };
+
+      const isSideView = state.sectionViewMode === "side";
+      const spanCm = isSideView ? sec.lengthCm : sec.widthCm;
+      const tentCenterX = state.pathType === "straight" ? 360 : 295;
+      // Use real aspect ratio scaled cleanly inside the viewport
+      const maxAllowedHalfW = state.pathType === "straight" ? 245 : 220;
+      const horizScale = Math.min(scale, (maxAllowedHalfW * 2) / Math.max(240, spanCm));
+      const tentHalfW = Math.round((spanCm / 2) * horizScale);
       const tentLeftX = tentCenterX - tentHalfW;
       const tentRightX = tentCenterX + tentHalfW;
       const tentPeakY = cmToY(sim.H_tent);
+      const sideWallRatio = sec.peakHeightCm > 0 ? sec.sideWallCm / sec.peakHeightCm : 0.45;
+      const actualSideWallCm = Math.round(sim.H_tent * sideWallRatio);
+      const sideWallY = cmToY(actualSideWallCm);
 
       let tentPathD = "";
       let tentInnerLines = "";
-      if (state.tentShape === "tipi") {
+      const prof = sec.profile;
+
+      if (prof === "tipi_cone") {
         tentPathD = `M ${tentLeftX},${groundY} L ${tentCenterX},${tentPeakY} L ${tentRightX},${groundY} Z`;
-        tentInnerLines = `<line x1="${tentCenterX}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${groundY}" stroke="#475569" stroke-width="2" stroke-dasharray="4,4" />`;
-      } else if (state.tentShape === "dome") {
-        const ctrlY = tentPeakY - cmToPx(sim.H_tent * 0.28);
-        tentPathD = `M ${tentLeftX},${groundY} Q ${tentLeftX + tentHalfW * 0.15},${ctrlY} ${tentCenterX},${tentPeakY} Q ${tentRightX - tentHalfW * 0.15},${ctrlY} ${tentRightX},${groundY} Z`;
+        tentInnerLines = `<line x1="${tentCenterX}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${groundY}" stroke="#64748b" stroke-width="2.5" stroke-dasharray="5,4" />`;
+      } else if (prof === "bell_wall") {
+        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX},${sideWallY} L ${tentCenterX},${tentPeakY} L ${tentRightX},${sideWallY} L ${tentRightX},${groundY} Z`;
         tentInnerLines = `
-          <path d="M ${tentLeftX + 25},${groundY} Q ${tentCenterX},${tentPeakY + 15} ${tentRightX - 25},${groundY}" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="${tentCenterX}" y1="${tentPeakY}" x2="${tentCenterX}" y2="${groundY}" stroke="#64748b" stroke-width="2.5" stroke-dasharray="5,4" />
+          <line x1="${tentLeftX}" y1="${sideWallY}" x2="${tentRightX}" y2="${sideWallY}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" />
+          <text x="${tentLeftX + 6}" y="${sideWallY - 5}" fill="#92400e" font-size="9.5" font-weight="bold">측벽 ${actualSideWallCm}cm</text>
         `;
-      } else if (state.tentShape === "cabin") {
-        const wallH = cmToY(Math.min(90, sim.H_tent * 0.38));
-        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + 12},${wallH} L ${tentCenterX},${tentPeakY} L ${tentRightX - 12},${wallH} L ${tentRightX},${groundY} Z`;
-        tentInnerLines = `<line x1="${tentLeftX + 12}" y1="${wallH}" x2="${tentRightX - 12}" y2="${wallH}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>`;
-      } else {
-        const shoulderY = cmToY(sim.H_tent * 0.86);
-        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + 22},${shoulderY} Q ${tentCenterX},${tentPeakY - 12} ${tentRightX - 22},${shoulderY} L ${tentRightX},${groundY} Z`;
+      } else if (prof === "cabin_ridge" || prof === "jack_hex") {
+        const inset = prof === "jack_hex" ? Math.round(tentHalfW * 0.14) : 6;
+        tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + inset},${sideWallY} L ${tentCenterX},${tentPeakY} L ${tentRightX - inset},${sideWallY} L ${tentRightX},${groundY} Z`;
         tentInnerLines = `
-          <line x1="${tentLeftX + 95}" y1="${shoulderY - 4}" x2="${tentLeftX + 85}" y2="${groundY}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
-          <line x1="${tentRightX - 95}" y1="${shoulderY - 4}" x2="${tentRightX - 85}" y2="${groundY}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="${tentLeftX + inset}" y1="${sideWallY}" x2="${tentRightX - inset}" y2="${sideWallY}" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,3"/>
+          <text x="${tentLeftX + inset + 6}" y="${sideWallY - 5}" fill="#92400e" font-size="9.5" font-weight="bold">측고 ${actualSideWallCm}cm</text>
+        `;
+      } else if (prof === "tunnel_living" || prof === "vhouse_ridge") {
+        if (isSideView) {
+          // Longitudinal side cross-section: long arched tunnel with ribs & inner tent box
+          const shoulderY = cmToY(sim.H_tent * 0.88);
+          tentPathD = `M ${tentLeftX},${groundY} Q ${tentLeftX + 10},${shoulderY} ${tentLeftX + 42},${tentPeakY + 6} L ${tentRightX - 42},${tentPeakY + 6} Q ${tentRightX - 10},${shoulderY} ${tentRightX},${groundY} Z`;
+          const ribCount = spanCm >= 650 ? 4 : 3;
+          let ribs = "";
+          for (let r = 1; r <= ribCount; r++) {
+            const rx = Math.round(tentLeftX + ((tentRightX - tentLeftX) * r) / (ribCount + 1));
+            ribs += `<line x1="${rx}" y1="${tentPeakY + 6}" x2="${rx}" y2="${groundY}" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4,4"/>`;
+          }
+          let innerBox = "";
+          if (sec.innerW > 0 && sec.innerH > 0) {
+            const iwPx = Math.round(sec.innerW * horizScale);
+            const ihY = cmToY(sec.innerH);
+            innerBox = `
+              <rect x="${tentLeftX + 12}" y="${ihY}" width="${iwPx}" height="${groundY - ihY}" rx="4" fill="#cbd5e1" fill-opacity="0.35" stroke="#475569" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <text x="${tentLeftX + 12 + iwPx / 2}" y="${(ihY + groundY) / 2}" fill="#334155" font-size="10" font-weight="bold" text-anchor="middle">이너텐트 (${sec.innerW}×${sec.innerH}cm)</text>
+            `;
+          }
+          tentInnerLines = ribs + innerBox;
+        } else {
+          // Front cross-section of tunnel/living shell: wide arch with high sidewall
+          tentPathD = `M ${tentLeftX},${groundY} L ${tentLeftX + 14},${sideWallY} Q ${tentCenterX},${tentPeakY - 26} ${tentRightX - 14},${sideWallY} L ${tentRightX},${groundY} Z`;
+          const doorY = cmToY(sec.doorHeightCm || Math.round(sim.H_tent * 0.82));
+          tentInnerLines = `
+            <path d="M ${tentLeftX + Math.round(tentHalfW * 0.32)},${groundY} L ${tentLeftX + Math.round(tentHalfW * 0.36)},${doorY} Q ${tentCenterX},${doorY - 12} ${tentRightX - Math.round(tentHalfW * 0.36)},${doorY} L ${tentRightX - Math.round(tentHalfW * 0.32)},${groundY}" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="${tentCenterX}" y="${doorY + 14}" fill="#475569" font-size="9.5" font-weight="bold" text-anchor="middle">출입구/창문 높이 약 ${sec.doorHeightCm}cm</text>
+          `;
+        }
+      } else {
+        // dome_geo / shelter_g
+        const archCtrlY = prof === "shelter_g" ? tentPeakY - cmToPx(sim.H_tent * 0.16) : tentPeakY - cmToPx(sim.H_tent * 0.24);
+        tentPathD = `M ${tentLeftX},${groundY} Q ${tentLeftX + tentHalfW * 0.12},${archCtrlY} ${tentCenterX},${tentPeakY} Q ${tentRightX - tentHalfW * 0.12},${archCtrlY} ${tentRightX},${groundY} Z`;
+        const doorY = cmToY(sec.doorHeightCm || Math.round(sim.H_tent * 0.8));
+        tentInnerLines = `
+          <path d="M ${tentLeftX + Math.round(tentHalfW * 0.25)},${groundY} Q ${tentCenterX},${doorY - 10} ${tentRightX - Math.round(tentHalfW * 0.25)},${groundY}" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <text x="${tentCenterX}" y="${doorY + 16}" fill="#475569" font-size="9.5" font-weight="bold" text-anchor="middle">아치 도어 약 ${sec.doorHeightCm}cm</text>
         `;
       }
+
+      // Add bottom real width/length dimension ruler inside tentInnerLines
+      tentInnerLines += `
+        <line x1="${tentLeftX}" y1="${groundY + 26}" x2="${tentRightX}" y2="${groundY + 26}" stroke="#475569" stroke-width="1.5"/>
+        <line x1="${tentLeftX}" y1="${groundY + 20}" x2="${tentLeftX}" y2="${groundY + 32}" stroke="#475569" stroke-width="1.5"/>
+        <line x1="${tentRightX}" y1="${groundY + 20}" x2="${tentRightX}" y2="${groundY + 32}" stroke="#475569" stroke-width="1.5"/>
+        <rect x="${tentCenterX - 66}" y="${groundY + 16}" width="132" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="${tentCenterX}" y="${groundY + 30}" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">${isSideView ? "실측 전체 길이" : "실측 바닥 폭"} ${spanCm}cm</text>
+      `;
 
       let stoveCenterX = tentCenterX;
       if (state.pathType === "straight") {
@@ -2409,6 +3082,67 @@
 
       renderSvgDiagram(sim);
 
+      // Update Real Cross-Section Specs Bar below diagram
+      const activeSec = tent && tent.section ? tent.section : {
+        widthCm: state.tentShape === "tunnel" ? 360 : 340,
+        lengthCm: state.tentShape === "tunnel" ? 580 : 340,
+        peakHeightCm: sim.H_tent,
+        sideWallCm: state.tentShape === "tipi" ? 0 : 100,
+        doorHeightCm: Math.round(sim.H_tent * 0.8),
+        structureNote: "사용자 직접 입력 치수"
+      };
+      const secBar = document.getElementById("crossSectionMetricsBar");
+      if (secBar) {
+        secBar.innerHTML = `
+          <div class="rounded-lg bg-white border border-slate-200 p-2">
+            <div class="text-[10px] text-slate-500 font-semibold">실측 폭 × 길이</div>
+            <div class="text-xs font-extrabold text-slate-900 mt-0.5">${activeSec.widthCm} × ${activeSec.lengthCm} cm</div>
+          </div>
+          <div class="rounded-lg bg-white border border-slate-200 p-2">
+            <div class="text-[10px] text-slate-500 font-semibold">최고 천장고</div>
+            <div class="text-xs font-extrabold text-orange-700 mt-0.5">${sim.H_tent} cm</div>
+          </div>
+          <div class="rounded-lg bg-white border border-slate-200 p-2">
+            <div class="text-[10px] text-slate-500 font-semibold">측벽(처마) 높이</div>
+            <div class="text-xs font-extrabold text-slate-900 mt-0.5">${activeSec.sideWallCm > 0 ? activeSec.sideWallCm + " cm" : "원뿔형(0cm)"}</div>
+          </div>
+          <div class="rounded-lg bg-white border border-slate-200 p-2">
+            <div class="text-[10px] text-slate-500 font-semibold">출입문/창문 높이</div>
+            <div class="text-xs font-extrabold text-sky-700 mt-0.5">약 ${activeSec.doorHeightCm} cm</div>
+          </div>
+          <div class="col-span-2 sm:col-span-1 rounded-lg bg-white border border-slate-200 p-2">
+            <div class="text-[10px] text-slate-500 font-semibold">단면 구조</div>
+            <div class="text-[11px] font-bold text-slate-700 mt-0.5 truncate" title="${activeSec.structureNote}">${activeSec.structureNote}</div>
+          </div>
+        `;
+      }
+      const dbSearchEl = document.getElementById("tentDbSearchInput");
+      if (dbSearchEl) {
+        dbSearchEl.addEventListener("input", (e) => {
+          state.tentDbSearch = e.target.value;
+          renderTentsTab();
+        });
+      }
+      const dbMiniToggle = document.getElementById("toggleDbMiniViewBtn");
+      if (dbMiniToggle) {
+        dbMiniToggle.addEventListener("click", () => {
+          state.tentDbMiniView = state.tentDbMiniView === "front" ? "side" : "front";
+          dbMiniToggle.textContent = `📐 단면 미리보기: ${state.tentDbMiniView === "front" ? "정면" : "측면"}`;
+          renderTentsTab();
+        });
+      }
+
+      const vfBtn = document.getElementById("viewFrontBtn");
+      const vsBtn = document.getElementById("viewSideBtn");
+      if (vfBtn && vsBtn) {
+        vfBtn.className = state.sectionViewMode === "front"
+          ? "section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-500 transition"
+          : "section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition";
+        vsBtn.className = state.sectionViewMode === "side"
+          ? "section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-500 transition"
+          : "section-view-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition";
+      }
+
       const diffBadgeLarge = document.getElementById("diffBadgeLarge");
       diffBadgeLarge.textContent = `설치 난이도: ${sim.diffLabel}`;
       diffBadgeLarge.className = `px-3 py-1 rounded-full text-xs font-extrabold border ${sim.diffBadgeClass}`;
@@ -2553,11 +3287,127 @@
         .join("");
     }
 
+    function buildBlueprintSvgContent(tent, viewMode, isMini) {
+      const sec = tent.section;
+      const W = isMini ? 96 : 420;
+      const H = isMini ? 56 : 260;
+      const groundY = isMini ? 48 : 212;
+      const padX = isMini ? 10 : 54;
+      const spanCm = viewMode === "side" ? sec.lengthCm : sec.widthCm;
+      const maxH = Math.max(300, sec.peakHeightCm + 30);
+      const scaleY = (groundY - (isMini ? 8 : 34)) / maxH;
+      const scaleX = Math.min(scaleY, (W - padX * 2) / Math.max(260, spanCm));
+
+      const cx = W / 2;
+      const halfW = Math.round((spanCm / 2) * scaleX);
+      const lx = cx - halfW;
+      const rx = cx + halfW;
+      const py = Math.round(groundY - sec.peakHeightCm * scaleY);
+      const swY = Math.round(groundY - sec.sideWallCm * scaleY);
+      const jackY = Math.round(groundY - tent.defaultJackHeight * scaleY);
+
+      let pathD = "";
+      let extra = "";
+      const prof = sec.profile;
+      if (prof === "tipi_cone") {
+        pathD = `M ${lx},${groundY} L ${cx},${py} L ${rx},${groundY} Z`;
+        extra += `<line x1="${cx}" y1="${py}" x2="${cx}" y2="${groundY}" stroke="#64748b" stroke-width="${isMini ? 1 : 2}" stroke-dasharray="3,2"/>`;
+      } else if (prof === "bell_wall" || prof === "cabin_ridge" || prof === "jack_hex") {
+        const inset = prof === "jack_hex" ? Math.round(halfW * 0.14) : 2;
+        pathD = `M ${lx},${groundY} L ${lx + inset},${swY} L ${cx},${py} L ${rx - inset},${swY} L ${rx},${groundY} Z`;
+        if (!isMini && sec.sideWallCm > 0) {
+          extra += `<line x1="${lx + inset}" y1="${swY}" x2="${rx - inset}" y2="${swY}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>`;
+          extra += `<text x="${lx + inset + 6}" y="${swY - 5}" fill="#b45309" font-size="10" font-weight="bold">측고 ${sec.sideWallCm}cm</text>`;
+        }
+      } else if (prof === "tunnel_living" || prof === "vhouse_ridge") {
+        if (viewMode === "side") {
+          const shY = Math.round(groundY - sec.peakHeightCm * 0.88 * scaleY);
+          const shoulderInset = Math.min(36, Math.round(halfW * 0.22));
+          pathD = `M ${lx},${groundY} Q ${lx + 6},${shY} ${lx + shoulderInset},${py + 4} L ${rx - shoulderInset},${py + 4} Q ${rx - 6},${shY} ${rx},${groundY} Z`;
+          if (!isMini) {
+            const ribs = spanCm >= 650 ? 4 : 3;
+            for (let i = 1; i <= ribs; i++) {
+              const rxPos = Math.round(lx + ((rx - lx) * i) / (ribs + 1));
+              extra += `<line x1="${rxPos}" y1="${py + 4}" x2="${rxPos}" y2="${groundY}" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,3"/>`;
+            }
+            if (sec.innerW > 0 && sec.innerH > 0) {
+              const iwPx = Math.round(sec.innerW * scaleX);
+              const ihY = Math.round(groundY - sec.innerH * scaleY);
+              extra += `<rect x="${lx + 8}" y="${ihY}" width="${iwPx}" height="${groundY - ihY}" rx="3" fill="#cbd5e1" fill-opacity="0.4" stroke="#475569" stroke-width="1.2" stroke-dasharray="3,2"/>`;
+              extra += `<text x="${lx + 8 + iwPx / 2}" y="${(ihY + groundY) / 2 + 3}" fill="#1e293b" font-size="9.5" font-weight="bold" text-anchor="middle">이너 ${sec.innerH}cm</text>`;
+            }
+          }
+        } else {
+          pathD = `M ${lx},${groundY} L ${lx + (isMini ? 4 : 10)},${swY} Q ${cx},${py - (isMini ? 6 : 20)} ${rx - (isMini ? 4 : 10)},${swY} L ${rx},${groundY} Z`;
+        }
+      } else {
+        const ctrlY = py - (isMini ? 6 : 20);
+        pathD = `M ${lx},${groundY} Q ${lx + halfW * 0.14},${ctrlY} ${cx},${py} Q ${rx - halfW * 0.14},${ctrlY} ${rx},${groundY} Z`;
+      }
+
+      if (isMini) {
+        return `
+          <line x1="4" y1="${groundY}" x2="${W - 4}" y2="${groundY}" stroke="#94a3b8" stroke-width="1"/>
+          <path d="${pathD}" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+          ${extra}
+        `;
+      }
+
+      // Detailed Architectural Blueprint SVG
+      const jackX = tent.defaultPath === "straight" ? cx + Math.round(halfW * 0.24) : rx - Math.round(halfW * 0.12);
+      return `
+        ${[100, 200, 300].filter((c) => c <= maxH).map((c) => {
+          const gy = Math.round(groundY - c * scaleY);
+          return `<line x1="12" y1="${gy}" x2="${W - 12}" y2="${gy}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2,2"/><text x="14" y="${gy - 3}" fill="#94a3b8" font-size="9">${c}cm</text>`;
+        }).join("")}
+        <line x1="12" y1="${groundY}" x2="${W - 12}" y2="${groundY}" stroke="#475569" stroke-width="2"/>
+        <path d="${pathD}" fill="#fef3c7" fill-opacity="0.72" stroke="#b45309" stroke-width="2.2" stroke-linejoin="round"/>
+        ${extra}
+        <!-- Peak Height Dimension -->
+        <line x1="${cx}" y1="${py}" x2="${rx + 26}" y2="${py}" stroke="#ea580c" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="${rx + 22}" y1="${py}" x2="${rx + 22}" y2="${groundY}" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="${rx + 26}" y="${(py + groundY) / 2 + 4}" fill="#c2410c" font-size="10.5" font-weight="bold">H ${sec.peakHeightCm}cm</text>
+        <!-- Width/Length Bottom Dimension -->
+        <line x1="${lx}" y1="${groundY + 16}" x2="${rx}" y2="${groundY + 16}" stroke="#334155" stroke-width="1.5"/>
+        <line x1="${lx}" y1="${groundY + 11}" x2="${lx}" y2="${groundY + 21}" stroke="#334155" stroke-width="1.5"/>
+        <line x1="${rx}" y1="${groundY + 11}" x2="${rx}" y2="${groundY + 21}" stroke="#334155" stroke-width="1.5"/>
+        <text x="${cx}" y="${groundY + 32}" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="middle">${viewMode === "side" ? "전체 길이" : "바닥 폭"} ${spanCm}cm</text>
+        <!-- Stove Jack Marker -->
+        <circle cx="${jackX}" cy="${jackY}" r="5" fill="#0ea5e9" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="${jackX - 8}" y="${jackY - 8}" fill="#0369a1" font-size="9.5" font-weight="bold" text-anchor="end">홀잭 ${tent.defaultJackHeight}cm</text>
+      `;
+    }
+
+    function openBlueprintModal(tentId) {
+      const tent = TENT_MODELS.find((t) => t.id === tentId) || TENT_MODELS[0];
+      state.blueprintModalTentId = tent.id;
+      document.getElementById("bpModalOriginBadge").textContent = `${tent.origin} 인기 · ${tent.shapeLabel}`;
+      document.getElementById("bpModalTitle").textContent = `${tent.brand} ${tent.name} — 실측 단면도`;
+      document.getElementById("bpModalSubtitle").textContent = `${tent.dimensions} · ${tent.section.structureNote}`;
+      document.getElementById("bpFrontDimLabel").textContent = `폭 ${tent.section.widthCm}cm × 높이 ${tent.section.peakHeightCm}cm`;
+      document.getElementById("bpSideDimLabel").textContent = `길이 ${tent.section.lengthCm}cm × 높이 ${tent.section.peakHeightCm}cm`;
+      document.getElementById("bpFrontSvg").innerHTML = buildBlueprintSvgContent(tent, "front", false);
+      document.getElementById("bpSideSvg").innerHTML = buildBlueprintSvgContent(tent, "side", false);
+      document.getElementById("bpSourceLink").href = tent.sourceUrl;
+      document.getElementById("bpSourceLink").textContent = `출처: ${tent.sourceTitle} ↗`;
+
+      document.getElementById("bpSpecGrid").innerHTML = `
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-slate-500">설치 폭 × 길이</div><div class="font-extrabold text-slate-900 mt-0.5">${tent.section.widthCm} × ${tent.section.lengthCm} cm</div></div>
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-slate-500">최고 높이 / 측벽</div><div class="font-extrabold text-orange-700 mt-0.5">${tent.section.peakHeightCm}cm / ${tent.section.sideWallCm > 0 ? tent.section.sideWallCm + "cm" : "원뿔"}</div></div>
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-slate-500">권장 홀잭 높이</div><div class="font-extrabold text-sky-700 mt-0.5">${tent.defaultJackHeight} cm (${tent.hasBuiltInJack ? "순정 홀잭" : "창문/커스텀"})</div></div>
+        <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-slate-500">추천 연통 경로</div><div class="font-extrabold text-slate-900 mt-0.5">${tent.defaultPath === "straight" ? "천장 직상(쉬움)" : tent.defaultPath === "elbow45" ? "45° 경사(중급)" : "측면 90°(고급)"}</div></div>
+      `;
+
+      document.getElementById("blueprintModal").classList.remove("hidden");
+    }
+
     function renderTentsTab() {
       const tbody = document.getElementById("tentDbTableBody");
+      const kw = (state.tentDbSearch || "").trim().toLowerCase();
       const filtered = TENT_MODELS.filter((t) => {
-        if (state.tentDbFilter === "all") return true;
-        return t.origin === state.tentDbFilter;
+        const originOk = state.tentDbFilter === "all" || t.origin === state.tentDbFilter;
+        const kwOk = !kw || `${t.brand} ${t.name} ${t.shapeLabel} ${t.note}`.toLowerCase().includes(kw);
+        return originOk && kwOk;
       });
 
       tbody.innerHTML = filtered
@@ -2580,20 +3430,28 @@
                 <div class="font-bold text-white">${t.brand} ${t.name}</div>
                 <div class="text-[11px] text-slate-400 mt-0.5">${t.note}</div>
               </td>
+              <td class="py-2.5 px-2 text-center">
+                <button type="button" data-view-bp="${t.id}" class="view-bp-db-btn inline-block rounded-lg bg-white border border-slate-300 hover:border-orange-500 p-1 transition" title="클릭하여 정면·측면 실측 단면도 크게 보기">
+                  <svg viewBox="0 0 96 56" width="88" height="52" class="block">${buildBlueprintSvgContent(t, state.tentDbMiniView || "front", true)}</svg>
+                </button>
+              </td>
               <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${t.shapeLabel}</td>
               <td class="py-3 px-3 text-slate-200 font-medium whitespace-nowrap">${t.dimensions}</td>
               <td class="py-3 px-3 text-center font-extrabold text-orange-400 whitespace-nowrap">${t.peakHeight} cm</td>
               <td class="py-3 px-3 text-center font-bold text-amber-300 whitespace-nowrap">${t.defaultJackHeight} cm</td>
               <td class="py-3 px-3 whitespace-nowrap">${pathLabel}</td>
-              <td class="py-3 px-3 text-center whitespace-nowrap">
-                <a href="${t.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-300 underline hover:text-orange-400">
-                  제원확인↗
+              <td class="py-3 px-3 text-center whitespace-nowrap space-y-1">
+                <div class="flex items-center justify-center gap-1.5">
+                  <button type="button" data-view-bp="${t.id}" class="view-bp-db-btn px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 text-xs font-bold transition">
+                    📐 단면도
+                  </button>
+                  <button type="button" data-apply-tent="${t.id}" class="apply-tent-db-btn px-2.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">
+                    적용
+                  </button>
+                </div>
+                <a href="${t.sourceUrl}" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-slate-400 underline hover:text-orange-400">
+                  제원출처↗
                 </a>
-              </td>
-              <td class="py-3 px-3 text-center whitespace-nowrap">
-                <button type="button" data-apply-tent="${t.id}" class="apply-tent-db-btn px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">
-                  시뮬레이터 적용
-                </button>
               </td>
             </tr>
           `;
@@ -2726,26 +3584,26 @@
           state.tentOriginFilter = "all";
           populateTentDropdown();
 
-          if (preset === "varanger_mstove") {
+          if (preset === "shelterg_mstove") {
             state.standHeight = 0;
             applyStoveModel("mstove_v3");
-            applyTentModel("helsport_varanger_8_10");
+            applyTentModel("minimalworks_shelter_g");
+          } else if (preset === "valhall_mstove") {
+            state.standHeight = 0;
+            applyStoveModel("mstove_v3");
+            applyTentModel("helsport_valhall");
           } else if (preset === "orison_mstove_stand") {
             state.standHeight = 55;
             applyStoveModel("mstove_v3");
             applyTentModel("backcountry_orison");
-          } else if (preset === "alfheim_lumora") {
-            state.standHeight = 0;
-            applyStoveModel("lumora_ti_legs");
-            applyTentModel("nordisk_alfheim_12_6");
-          } else if (preset === "landlock_mstove") {
+          } else if (preset === "a7ex_mstove") {
             state.standHeight = 0;
             applyStoveModel("mstove_v3");
-            applyTentModel("snowpeak_landlock");
-          } else if (preset === "ghost_dweller") {
+            applyTentModel("northpeak_a7_ex");
+          } else if (preset === "cocoon3_lumora") {
             state.standHeight = 0;
-            applyStoveModel("dweller_max3_legs");
-            applyTentModel("kovea_ghost_plus");
+            applyStoveModel("lumora_ti_legs");
+            applyTentModel("coleman_cocoon3");
           }
           document.getElementById("tentSelect").value = state.selectedTentId;
           syncInputsFromState();
@@ -2901,6 +3759,11 @@
       });
 
       document.getElementById("tentDbTableBody").addEventListener("click", (e) => {
+        const bpBtn = e.target.closest(".view-bp-db-btn");
+        if (bpBtn) {
+          openBlueprintModal(bpBtn.getAttribute("data-view-bp"));
+          return;
+        }
         const btn = e.target.closest(".apply-tent-db-btn");
         if (!btn) return;
         const tentId = btn.getAttribute("data-apply-tent");
@@ -2909,8 +3772,46 @@
         applyTentModel(tentId);
         document.getElementById("tentSelect").value = tentId;
         switchTab("simulator");
-        showToast("선택하신 텐트 제원이 시뮬레이터에 적용되었습니다.");
+        showToast("선택하신 텐트 제원과 실측 단면도가 시뮬레이터에 적용되었습니다.");
       });
+
+      const vfBtn = document.getElementById("viewFrontBtn");
+      const vsBtn = document.getElementById("viewSideBtn");
+      if (vfBtn) vfBtn.addEventListener("click", () => { state.sectionViewMode = "front"; updateUI(); });
+      if (vsBtn) vsBtn.addEventListener("click", () => { state.sectionViewMode = "side"; updateUI(); });
+
+      const openBpBtn = document.getElementById("openBlueprintModalBtn");
+      if (openBpBtn) {
+        openBpBtn.addEventListener("click", () => {
+          const targetId = state.selectedTentId === "custom_tent" ? TENT_MODELS[0].id : state.selectedTentId;
+          openBlueprintModal(targetId);
+        });
+      }
+      const closeBpBtn = document.getElementById("closeBlueprintModalBtn");
+      if (closeBpBtn) {
+        closeBpBtn.addEventListener("click", () => {
+          document.getElementById("blueprintModal").classList.add("hidden");
+        });
+      }
+      const bpModal = document.getElementById("blueprintModal");
+      if (bpModal) {
+        bpModal.addEventListener("click", (e) => {
+          if (e.target === bpModal) bpModal.classList.add("hidden");
+        });
+      }
+      const bpApplyBtn = document.getElementById("bpApplyToSimBtn");
+      if (bpApplyBtn) {
+        bpApplyBtn.addEventListener("click", () => {
+          const tid = state.blueprintModalTentId;
+          document.getElementById("blueprintModal").classList.add("hidden");
+          state.tentOriginFilter = "all";
+          populateTentDropdown();
+          applyTentModel(tid);
+          document.getElementById("tentSelect").value = tid;
+          switchTab("simulator");
+          showToast("선택하신 텐트 실측 단면도가 시뮬레이터에 적용되었습니다.");
+        });
+      }
     }
 
     function fallbackCopy(text) {
