@@ -582,9 +582,37 @@
             <div id="safetyAlertBox" class="hidden rounded-xl bg-rose-950/70 border border-rose-500/50 p-3 text-xs text-rose-200 space-y-1">
             </div>
 
-            <!-- Interactive SVG Canvas Container -->
+            <!-- Interactive SVG Canvas Container (Supports Stove Drag & Drop) -->
             <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-sky-50/70 via-slate-50 to-slate-100 border border-slate-300 shadow-inner">
-              <svg id="simSvg" viewBox="0 0 760 480" class="w-full h-auto block select-none"></svg>
+              <div class="absolute top-2.5 right-2.5 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 border border-orange-300 text-[11px] font-bold text-orange-700 shadow-sm">
+                <span>🖐️ 도면 속 난로를 좌우로 드래그해 이동해 보세요</span>
+              </div>
+              <svg id="simSvg" viewBox="0 0 760 480" class="w-full h-auto block select-none touch-none"></svg>
+            </div>
+
+            <!-- Interactive Stove Placement Slider & Quick Move Controls -->
+            <div class="rounded-xl bg-orange-50/70 border border-orange-200 p-3 space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-extrabold text-orange-800">🔥 텐트 내부 난로 위치 이동 (자동 연통 경로 재계산)</span>
+                  <span id="stovePosReadoutBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white text-orange-700 border border-orange-300">
+                    중앙 기준 +42cm
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1">
+                  <button type="button" data-move-stove="left" class="stove-move-btn px-2 py-1 rounded-lg bg-white hover:bg-orange-100 text-slate-700 border border-slate-300 text-[11px] font-bold transition">◀ 좌측</button>
+                  <button type="button" data-move-stove="center" class="stove-move-btn px-2 py-1 rounded-lg bg-white hover:bg-orange-100 text-slate-700 border border-slate-300 text-[11px] font-bold transition">● 중앙</button>
+                  <button type="button" data-move-stove="under_jack" class="stove-move-btn px-2 py-1 rounded-lg bg-white hover:bg-orange-100 text-sky-700 border border-sky-300 text-[11px] font-bold transition">🎯 홀잭 아래</button>
+                  <button type="button" data-move-stove="reset" class="stove-move-btn px-2 py-1 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold transition">↺ 기본위치</button>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[11px] font-semibold text-slate-600 whitespace-nowrap">좌측 벽면</span>
+                <input id="stovePosSlider" type="range" min="-150" max="150" step="5" value="40" class="w-full" />
+                <span class="text-[11px] font-semibold text-slate-600 whitespace-nowrap">우측 벽면</span>
+              </div>
+              <div id="stovePlacementMetrics" class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-700 font-medium">
+              </div>
             </div>
 
             <!-- Real Cross-Section Dimensions Bar -->
@@ -1736,7 +1764,7 @@
         id: "kzm_attica_x",
         origin: "국내",
         brand: "카즈미 (KZM)",
-        name: "아티카 X / NEW 아티카",
+        name: "아티카 X (Attica X)",
         shape: "tunnel",
         shapeLabel: "대형 거실형 리빙쉘",
         dimensions: "620 × 375 × 210 cm (이너 320×220×185cm)",
@@ -1747,7 +1775,7 @@
         hasBuiltInJack: false,
         sourceTitle: "다나와 카즈미 아티카 X 제원",
         sourceUrl: "https://prod.danawa.com/info/?pcode=79385966",
-        note: "국내 패밀리 리빙쉘 최다 판매 베스트셀러(620×375×210cm). 넓은 전실 측면 도어 지퍼를 통해 90° 엘보 2개로 외부 수직 배출.",
+        note: "국내 패밀리 리빙쉘 최다 판매 베스트셀러(620×375×210cm, NEW 아티카는 폭 360cm). 넓은 전실 측면 도어 지퍼를 통해 90° 엘보 2개로 외부 수직 배출.",
         section: {
           profile: "tunnel_living",
           widthCm: 375,
@@ -1848,7 +1876,7 @@
         id: "jeep_grand_sylvester",
         origin: "국내",
         brand: "지프 (JEEP)",
-        name: "그랜드 실베스터 / 실베스터 2",
+        name: "그랜드 실베스터 (Grand Sylvester)",
         shape: "tunnel",
         shapeLabel: "대형 거실형 리빙쉘",
         dimensions: "670 × 370 × 220 cm",
@@ -1859,7 +1887,7 @@
         hasBuiltInJack: false,
         sourceTitle: "다나와 지프 그랜드 실베스터 제원",
         sourceUrl: "https://prod.danawa.com/info/?pcode=59920895",
-        note: "국내 장박·동계 가족캠핑 스테디셀러(670×370×220cm). 천장고가 220cm로 높아 측면 90° 배출 시 연장관 여유 확보 필요.",
+        note: "국내 장박·동계 가족캠핑 스테디셀러(670×370×220cm, 실베스터 2는 580×350×220cm). 천장고가 220cm로 높아 측면 90° 배출 시 연장관 여유 확보 필요.",
         section: {
           profile: "tunnel_living",
           widthCm: 370,
@@ -2057,8 +2085,8 @@
         defaultHorizDist: 55,
         defaultPath: "elbow45",
         hasBuiltInJack: false,
-        sourceTitle: "다나와 아스가르드 12.6 제원",
-        sourceUrl: "https://prod.danawa.com/info/?pcode=27478145",
+        sourceTitle: "캠핑연구소 아스가르드 12.6 제원",
+        sourceUrl: "https://camping-lab.com/tents/180",
         note: "국내 감성 면텐트 대표 모델(400×375×250cm, 수직 측벽 75cm). 중앙 메인폴을 피해 45° 엘보 2개로 경사면/출입구 상단 배출.",
         section: {
           profile: "bell_wall",
@@ -2227,6 +2255,10 @@
       horizDist: 0,         // cm
       sectionViewMode: "front", // "front" (폭×높이) | "side" (길이×높이)
       blueprintModalTentId: "helsport_valhall",
+      stovePosCm: 42,           // tent center = 0, negative = left, positive = right
+      jackPosCm: 42,            // fixed stove jack X offset from tent center
+      isDraggingStove: false,
+      lastRenderGeometry: null,
       selectedStoveId: "mstove_v3",
       stoveHeight: 35,      // cm
       standHeight: 0,       // cm
@@ -2294,9 +2326,56 @@
       select.appendChild(customOpt);
     }
 
+    function getActiveTentSection() {
+      const tent = TENT_MODELS.find((t) => t.id === state.selectedTentId);
+      if (tent && tent.section) return tent.section;
+      return {
+        profile: state.tentShape === "tipi" ? "tipi_cone" : state.tentShape === "cabin" ? "cabin_ridge" : state.tentShape === "tunnel" ? "tunnel_living" : "dome_geo",
+        widthCm: state.tentShape === "tunnel" ? 360 : 340,
+        lengthCm: state.tentShape === "tunnel" ? 580 : 340,
+        peakHeightCm: Number(state.tentHeight) || 210,
+        sideWallCm: state.tentShape === "tipi" ? 0 : state.tentShape === "cabin" ? 110 : 100,
+        doorHeightCm: Math.round((Number(state.tentHeight) || 210) * 0.8),
+        innerW: 0,
+        innerH: 0,
+        structureNote: "사용자 직접 입력 단면"
+      };
+    }
+
+    function getCurrentSpanCm() {
+      const sec = getActiveTentSection();
+      return state.sectionViewMode === "side" ? sec.lengthCm : sec.widthCm;
+    }
+
+    function clampStovePos(posCm) {
+      const halfSpan = getCurrentSpanCm() / 2;
+      const maxOffset = Math.max(40, Math.round(halfSpan - 28));
+      return Math.max(-maxOffset, Math.min(maxOffset, Math.round(posCm)));
+    }
+
+    function resetStoveAndJackPositions(useDefaultHoriz) {
+      const spanCm = getCurrentSpanCm();
+      const halfSpan = spanCm / 2;
+      if (state.pathType === "straight") {
+        state.jackPosCm = Math.round(halfSpan * 0.28);
+        state.stovePosCm = clampStovePos(state.jackPosCm - (useDefaultHoriz ? 0 : state.horizDist));
+      } else if (state.pathType === "elbow45") {
+        state.jackPosCm = Math.round(halfSpan * 0.72);
+        const hDist = useDefaultHoriz ? (state.horizDist || 45) : state.horizDist;
+        state.stovePosCm = clampStovePos(state.jackPosCm - hDist);
+      } else {
+        state.jackPosCm = Math.round(halfSpan * 0.96);
+        const hDist = useDefaultHoriz ? (state.horizDist || 65) : state.horizDist;
+        state.stovePosCm = clampStovePos(state.jackPosCm - hDist);
+      }
+      state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
+    }
+
     function applyTentModel(tentId) {
       if (tentId === "custom_tent") {
         state.selectedTentId = "custom_tent";
+        resetStoveAndJackPositions(true);
+        syncInputsFromState();
         updateUI();
         return;
       }
@@ -2308,6 +2387,7 @@
       state.jackHeight = tent.defaultJackHeight;
       state.horizDist = tent.defaultHorizDist;
       state.pathType = tent.defaultPath;
+      resetStoveAndJackPositions(true);
       syncInputsFromState();
       updateUI();
     }
@@ -2363,16 +2443,26 @@
       // Target minimum top height
       const minTargetTop = Math.max(H_tent + clearance, H_jack + 70);
 
-      let D_horiz = Number(state.horizDist) || 0;
-      if (state.pathType === "straight") {
-        D_horiz = 0;
-      } else if (state.pathType === "elbow45" && D_horiz < 25) {
-        D_horiz = 45;
-      } else if (state.pathType === "elbow90" && D_horiz < 30) {
-        D_horiz = 65;
+      const spanCm = getCurrentSpanCm();
+      const halfSpan = spanCm / 2;
+      const stovePosCm = clampStovePos(state.stovePosCm);
+      const jackPosCm = Math.round(state.jackPosCm);
+      const dxToJackCm = jackPosCm - stovePosCm;
+      const D_horiz = Math.abs(Math.round(dxToJackCm));
+
+      // Wall clearance from stove outer edge (approx 20cm half-width)
+      const leftWallGapCm = Math.max(0, Math.round(halfSpan + stovePosCm - 20));
+      const rightWallGapCm = Math.max(0, Math.round(halfSpan - stovePosCm - 20));
+      const minWallGapCm = Math.min(leftWallGapCm, rightWallGapCm);
+
+      // Determine effective path geometry (if stove moved away from straight jack > 12cm, auto-route 45-deg bypass!)
+      let effectivePathMode = state.pathType;
+      let autoBypassActive = false;
+      if (state.pathType === "straight" && D_horiz > 12) {
+        effectivePathMode = "elbow45";
+        autoBypassActive = true;
       }
 
-      // Compute path geometry & required effective pipe length
       let elbowAngle = 0;
       let elbowCount = 0;
       let indoorVertLen = 0;
@@ -2380,19 +2470,19 @@
       let outdoorVertLen = 0;
       let totalReqEffLen = 0;
 
-      if (state.pathType === "straight") {
+      if (effectivePathMode === "straight") {
         elbowAngle = 0;
         elbowCount = 0;
         totalReqEffLen = Math.max(60, minTargetTop - H_start);
         indoorVertLen = Math.max(0, H_jack - H_start);
         outdoorVertLen = Math.max(0, totalReqEffLen - indoorVertLen);
-      } else if (state.pathType === "elbow45") {
+      } else if (effectivePathMode === "elbow45") {
         elbowAngle = 45;
         elbowCount = 2;
-        const diagRise = D_horiz;
+        const diagRise = Math.max(20, D_horiz);
         const elbow1Height = Math.max(H_start + effDamperLen, H_jack - diagRise);
         indoorVertLen = Math.max(effDamperLen, elbow1Height - H_start);
-        const actualRise = Math.max(20, H_jack - (H_start + indoorVertLen));
+        const actualRise = Math.max(15, H_jack - (H_start + indoorVertLen));
         angledOrHorizLen = Math.round(Math.sqrt(D_horiz * D_horiz + actualRise * actualRise));
         outdoorVertLen = Math.max(60, minTargetTop - H_jack);
         totalReqEffLen = indoorVertLen + angledOrHorizLen + outdoorVertLen;
@@ -2418,15 +2508,32 @@
       const actualEffTotalLen = actualRawTotalLen - totalOverlapLost;
 
       let actualTopHeight = H_start + actualEffTotalLen;
-      if (state.pathType === "elbow45") {
-        actualTopHeight = Math.round(H_start + indoorVertLen + (angledOrHorizLen * 0.707) + outdoorVertLen);
-      } else if (state.pathType === "elbow90") {
-        actualTopHeight = Math.round(H_start + indoorVertLen + outdoorVertLen);
+      if (effectivePathMode === "elbow45") {
+        const extraFromRounding = Math.max(0, actualEffTotalLen - totalReqEffLen);
+        actualTopHeight = Math.round(H_jack + outdoorVertLen + extraFromRounding);
+      } else if (effectivePathMode === "elbow90") {
+        const extraFromRounding = Math.max(0, actualEffTotalLen - totalReqEffLen);
+        actualTopHeight = Math.round(H_jack + outdoorVertLen + extraFromRounding);
       }
       const actualRoofClearance = actualTopHeight - H_tent;
 
       // Safety warnings check
       const warnings = [];
+      if (minWallGapCm < 45) {
+        warnings.push(
+          `난로가 텐트 벽면과 너무 가깝습니다(현재 최소 벽면 이격 ${minWallGapCm}cm). 화재 및 스킨 열손상 방지를 위해 난로를 텐트 벽면에서 최소 45~50cm 이상 안쪽으로 이동하세요.`
+        );
+      }
+      if (autoBypassActive) {
+        warnings.push(
+          `난로를 천장 홀잭 위치에서 수평 ${D_horiz}cm 이동하여 45° 엘보 2개 우회 경로가 자동 적용되었습니다. 엘보 없이 직상 설치하려면 [🎯 홀잭 아래] 버튼을 누르세요.`
+        );
+      }
+      if (effectivePathMode === "elbow90" && D_horiz > 130) {
+        warnings.push(
+          `측면 90° 수평 이동 거리(${D_horiz}cm)가 너무 깁니다. 배기 저항 증가·연통 처짐·역류 위험이 높으므로 난로를 홀잭(창문) 쪽으로 더 가까이 배치하세요.`
+        );
+      }
       if (H_jack <= H_start + 20) {
         warnings.push(
           `현재 배기구 출발 높이(${H_start}cm)가 홀잭 높이(${H_jack}cm)와 너무 가깝거나 높습니다. 스탠드 높이를 낮추거나 홀잭 위치를 최소 ${H_start + 35}cm 이상으로 높여 주세요.`
@@ -2449,22 +2556,22 @@
       let diffBadgeClass = "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
       let diffReason = "";
 
-      if (state.pathType === "elbow90" || actualTopHeight > 430 || warnings.length > 0) {
+      if (effectivePathMode === "elbow90" || actualTopHeight > 430 || minWallGapCm < 45 || D_horiz > 130) {
         diffLevel = "hard";
         diffLabel = "고급 ★★★";
         diffBadgeClass = "bg-rose-500/20 text-rose-300 border-rose-500/40";
         diffReason =
-          state.pathType === "elbow90"
-            ? `90° 엘보 2개를 사용해 측면 창문(높이 ${H_jack}cm)으로 배출하는 경로입니다. 수평 관통 구간(${angledOrHorizLen}cm)의 하중 처짐을 막기 위해 외부 폴대/삼각대 지지대와 3방향 가이라인 고정이 반드시 필요하며, 초기 착화 시 예열에 신경 써야 합니다.`
-            : `총 연통 도달 높이가 ${actualTopHeight}cm로 매우 높거나 홀잭-난로 간격 제약이 있어 풍압 대비 2단 가이라인 고정이 필수적인 상급자 세팅입니다.`;
-      } else if (state.pathType === "elbow45" || totalSegments > 12 || actualTopHeight > 380) {
+          effectivePathMode === "elbow90"
+            ? `90° 엘보 2개를 사용해 측면 창문(높이 ${H_jack}cm, 수평 이동 ${D_horiz}cm)으로 배출하는 경로입니다. 수평 관통 구간(${angledOrHorizLen}cm)의 하중 처짐을 막기 위해 외부 폴대/삼각대 지지대와 3방향 가이라인 고정이 반드시 필요합니다.`
+            : `난로 배치 위치의 벽면 이격(${minWallGapCm}cm) 또는 연통 도달 높이(${actualTopHeight}cm)에 주의가 필요한 상급자 세팅입니다.`;
+      } else if (effectivePathMode === "elbow45" || totalSegments > 12 || actualTopHeight > 380) {
         diffLevel = "medium";
         diffLabel = "중급 ★★☆";
         diffBadgeClass = "bg-amber-500/20 text-amber-300 border-amber-500/40";
         diffReason =
-          state.pathType === "elbow45"
-            ? `45° 엘보 2개를 사용하여 경사면/측면 홀잭(높이 ${H_jack}cm)을 대각선으로 통과하는 구성입니다. 90° 굴절보다 배기 흐름이 훨씬 원활하며, 홀잭 통과 부위에 50cm 단열 보호와 외부 고정링 스트링 지지를 해주면 안정적으로 운용할 수 있습니다.`
-            : `수직 직상형 경로이나 텐트 천장고(${H_tent}cm)가 높아 기본 3.3m 세트(12본)에 연장 직관 ${totalSegments - 12}본을 추가한 총 ${totalSegments}본 구성입니다. 상단 흔들림 방지를 위해 3방향 가이라인을 단단히 고정하세요.`;
+          effectivePathMode === "elbow45"
+            ? `${autoBypassActive ? "난로를 천장 홀잭에서 수평 " + D_horiz + "cm 이동하여 " : ""}45° 엘보 2개로 대각선 우회 통과하는 구성입니다. 90° 굴절보다 배기 흐름이 원활하며, 홀잭 부위 50cm 단열 보호와 외부 고정링 지지를 권장합니다.`
+            : `수직 직상형 경로이나 텐트 천장고(${H_tent}cm)가 높아 기본 3.3m 세트(12본)에 연장 직관 ${totalSegments - 12}본을 추가한 총 ${totalSegments}본 구성입니다. 상단 3방향 가이라인을 단단히 고정하세요.`;
       } else {
         diffLevel = "easy";
         diffLabel = "쉬움 ★☆☆";
@@ -2478,6 +2585,15 @@
         H_stove,
         H_stand,
         H_start,
+        spanCm,
+        stovePosCm,
+        jackPosCm,
+        dxToJackCm,
+        leftWallGapCm,
+        rightWallGapCm,
+        minWallGapCm,
+        effectivePathMode,
+        autoBypassActive,
         D_horiz,
         overlap,
         clearance,
@@ -2620,14 +2736,11 @@
         <text x="${tentCenterX}" y="${groundY + 30}" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">${isSideView ? "실측 전체 길이" : "실측 바닥 폭"} ${spanCm}cm</text>
       `;
 
-      let stoveCenterX = tentCenterX;
-      if (state.pathType === "straight") {
-        stoveCenterX = tentCenterX + Math.round(tentHalfW * 0.25);
-      } else if (state.pathType === "elbow45") {
-        stoveCenterX = tentCenterX + Math.round(tentHalfW * 0.15);
-      } else {
-        stoveCenterX = tentRightX - cmToPx(sim.D_horiz) - 18;
-      }
+      // Save live coordinate mapping so mouse/touch dragging translates SVG X -> real cm
+      state.lastRenderGeometry = { tentCenterX, horizScale, tentLeftX, tentRightX, spanCm };
+
+      const stoveCenterX = Math.round(tentCenterX + sim.stovePosCm * horizScale);
+      const jackTargetX = Math.round(tentCenterX + sim.jackPosCm * horizScale);
 
       const stoveW = 48;
       const standTopY = cmToY(sim.H_stand);
@@ -2636,37 +2749,38 @@
       const pipeTopY = cmToY(sim.actualTopHeight);
 
       let pipePoints = [];
-      let jackPoint = { x: stoveCenterX, y: jackY, angle: 0 };
-      let topPoint = { x: stoveCenterX, y: pipeTopY };
+      let jackPoint = { x: jackTargetX, y: jackY, angle: 0 };
+      let topPoint = { x: jackTargetX, y: pipeTopY };
 
-      if (state.pathType === "straight") {
+      if (sim.effectivePathMode === "straight") {
         pipePoints = [
           { x: stoveCenterX, y: stoveTopY },
           { x: stoveCenterX, y: pipeTopY }
         ];
         jackPoint = { x: stoveCenterX, y: jackY, angle: 0 };
         topPoint = { x: stoveCenterX, y: pipeTopY };
-      } else if (state.pathType === "elbow45") {
+      } else if (sim.effectivePathMode === "elbow45") {
         const elbow1Y = cmToY(sim.H_start + sim.indoorVertLen);
-        const jackX = stoveCenterX + cmToPx(sim.D_horiz);
         pipePoints = [
           { x: stoveCenterX, y: stoveTopY },
           { x: stoveCenterX, y: elbow1Y },
-          { x: jackX, y: jackY },
-          { x: jackX, y: pipeTopY }
+          { x: jackTargetX, y: jackY },
+          { x: jackTargetX, y: pipeTopY }
         ];
-        jackPoint = { x: jackX - 8, y: jackY + 8, angle: 45 };
-        topPoint = { x: jackX, y: pipeTopY };
+        const dirSign = jackTargetX >= stoveCenterX ? 1 : -1;
+        jackPoint = { x: jackTargetX - dirSign * 6, y: jackY + 6, angle: dirSign * 45 };
+        topPoint = { x: jackTargetX, y: pipeTopY };
       } else {
-        const outX = stoveCenterX + cmToPx(sim.angledOrHorizLen);
-        const wallJackX = stoveCenterX + cmToPx(sim.D_horiz);
+        // elbow90
+        const outDir = jackTargetX >= tentCenterX ? 1 : -1;
+        const outX = jackTargetX + outDir * Math.max(24, Math.round(35 * horizScale));
         pipePoints = [
           { x: stoveCenterX, y: stoveTopY },
           { x: stoveCenterX, y: jackY },
           { x: outX, y: jackY },
           { x: outX, y: pipeTopY }
         ];
-        jackPoint = { x: wallJackX, y: jackY, angle: 90 };
+        jackPoint = { x: jackTargetX, y: jackY, angle: 90 };
         topPoint = { x: outX, y: pipeTopY };
       }
 
@@ -2674,7 +2788,7 @@
       const polyStr = pipePoints.map((p) => `${p.x},${p.y}`).join(" ");
       pipeSvgMarkup += `<polyline points="${polyStr}" fill="none" stroke="#334155" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />`;
 
-      if (state.pathType === "straight") {
+      if (sim.effectivePathMode === "straight") {
         let curCm = sim.H_start;
         for (let i = 0; i < sim.totalSegments; i++) {
           const segEff = i === 0 ? sim.effDamperLen : sim.effPipeLen;
@@ -2837,8 +2951,12 @@
         ${tentInnerLines}
 
         ${supportPoleMarkup}
-        ${standMarkup}
-        ${stoveMarkup}
+        <g id="draggableStoveGroup" style="cursor: ew-resize;">
+          ${standMarkup}
+          ${stoveMarkup}
+          <rect x="${stoveCenterX - 30}" y="${groundY + 2}" width="60" height="15" rx="7" fill="#ea580c" stroke="#ffffff" stroke-width="1.2"/>
+          <text x="${stoveCenterX}" y="${groundY + 12.5}" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">↔ 드래그</text>
+        </g>
 
         ${pipeSvgMarkup}
         ${guylineMarkup}
@@ -3062,11 +3180,33 @@
         sim.diffLevel === "easy" ? "text-emerald-400" : sim.diffLevel === "medium" ? "text-amber-400" : "text-rose-400"
       }`;
       document.getElementById("kpiDifficultySub").textContent =
-        state.pathType === "straight"
+        sim.effectivePathMode === "straight"
           ? "수직 직상 · 엘보 0개"
-          : state.pathType === "elbow45"
-          ? "45° 경사 · 엘보 2개"
+          : sim.effectivePathMode === "elbow45"
+          ? (sim.autoBypassActive ? "위치 이동 · 45° 자동 우회" : "45° 경사 · 엘보 2개")
           : "90° 측면 · 엘보 2개 + 지지대";
+
+      // Sync interactive stove position slider & metrics
+      const posSlider = document.getElementById("stovePosSlider");
+      const maxOff = Math.max(40, Math.round(sim.spanCm / 2 - 28));
+      if (posSlider) {
+        posSlider.min = String(-maxOff);
+        posSlider.max = String(maxOff);
+        posSlider.value = String(sim.stovePosCm);
+      }
+      const posBadge = document.getElementById("stovePosReadoutBadge");
+      if (posBadge) {
+        posBadge.textContent = sim.stovePosCm === 0 ? "텐트 정중앙 (0cm)" : `중앙 기준 ${sim.stovePosCm > 0 ? "+" : ""}${sim.stovePosCm}cm`;
+      }
+      const placeMetrics = document.getElementById("stovePlacementMetrics");
+      if (placeMetrics) {
+        const wallStatusColor = sim.minWallGapCm < 45 ? "text-rose-700 font-extrabold" : "text-emerald-700 font-bold";
+        placeMetrics.innerHTML = `
+          <span>홀잭까지 수평거리: <strong class="text-orange-700">${sim.D_horiz}cm</strong></span>
+          <span>좌측 벽면 이격: <strong>${sim.leftWallGapCm}cm</strong> · 우측 벽면 이격: <strong>${sim.rightWallGapCm}cm</strong></span>
+          <span class="${wallStatusColor}">${sim.minWallGapCm < 45 ? "⚠️ 벽면 과접근 주의" : "✓ 안전 이격 확보"}</span>
+        `;
+      }
 
       document.getElementById("diagramTitleBadge").textContent = tent ? `${tent.brand} ${tent.name}` : `사용자 텐트 (높이 ${sim.H_tent}cm)`;
       document.getElementById("overlapFormulaBadge").textContent = `기본 ${sim.rawPipeLen}cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 (연통 ${sim.totalSegments}본 연결 시 ${sim.totalSegments - 1}개 마디 단축)`;
@@ -3665,6 +3805,7 @@
           } else if (pType === "elbow90" && state.horizDist === 0) {
             state.horizDist = 65;
           }
+          resetStoveAndJackPositions(true);
           syncInputsFromState();
           updateUI();
         });
@@ -3687,7 +3828,15 @@
 
       linkInputPair("tentHeightInput", "tentHeightSlider", "tentHeight");
       linkInputPair("jackHeightInput", "jackHeightSlider", "jackHeight");
-      linkInputPair("horizDistInput", "horizDistSlider", "horizDist");
+      const syncHorizMove = (val) => {
+        state.horizDist = Math.max(0, Number(val) || 0);
+        state.stovePosCm = clampStovePos(state.jackPosCm - state.horizDist);
+        document.getElementById("horizDistInput").value = state.horizDist;
+        document.getElementById("horizDistSlider").value = state.horizDist;
+        updateUI();
+      };
+      document.getElementById("horizDistInput").addEventListener("input", (e) => syncHorizMove(e.target.value));
+      document.getElementById("horizDistSlider").addEventListener("input", (e) => syncHorizMove(e.target.value));
       linkInputPair("stoveHeightInput", "stoveHeightSlider", "stoveHeight");
       linkInputPair("standHeightInput", "standHeightSlider", "standHeight");
 
@@ -3777,8 +3926,80 @@
 
       const vfBtn = document.getElementById("viewFrontBtn");
       const vsBtn = document.getElementById("viewSideBtn");
-      if (vfBtn) vfBtn.addEventListener("click", () => { state.sectionViewMode = "front"; updateUI(); });
-      if (vsBtn) vsBtn.addEventListener("click", () => { state.sectionViewMode = "side"; updateUI(); });
+      if (vfBtn) vfBtn.addEventListener("click", () => { state.sectionViewMode = "front"; resetStoveAndJackPositions(false); syncInputsFromState(); updateUI(); });
+      if (vsBtn) vsBtn.addEventListener("click", () => { state.sectionViewMode = "side"; resetStoveAndJackPositions(false); syncInputsFromState(); updateUI(); });
+
+      // Stove Position Slider & Quick Placement Buttons
+      const stovePosSliderEl = document.getElementById("stovePosSlider");
+      if (stovePosSliderEl) {
+        stovePosSliderEl.addEventListener("input", (e) => {
+          state.stovePosCm = clampStovePos(Number(e.target.value) || 0);
+          state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
+          document.getElementById("horizDistInput").value = state.horizDist;
+          document.getElementById("horizDistSlider").value = state.horizDist;
+          updateUI();
+        });
+      }
+
+      document.querySelectorAll(".stove-move-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const action = btn.getAttribute("data-move-stove");
+          const halfSpan = getCurrentSpanCm() / 2;
+          if (action === "left") {
+            state.stovePosCm = clampStovePos(-Math.round(halfSpan * 0.55));
+          } else if (action === "center") {
+            state.stovePosCm = 0;
+          } else if (action === "under_jack") {
+            state.stovePosCm = clampStovePos(state.jackPosCm);
+          } else {
+            const curTent = TENT_MODELS.find((t) => t.id === state.selectedTentId);
+            state.horizDist = curTent ? curTent.defaultHorizDist : 0;
+            resetStoveAndJackPositions(true);
+          }
+          state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
+          syncInputsFromState();
+          updateUI();
+        });
+      });
+
+      // Direct Mouse / Touch Drag & Drop of Stove inside #simSvg
+      const simSvgEl = document.getElementById("simSvg");
+      if (simSvgEl) {
+        const updateStoveFromPointer = (clientX) => {
+          if (!state.lastRenderGeometry) return;
+          const rect = simSvgEl.getBoundingClientRect();
+          if (!rect.width) return;
+          const svgX = ((clientX - rect.left) / rect.width) * 760;
+          const { tentCenterX, horizScale } = state.lastRenderGeometry;
+          if (!horizScale) return;
+          const rawCm = (svgX - tentCenterX) / horizScale;
+          state.stovePosCm = clampStovePos(rawCm);
+          state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
+          document.getElementById("horizDistInput").value = state.horizDist;
+          document.getElementById("horizDistSlider").value = state.horizDist;
+          updateUI();
+        };
+
+        simSvgEl.addEventListener("pointerdown", (e) => {
+          const targetGroup = e.target.closest("#draggableStoveGroup");
+          if (!targetGroup) return;
+          state.isDraggingStove = true;
+          try { simSvgEl.setPointerCapture(e.pointerId); } catch (err) {}
+          e.preventDefault();
+        });
+        simSvgEl.addEventListener("pointermove", (e) => {
+          if (!state.isDraggingStove) return;
+          e.preventDefault();
+          updateStoveFromPointer(e.clientX);
+        });
+        const stopDrag = (e) => {
+          if (!state.isDraggingStove) return;
+          state.isDraggingStove = false;
+          try { simSvgEl.releasePointerCapture(e.pointerId); } catch (err) {}
+        };
+        simSvgEl.addEventListener("pointerup", stopDrag);
+        simSvgEl.addEventListener("pointercancel", stopDrag);
+      }
 
       const openBpBtn = document.getElementById("openBlueprintModalBtn");
       if (openBpBtn) {
@@ -4206,6 +4427,7 @@
       }
 
       applyUrlQueryParams();
+      resetStoveAndJackPositions(true);
       renderAdminDrawerState();
       syncInputsFromState();
       updateUI();
