@@ -349,15 +349,40 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 class="text-base font-extrabold text-slate-900">🛒 이 세팅에 필요한 연통 · 부속품</h2>
-          <p class="text-xs text-slate-500 mt-0.5">이미 보유한 품목은 체크를 해제하세요. 품절 상품은 합계에서 자동 제외됩니다.</p>
+          <p class="text-xs text-slate-500 mt-0.5">난로 상세페이지 기준 <strong>기본 포함 구성품</strong>과 <strong>추가 구매 품목</strong>을 자동 구분합니다. 이미 보유한 품목은 체크를 해제하세요.</p>
         </div>
         <button id="sCopyQuoteBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold shadow-sm transition">
           <span>📋 연통 목록 복사</span>
         </button>
       </div>
 
-      <!-- Responsive Cards Grid -->
-      <div id="sBomCards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+      <!-- 난로 상세페이지 호환성 · 선택 옵션 안내 배너 -->
+      <div id="sStoveCompatBox" class="rounded-2xl bg-slate-50 border border-slate-200/90 px-4 py-3 text-xs text-slate-700 space-y-1"></div>
+
+      <!-- 3-1. 기본 포함 연통 · 부속품 (0원) -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-xs sm:text-sm font-extrabold text-emerald-800 flex items-center gap-1.5">
+            <span>📦 기본 포함 연통 · 부속품</span>
+            <span id="sIncludedStatusPill" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">난로 구매 시 기본 제공</span>
+          </h3>
+          <span class="text-[11px] font-bold text-emerald-700">추가 비용 0원</span>
+        </div>
+        <div id="sIncludedCards" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+
+      <!-- 3-2. 별도 추가 구매 연통 · 부속품 -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-xs sm:text-sm font-extrabold text-orange-800 flex items-center gap-1.5">
+            <span>🛒 추가 구매 필요 연통 · 부속품</span>
+            <span id="sExtraBuyBadge" class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-extrabold">별도 구매</span>
+          </h3>
+          <span class="text-[11px] text-slate-500">품절 상품 합계 자동 제외</span>
+        </div>
+        <!-- Responsive Cards Grid -->
+        <div id="sBomCards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+      </div>
 
       <!-- Total Bar -->
       <div class="rounded-2xl bg-slate-900 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -440,19 +465,62 @@
 
       // === 공용 부속 및 스탠드 ===
       p_guide_ring: { id: "p_guide_ring", mat: "both", name: "티타늄 76파이 연통 고정링 (가이드링)", price: 8500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12673273220" },
-      p_stand_550: { id: "p_stand_550", mat: "both", name: "유니버셜 스탠드 550 (55cm)", price: 115000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12412259304" }
+      p_stand_550: { id: "p_stand_550", mat: "both", name: "유니버셜 스탠드 550 (55cm)", price: 115000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12412259304" },
+      p_dweller_stand: { id: "p_dweller_stand", mat: "both", name: "포몰리 드웰러 맥스 전용 철재 수납 스탠드", price: 299000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11225250383" }
     };
 
     const STOVES = [
-      // 스테인리스 난로 (스테인리스 연통 전용)
-      { id: "mstove_v3", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v3 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v3" },
-      { id: "mstove_v2_down", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v2 다운사이징 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v2_down" },
-      { id: "mjolnir_ddakkung", mat: "stainless", name: "[스텐] 캠핑투게더 묠니르 + 따꿍 키트 (38cm)", h: 38, pipe: "tapered_70_73_76", pid: "p_mjolnir_ddakkung" },
-      { id: "dweller_max3", mat: "stainless", name: "[스텐] 포몰리 드웰러 맥스 3 다리펼침 (49cm)", h: 49, pipe: "single_70", pid: "p_dweller_max3" },
-      // 티타늄 난로 (티타늄 연통 전용)
-      { id: "lumora_ti", mat: "titanium", name: "[티타늄] 포몰리 루모라 Ti 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_lumora_ti" },
-      { id: "dweller_ti3", mat: "titanium", name: "[티타늄] 포몰리 드웰러 맥스 티아이 3 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_dweller_ti3" },
-      { id: "pomoly_xti5", mat: "titanium", name: "[티타늄] 포몰리 엑스-티아이 5 / X-Ti 5 (35cm)", h: 35, pipe: "ti_nested_70_76", pid: "p_pomoly_xti5" }
+      // 스테인리스 난로 (스테인리스 연통 전용 · 상세페이지 기본 구성품 & 옵션 호환 반영)
+      {
+        id: "mstove_v3", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v3 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v3",
+        includedPipes: 12, includedRings: 0, isRollPipe: false,
+        compatDia: "스텐 Ø70-73-76mm (76파이 연장 시 3중 겹침 수납 호환)",
+        includedSummary: "스텐 70-73-76파이 3.3m 연통 세트 총 12본 (Ø70 댐퍼 1 + Ø70 직관 4 + Ø70-73 레듀셔 1 + Ø73 직관 4 + Ø73-76 레듀셔 1 + Ø76 최상단 1)",
+        optionsNote: "상세페이지 옵션: 난로 수납가방 · 유니버셜 스탠드 550(55cm) · 스탠드 가방 · 펠릿연소기 도킹툴"
+      },
+      {
+        id: "mstove_v2_down", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v2 다운사이징 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v2_down",
+        includedPipes: 12, includedRings: 0, isRollPipe: false,
+        compatDia: "스텐 Ø70-73-76mm (후렌지·70/73/76 단품 호환)",
+        includedSummary: "스텐 70-73-76파이 3.3m 연통 세트 총 12본 (Ø70 댐퍼 1 + 직관 8 + 레듀셔 2 + Ø76 상단 1)",
+        optionsNote: "상세페이지 옵션/호환: 펠릿연소기 도킹툴 · 연통 후렌지 · 70/73/76파이 연장 직관 · 70파이 엘보"
+      },
+      {
+        id: "mjolnir_ddakkung", mat: "stainless", name: "[스텐] 캠핑투게더 묠니르 + 따꿍 키트 (38cm)", h: 38, pipe: "tapered_70_73_76", pid: "p_mjolnir_ddakkung",
+        includedPipes: 0, includedRings: 0, isRollPipe: false,
+        compatDia: "스텐 Ø70mm 베이스 (70-73-76파이 3.3m 세트 · 70파이 댐퍼/직관 호환)",
+        includedSummary: "기본 포함 연통 없음 (묠니르 화로대 업그레이드 키트 — 연통 세트 별도 구매 필수)",
+        optionsNote: "상세페이지 옵션/호환: 연통 후렌지 · 70-73-76파이 3.3m 연통 세트 · 70파이 댐퍼 연통"
+      },
+      {
+        id: "dweller_max3", mat: "stainless", name: "[스텐] 포몰리 드웰러 맥스 3 다리펼침 (49cm)", h: 49, pipe: "single_70", pid: "p_dweller_max3",
+        includedPipes: 9, includedRings: 1, isRollPipe: false,
+        compatDia: "스텐 Ø70-75mm (304SS 70파이/75파이 직관·레듀셔 호환)",
+        includedSummary: "스텐 연통 총 9본 (직관 8본 + 불티방지캡 연통 1본, 약 2.3~2.6m) + 연통 고정링 1개",
+        optionsNote: "상세페이지 옵션/호환: 포몰리 드웰러 철재 스탠드 · 70/75파이 30cm 직관 · Ø70-75 레듀셔 · 70/75파이 이중연통"
+      },
+      // 티타늄 난로 (티타늄 연통 전용 · 상세페이지 기본 구성품 & 옵션 호환 반영)
+      {
+        id: "lumora_ti", mat: "titanium", name: "[티타늄] 포몰리 루모라 Ti 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_lumora_ti",
+        includedPipes: 10, includedRings: 1, isRollPipe: false,
+        compatDia: "티타늄 Ø70-76mm (포몰리 티타늄 네스티드 연통·70파이 티타늄 엘보 호환)",
+        includedSummary: "티타늄 70-76파이 네스티드 연통 3m 세트 총 10본 (직관 9본 + 불티방지캡 관 1본) + 고정링 1개",
+        optionsNote: "상세페이지 옵션/호환: 티타늄 70·76파이 단품 연통 · 티타늄 70파이 엘보(45°/90°) · 티타늄 스킨 홀잭 보호망"
+      },
+      {
+        id: "dweller_ti3", mat: "titanium", name: "[티타늄] 포몰리 드웰러 맥스 티아이 3 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_dweller_ti3",
+        includedPipes: 10, includedRings: 1, isRollPipe: false,
+        compatDia: "티타늄 Ø70-76mm (포몰리 티타늄 네스티드 연통·70파이 티타늄 엘보 호환)",
+        includedSummary: "티타늄 70-76파이 네스티드 연통 3m 세트 총 10본 (직관 9본 + 불티방지캡 관 1본) + 고정링 1개",
+        optionsNote: "상세페이지 옵션/호환: 포몰리 드웰러 철재 스탠드 · 티타늄 70·76파이 단품 · 티타늄 70파이 엘보 · 티타늄 보호망"
+      },
+      {
+        id: "pomoly_xti5", mat: "titanium", name: "[티타늄] 포몰리 엑스-티아이 5 / X-Ti 5 (35cm)", h: 35, pipe: "ti_nested_70_76", pid: "p_pomoly_xti5",
+        includedPipes: 10, includedRings: 1, isRollPipe: true,
+        compatDia: "티타늄 Ø70mm (롤타입 3m 기본 포함 · 원통형 70파이 티타늄 연통 세트 호환)",
+        includedSummary: "티타늄 Ø70mm 롤타입(말아쓰는) 연통 3m + 댐퍼 베이스 + 불티방지캡 + 고정 클립 3개",
+        optionsNote: "상세페이지 별매 옵션: 티타늄 랜턴 스탠드 · 티타늄 측면 선반(오덕 겸용) · 원통형 70파이 티타늄 연통·엘보 호환"
+      }
     ];
 
     function getActiveStove() {
@@ -990,50 +1058,112 @@
     }
 
     function buildBom(sim) {
-      const list = [];
-      const add = (pid, qty, cat, note) => {
+      const stoveObj = getActiveStove();
+      const isTi = stoveObj.mat === "titanium";
+      const includedList = [];
+      const buyList = [];
+
+      const addBuy = (pid, qty, cat, note) => {
+        if (!qty || qty <= 0) return;
         const p = PRODUCTS[pid];
         if (!p) return;
-        list.push({ id: pid, cat, name: note ? `${p.name} · ${note}` : p.name, qty, unit: p.price, url: p.url, soldOut: /품절/.test(p.status) });
+        buyList.push({ id: pid, cat, name: note ? `${p.name} · ${note}` : p.name, qty, unit: p.price, url: p.url, soldOut: /품절/.test(p.status) });
       };
-      const isTi = getActiveStove().mat === "titanium";
 
-      if (isTi) {
-        // 티타늄 난로 -> 100% 티타늄 연통·부속 전용 구성
-        if (st.pipeSys === "ti_nested_83_89") {
-          add("p_ti_set_83_89", 1, "티타늄 연통 세트");
-          if (sim.totalSeg > 10) add("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
-        } else if (st.pipeSys === "ti_single_70_76") {
-          add("p_ti_damper_base", 1, "티타늄 댐퍼 베이스");
-          add("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
-        } else {
-          add("p_ti_set_70_76", 1, "티타늄 연통 세트");
-          if (sim.totalSeg > 10) add("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
-        }
-        if (sim.elbowCnt > 0) add("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
-        add("p_ti_guard_70", 1, "스킨 보호");
-        add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "티타늄 외부 고정링");
-      } else {
-        // 스테인리스 난로 -> 100% 스테인리스 연통·부속 전용 구성
-        if (st.pipeSys === "tapered_70_73_76") {
-          add("p_set_33m", 1, "스텐 기본 세트");
-          if (sim.totalSeg > 12) add("p_pipe_76", sim.totalSeg - 12, "스텐 추가 직관");
-        } else if (st.pipeSys === "single_70") {
-          add("p_damper_70", 1, "스텐 하단 댐퍼");
-          add("p_pipe_70", sim.straightCnt, "스텐 직관 연통");
-        } else {
-          add("p_reducer_70_75", 1, "스텐 구경 레듀셔");
-          add("p_pipe_75", sim.straightCnt, "스텐 직관 연통");
-          add("p_spark_cap_75", 1, "스텐 최상단 불티캡");
-        }
-        if (sim.elbowCnt > 0) add(st.pipeSys === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCnt, `스텐 ${sim.elbowAng}° 엘보`);
-        if (st.protSys === "double_pipe" || st.protSys === "both_guard") add(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
-        if (st.protSys === "mesh_guard" || st.protSys === "both_guard") add("p_mesh_guard", 1, "스킨 보호");
-        add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "외부 고정링");
+      // 1) 난로 상세페이지 기준 기본 포함 구성품 산출
+      const incPipes = Number(stoveObj.includedPipes) || 0;
+      const incRings = Number(stoveObj.includedRings) || 0;
+      const needRings = sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1;
+      const extraRings = Math.max(0, needRings - incRings);
+
+      if (incPipes > 0) {
+        const useLabel = stoveObj.isRollPipe
+          ? `3m 롤연통 기본 사용 (유효 약 300cm)`
+          : (sim.totalSeg <= incPipes
+            ? `기본 ${incPipes}본 중 ${sim.totalSeg}본 사용 (추가 직관 불필요)`
+            : `기본 ${incPipes}본 전체 사용 + ${sim.totalSeg - incPipes}본 추가 필요`);
+        includedList.push({
+          cat: stoveObj.isRollPipe ? "기본 포함 롤연통" : "기본 포함 연통",
+          name: stoveObj.includedSummary,
+          detail: useLabel
+        });
+      }
+      if (incRings > 0) {
+        includedList.push({
+          cat: "기본 포함 고정 부품",
+          name: stoveObj.isRollPipe ? "티타늄 연통 고정 클립 3개 + 댐퍼 베이스 + 불티방지캡" : "연통 고정링 (가이드링) 1개 + 불티방지캡",
+          detail: extraRings > 0 ? `강풍·장연통 대비 고정링 ${extraRings}개 추가 권장` : "기본 포함 고정링으로 충분"
+        });
       }
 
-      if (sim.H_stand >= 50) add("p_stand_550", 1, "난로 스탠드");
-      return list;
+      // 2) 별도 추가 구매가 필요한 연통 · 부속품만 산출
+      if (isTi) {
+        // 티타늄 난로 -> 100% 티타늄 연통·부속 전용 구성
+        if (stoveObj.isRollPipe) {
+          // X-Ti 5: 롤타입 3m 기본 포함. 엘보 굴절이거나 3m(10본) 초과 시 원통형 티타늄 연통 안내
+          if (sim.elbowCnt > 0 || sim.totalSeg > incPipes) {
+            const extraCnt = Math.max(1, sim.totalSeg - incPipes);
+            addBuy("p_ti_pipe_70_76", extraCnt, "티타늄 추가 직관", sim.elbowCnt > 0 ? "엘보 연결·원통형 확장용" : `기본 3m 초과 ${extraCnt}본`);
+          }
+        } else if (incPipes === 0) {
+          if (st.pipeSys === "ti_nested_83_89") {
+            addBuy("p_ti_set_83_89", 1, "티타늄 연통 세트");
+            if (sim.totalSeg > 10) addBuy("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+          } else if (st.pipeSys === "ti_single_70_76") {
+            addBuy("p_ti_damper_base", 1, "티타늄 댐퍼 베이스");
+            addBuy("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
+          } else {
+            addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
+            if (sim.totalSeg > 10) addBuy("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+          }
+        } else if (sim.totalSeg > incPipes) {
+          const extraTi = sim.totalSeg - incPipes;
+          addBuy("p_ti_pipe_70_76", extraTi, "티타늄 추가 직관", `기본 ${incPipes}본 초과분 (+${extraTi * sim.effPipe}cm)`);
+        }
+
+        if (sim.elbowCnt > 0) addBuy("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
+        addBuy("p_ti_guard_70", 1, "스킨 보호");
+        if (extraRings > 0) addBuy("p_guide_ring", extraRings, "티타늄 외부 고정링", "추가 고정용");
+      } else {
+        // 스테인리스 난로 -> 100% 스테인리스 연통·부속 전용 구성
+        if (incPipes === 0) {
+          // 묠니르+따꿍 키트 등 연통 미포함 모델 -> 기본 세트/단품 전체 구매 필요
+          if (st.pipeSys === "tapered_70_73_76") {
+            addBuy("p_set_33m", 1, "스텐 기본 세트", "연통 미포함 모델 필수");
+            if (sim.totalSeg > 12) addBuy("p_pipe_76", sim.totalSeg - 12, "스텐 추가 직관");
+          } else if (st.pipeSys === "single_70") {
+            addBuy("p_damper_70", 1, "스텐 하단 댐퍼");
+            addBuy("p_pipe_70", sim.straightCnt, "스텐 직관 연통");
+          } else {
+            addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔");
+            addBuy("p_pipe_75", sim.straightCnt, "스텐 직관 연통");
+            addBuy("p_spark_cap_75", 1, "스텐 최상단 불티캡");
+          }
+        } else if (sim.totalSeg > incPipes) {
+          // 엠스토브 v3/v2(12본 포함), 드웰러 맥스 3(9본 포함) -> 초과분만 추가 구매!
+          const extraSt = sim.totalSeg - incPipes;
+          if (st.pipeSys === "tapered_70_73_76") {
+            addBuy("p_pipe_76", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분 · 3중 겹침 수납 호환`);
+          } else if (st.pipeSys === "single_75") {
+            addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔", "Ø70→Ø75 변환");
+            addBuy("p_pipe_75", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+          } else {
+            addBuy("p_pipe_70", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+          }
+        }
+
+        if (sim.elbowCnt > 0) addBuy(st.pipeSys === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCnt, `스텐 ${sim.elbowAng}° 엘보`);
+        if (st.protSys === "double_pipe" || st.protSys === "both_guard") addBuy(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
+        if (st.protSys === "mesh_guard" || st.protSys === "both_guard") addBuy("p_mesh_guard", 1, "스킨 보호");
+        if (extraRings > 0) addBuy("p_guide_ring", extraRings, "외부 고정링");
+      }
+
+      if (sim.H_stand >= 50) {
+        const isDweller = stoveObj.id === "dweller_max3" || stoveObj.id === "dweller_ti3";
+        addBuy(isDweller ? "p_dweller_stand" : "p_stand_550", 1, "난로 옵션 스탠드");
+      }
+
+      return { includedList, buyList, incPipes, extraPipeNeeded: Math.max(0, sim.totalSeg - incPipes) };
     }
 
     function render() {
@@ -1112,9 +1242,64 @@
 
       drawSvg(sim);
 
-      const items = buildBom(sim);
+      const { includedList, buyList, incPipes, extraPipeNeeded } = buildBom(sim);
+
+      // 난로 호환성 & 상세페이지 옵션 안내 렌더링
+      const compatBox = document.getElementById("sStoveCompatBox");
+      if (compatBox) {
+        compatBox.innerHTML = `
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="font-extrabold text-slate-900">🔧 ${escapeHtml(stoveObj.name)} 호환 규격:</span>
+            <span class="font-bold ${stoveObj.mat === "titanium" ? "text-indigo-700" : "text-orange-700"}">${escapeHtml(stoveObj.compatDia)}</span>
+          </div>
+          <div class="text-[11px] text-slate-600">🧩 ${escapeHtml(stoveObj.optionsNote)}</div>
+        `;
+      }
+
+      // 기본 포함 연통·부속품 카드 렌더링
+      const incStatusPill = document.getElementById("sIncludedStatusPill");
+      if (incStatusPill) {
+        if (incPipes === 0) {
+          incStatusPill.textContent = "연통 미포함 모델 (별도 구매 필요)";
+          incStatusPill.className = "px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold";
+        } else if (extraPipeNeeded === 0) {
+          incStatusPill.textContent = `기본 ${incPipes}본으로 높이 충족 ✓`;
+          incStatusPill.className = "px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold";
+        } else {
+          incStatusPill.textContent = `기본 ${incPipes}본 포함 · +${extraPipeNeeded}본 추가 필요`;
+          incStatusPill.className = "px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-extrabold";
+        }
+      }
+
+      const incCardsEl = document.getElementById("sIncludedCards");
+      if (incCardsEl) {
+        if (includedList.length === 0) {
+          incCardsEl.innerHTML = `
+            <div class="sm:col-span-2 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3 text-xs text-amber-900 font-semibold">
+              ℹ️ 선택한 <strong>${escapeHtml(stoveObj.name)}</strong>은 기본 포함 연통이 없는 모델입니다. 아래 추가 구매 목록에서 연통 세트를 함께 준비해 주세요.
+            </div>
+          `;
+        } else {
+          incCardsEl.innerHTML = includedList.map((inc) => `
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 space-y-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-extrabold">✓ ${escapeHtml(inc.cat)}</span>
+                <span class="text-[11px] font-extrabold text-emerald-700">기본 포함 (0원)</span>
+              </div>
+              <div class="text-xs font-bold text-slate-900 leading-snug pt-0.5">${escapeHtml(inc.name)}</div>
+              <div class="text-[11px] font-semibold text-emerald-800">${escapeHtml(inc.detail)}</div>
+            </div>
+          `).join("");
+        }
+      }
+
+      const extraBadgeEl = document.getElementById("sExtraBuyBadge");
+      if (extraBadgeEl) {
+        extraBadgeEl.textContent = buyList.length === 0 ? "추가 구매 없음" : `${buyList.length}개 품목`;
+      }
+
       let sum = 0, qtySum = 0;
-      const cards = items.map((it) => {
+      const cards = buyList.map((it) => {
         const inc = !it.soldOut && !st.excluded[it.id];
         const sub = it.qty * it.unit;
         if (inc) { sum += sub; qtySum += it.qty; }
@@ -1138,7 +1323,9 @@
         `;
       });
 
-      document.getElementById("sBomCards").innerHTML = cards.join("");
+      document.getElementById("sBomCards").innerHTML = cards.length > 0
+        ? cards.join("")
+        : `<div class="sm:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-xs font-bold text-emerald-800">✓ 난로 기본 포함 연통·부속품만으로 설치가 가능합니다. 별도 추가 구매 품목이 없습니다.</div>`;
       const copyBtn = document.getElementById("sCopyQuoteBtn");
       if (sim.blocked) {
         document.getElementById("sTotalQty").textContent = "추천 보류";
@@ -1146,20 +1333,22 @@
         document.getElementById("sTotalSub").textContent = "상단 경고의 [자동 보정] 버튼을 눌러 조건을 맞춰 주세요.";
         copyBtn.disabled = true;
       } else {
-        document.getElementById("sTotalQty").textContent = `총 ${qtySum}개 선택`;
+        document.getElementById("sTotalQty").textContent = `추가 구매 ${qtySum}개 선택`;
         document.getElementById("sTotalPrice").textContent = formatKRW(sum);
         const stoveP = stoveObj.pid ? PRODUCTS[stoveObj.pid] : null;
         document.getElementById("sTotalSub").textContent = stoveP ? `난로(${stoveP.name} ${formatKRW(stoveP.price)}) 포함 시 ${formatKRW(sum + stoveP.price)}` : "보유 난로 기준 추가 연통 합계";
         copyBtn.disabled = false;
       }
 
-      // 7a, 7b. 연통 목록 복사 텍스트 ("연통 총 높이", "스킨 보호")
+      // 7a, 7b. 연통 목록 복사 텍스트 (기본 포함 + 추가 구매 구분)
       st.lastQuoteText = [
         `[캠핑투게더 연통 시뮬레이터 연통 목록]`,
         `- 텐트: ${t.name} (천장 ${sim.H_tent}cm / 홀잭 ${sim.H_jack}cm)`,
         `- 난로: ${stoveObj.name} (난로 ${sim.H_stove}cm + 스탠드 ${sim.H_stand}cm = 출발 ${sim.H_start}cm)`,
         `- 연통 총 높이: ${sim.topH}cm (천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm · 총 ${sim.totalSeg}본 · 난이도 ${sim.diff})`,
-        ...items.filter((it) => !it.soldOut && !st.excluded[it.id]).map((it) => `  · ${it.cat}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unit)}) → ${it.url}`),
+        `- [기본 포함 연통·부속]: ${includedList.length ? includedList.map((x) => `${x.name} (${x.detail})`).join(" / ") : "없음"}`,
+        `- [추가 구매 필요 품목]:`,
+        ...buyList.filter((it) => !it.soldOut && !st.excluded[it.id]).map((it) => `  · ${it.cat}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unit)}) → ${it.url}`),
         `- 추가 구매 합계: ${formatKRW(sum)}`
       ].join("\n");
     }
