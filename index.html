@@ -1389,10 +1389,6 @@
 
       // Cross-Navigation to Pro / Full Version (preserves current inputs)
       document.getElementById("goProVersionBtn").addEventListener("click", () => {
-        const pathname = (window.location && window.location.pathname) ? window.location.pathname : "";
-        const targetFile = pathname.includes("camping_together_simple_simulator")
-          ? "./camping_together_chimney_simulator.html"
-          : "./pro.html";
         const curTent = TENTS.find((x) => x.id === st.tentId);
         const params = new URLSearchParams();
         params.set("tent", st.tentId);
@@ -1403,7 +1399,25 @@
         params.set("st", String(st.standH));
         params.set("path", st.path);
         params.set("pipe", st.pipeSys);
-        window.location.href = `${targetFile}?${params.toString()}`;
+
+        const protocol = window.location ? window.location.protocol : "";
+        const isNavigable = protocol === "http:" || protocol === "https:" || protocol === "file:";
+        if (!isNavigable) {
+          const fallbackUrl = `https://stove-iota.vercel.app/pro.html?${params.toString()}`;
+          window.open(fallbackUrl, "_blank", "noopener,noreferrer");
+          showToast("미리보기 환경에서는 상세 버전을 새 창으로 엽니다.");
+          return;
+        }
+        try {
+          const pathname = window.location.pathname || "";
+          const targetFile = pathname.includes("camping_together_simple_simulator")
+            ? "./camping_together_chimney_simulator.html"
+            : "./pro.html";
+          const resolvedUrl = new URL(`${targetFile}?${params.toString()}`, window.location.href).href;
+          window.location.href = resolvedUrl;
+        } catch (err) {
+          showToast("페이지 이동 경로를 생성할 수 없습니다.");
+        }
       });
 
       // Restore incoming query params when switching from Full -> Simple
