@@ -121,9 +121,6 @@
       <!-- Optional Expandable Formula Box -->
       <div id="formulaBox" class="hidden mx-4 sm:mx-6 mt-3 rounded-2xl bg-amber-50/90 border border-amber-200 p-3 text-xs text-slate-700 font-mono leading-relaxed"></div>
 
-      <!-- Safety Alert / Auto-Fix Box -->
-      <div id="alertBox" class="hidden mx-4 sm:mx-6 mt-3 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 space-y-2"></div>
-
       <!-- MAIN INTERACTIVE DRAWING CANVAS -->
       <div class="p-3 sm:p-5">
         <div class="relative rounded-2xl bg-gradient-to-b from-sky-50/60 via-slate-50/80 to-slate-100/80 border border-slate-200/80 overflow-hidden">
@@ -149,6 +146,9 @@
             <button type="button" data-pos-act="reset" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">↺ 초기화</button>
           </div>
         </div>
+
+        <!-- Safety Alert / Auto-Fix Box (placed below SVG to prevent layout shift during drag) -->
+        <div id="alertBox" class="hidden mt-3 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 space-y-2"></div>
       </div>
     </section>
 
@@ -175,7 +175,7 @@
               class="flex-1 min-w-0 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none" />
             <button id="sTentSearchBtn" type="button"
               class="px-3 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition shadow-sm">
-              검색
+              AI 검색
             </button>
           </div>
           <div id="sTentSuggestBox" class="hidden max-h-44 overflow-y-auto rounded-xl bg-white border border-slate-200 divide-y divide-slate-100 shadow-lg"></div>
@@ -573,12 +573,13 @@
     function drawSvg(sim) {
       const svg = document.getElementById("heroSvg");
       const W = 800, H = 440, gY = 394;
-      const maxH = Math.max(sim.topH + 35, sim.H_tent + 55, 360);
+      const baseMaxH = Math.max(sim.H_tent + 150, sim.topH + 25, 395);
+      const maxH = (st.dragging && st.lockedMaxH) ? Math.max(st.lockedMaxH, sim.topH + 20) : baseMaxH;
       const scaleY = (gY - 40) / maxH;
       const yOf = (cm) => Math.round(gY - cm * scaleY);
       const t = getTent();
-      const cx = sim.effMode === "straight" ? 390 : 320;
-      const maxHalf = sim.effMode === "straight" ? 260 : 230;
+      const cx = 365;
+      const maxHalf = 235;
       const scaleX = Math.min(scaleY, (maxHalf * 2) / Math.max(240, sim.span));
       const halfW = Math.round((sim.span / 2) * scaleX);
       const lx = cx - halfW, rx = cx + halfW, py = yOf(sim.H_tent);
@@ -1003,18 +1004,21 @@
       svg.addEventListener("pointerdown", (e) => {
         if (!e.target.closest("#sDragStove")) return;
         st.dragging = true;
+        st.dragGeom = st.geom ? { cx: st.geom.cx, scaleX: st.geom.scaleX } : { cx: 365, scaleX: 1 };
+        const curSim = compute();
+        st.lockedMaxH = Math.max(curSim.H_tent + 150, curSim.topH + 25, 395);
         try { svg.setPointerCapture(e.pointerId); } catch (err) {}
         e.preventDefault();
       });
       svg.addEventListener("pointermove", (e) => {
-        if (!st.dragging || !st.geom) return;
+        if (!st.dragging || !st.dragGeom) return;
         const r = svg.getBoundingClientRect();
         if (!r.width) return;
         const xSvg = ((e.clientX - r.left) / r.width) * 800;
-        st.stovePosCm = clampPos((xSvg - st.geom.cx) / st.geom.scaleX);
+        st.stovePosCm = clampPos((xSvg - st.dragGeom.cx) / st.dragGeom.scaleX);
         scheduleRender();
       });
-      const stopDrag = (e) => { if (!st.dragging) return; st.dragging = false; try { svg.releasePointerCapture(e.pointerId); } catch (err) {} render(); };
+      const stopDrag = (e) => { if (!st.dragging) return; st.dragging = false; st.dragGeom = null; st.lockedMaxH = null; try { svg.releasePointerCapture(e.pointerId); } catch (err) {} render(); };
       svg.addEventListener("pointerup", stopDrag);
       svg.addEventListener("pointercancel", stopDrag);
 
@@ -1256,27 +1260,120 @@
         });
       };
 
-      const runSimpleSearch = () => {
+
+    const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v1";
+    function readAiTentCache(q) {
+      try {
+        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+        return map[normalizeSearchStr(q)] || null;
+      } catch (e) { return null; }
+    }
+    function writeAiTentCache(q, payload) {
+      try {
+        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+        map[normalizeSearchStr(q)] = payload;
+        const keys = Object.keys(map);
+        if (keys.length > 50) delete map[keys[0]];
+        localStorage.setItem(AI_TENT_CACHE_KEY, JSON.stringify(map));
+      } catch (e) {}
+    }
+    async function fetchAiTentSpecFromWeb(query) {
+      const cached = readAiTentCache(query);
+      if (cached && cached.ok && cached.tent) return { ...cached, fromLocalCache: true };
+      const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+      const apiUrl = isHttp ? `/api/tent-search?q=${encodeURIComponent(query)}` : null;
+      if (!apiUrl) {
+        return { ok: false, code: "LOCAL_PREVIEW", error: "로컬 미리보기 환경에서는 Vercel 배포 후 AI 웹 검색이 자동 연동됩니다." };
+      }
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 16000);
+      try {
+        const res = await fetch(apiUrl, { signal: ctrl.signal });
+        clearTimeout(timer);
+        const data = await res.json().catch(() => null);
+        if (res.ok && data && data.ok && data.tent) {
+          writeAiTentCache(query, data);
+          return data;
+        }
+        return data || { ok: false, code: "HTTP_ERR", error: "웹 제원 검색 결과를 찾지 못했습니다." };
+      } catch (err) {
+        clearTimeout(timer);
+        return { ok: false, code: "NETWORK_ERR", error: "AI 검색 서버 연결에 실패했습니다." };
+      }
+    }
+
+      function applyAiResultSimple(data, originalQuery) {
+        const t = data.tent;
+        const label = `${t.brand ? t.brand + " " : ""}${t.name || originalQuery}`.trim();
+        st.tentId = "custom";
+        st.tentH = t.peakHeight;
+        st.jackH = t.jackHeight;
+        if (["straight", "elbow45", "elbow90"].includes(t.defaultPath)) st.path = t.defaultPath;
+        const cust = TENTS.find((x) => x.id === "custom");
+        if (cust) {
+          cust.w = t.tentWidth || 340;
+          cust.l = t.tentLength || 420;
+          cust.h = t.peakHeight;
+          cust.jh = t.jackHeight;
+          cust.shape = t.shape || "dome";
+        }
+        resetPos();
+        syncInputs();
+        render();
+        sFallback.classList.add("hidden");
+        const srcHtml = (Array.isArray(data.sources) && data.sources.length > 0)
+          ? ` · <a href="${sanitizeUrl(data.sources[0].url)}" target="_blank" rel="noopener noreferrer" class="underline font-bold">출처 확인 ↗</a>`
+          : "";
+        sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
+        sFb.innerHTML = `🤖 <strong>AI 웹 검색 자동입력 완료:</strong> ${escapeHtml(label)} (최고높이 ${t.peakHeight}cm · 폭 ${t.tentWidth}cm · 홀잭 ${t.jackHeight}cm${t.jackEstimated ? " 추정" : ""})${srcHtml}`;
+        sFb.classList.remove("hidden");
+        showToast(`AI가 ${label} 제원을 찾아 자동 입력했습니다!`);
+      }
+
+      const runSimpleSearch = async (forceWebAi = false) => {
         const q = sInput.value.trim();
         if (!q) { showToast("검색할 텐트 모델명을 입력해 주세요."); return; }
-        const matches = searchTentCandidatesSimple(q);
-        if (matches.length > 0) {
-          sInput.value = matches[0].displayName;
-          applySearchedTentSimple(matches[0]);
+        sSuggest.classList.add("hidden");
+        if (!forceWebAi) {
+          const matches = searchTentCandidatesSimple(q);
+          if (matches.length > 0) {
+            sInput.value = matches[0].displayName;
+            applySearchedTentSimple(matches[0]);
+            return;
+          }
+        }
+        // Not in built-in DB (or forced): Call Live Web AI Search (/api/tent-search)
+        sFallback.classList.add("hidden");
+        sBtn.disabled = true;
+        sBtn.textContent = "검색중...";
+        sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-sky-50 border border-sky-200 text-sky-800";
+        sFb.innerHTML = `🤖 AI가 인터넷(구글·네이버)에서 <strong>"${escapeHtml(q)}"</strong> 텐트 사이즈를 확인하는 중입니다...`;
+        sFb.classList.remove("hidden");
+
+        const aiRes = await fetchAiTentSpecFromWeb(q);
+        sBtn.disabled = false;
+        sBtn.textContent = "AI 검색";
+
+        if (aiRes && aiRes.ok && aiRes.tent) {
+          applyAiResultSimple(aiRes, q);
         } else {
-          sSuggest.classList.add("hidden");
           sFb.classList.add("hidden");
           const sq = encodeURIComponent(`${q} 텐트 높이 제원 규격`);
           sNaver.href = `https://search.naver.com/search.naver?query=${sq}`;
           sGoogle.href = `https://www.google.com/search?q=${sq}`;
-          sFbMsg.textContent = `"${q}" 모델이 내장 DB에 없습니다. 아래 버튼으로 공식 제원을 확인한 뒤 치수 문구를 붙여넣으면 자동으로 입력됩니다.`;
+          const reason = (aiRes && aiRes.code === "NO_API_KEY")
+            ? "Vercel 환경변수(GEMINI_API_KEY) 설정 후 AI 자동검색이 작동합니다. 지금은 아래에서 제원을 복사·붙여넣기해 바로 적용할 수 있습니다."
+            : (aiRes && aiRes.code === "LOCAL_PREVIEW")
+              ? "실제 배포 사이트(Vercel)에서는 AI가 인터넷에서 자동 검색합니다. 현재 미리보기에서는 아래 버튼으로 제원을 복사·붙여넣기해 주세요."
+              : `"${q}"의 정확한 공식 치수를 찾지 못했습니다. 아래에서 제원을 확인해 붙여넣으면 자동 입력됩니다.`;
+          sFbMsg.textContent = reason;
           sFallback.classList.remove("hidden");
         }
       };
 
       sInput.addEventListener("input", () => renderSimpleSuggestions(sInput.value));
       sInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runSimpleSearch(); } });
-      sBtn.addEventListener("click", runSimpleSearch);
+      sBtn.addEventListener("click", () => runSimpleSearch(false));
       document.addEventListener("click", (e) => {
         if (!sInput.contains(e.target) && !sSuggest.contains(e.target)) sSuggest.classList.add("hidden");
       });
