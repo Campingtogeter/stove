@@ -320,7 +320,7 @@
                   class="flex-1 min-w-0 rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:border-orange-500 focus:outline-none" />
                 <button id="custTentSearchBtn" type="button"
                   class="px-3 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold whitespace-nowrap transition shadow-sm">
-                  검색·적용
+                  AI 검색·적용
                 </button>
               </div>
               <div id="custTentSuggestBox" class="hidden max-h-48 overflow-y-auto rounded-lg bg-slate-950 border border-slate-700 divide-y divide-slate-800 shadow-xl"></div>
@@ -5502,27 +5502,115 @@
         });
       };
 
-      const runSearch = () => {
+
+    const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v1";
+    function readAiTentCache(q) {
+      try {
+        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+        return map[normalizeSearchStr(q)] || null;
+      } catch (e) { return null; }
+    }
+    function writeAiTentCache(q, payload) {
+      try {
+        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+        map[normalizeSearchStr(q)] = payload;
+        const keys = Object.keys(map);
+        if (keys.length > 50) delete map[keys[0]];
+        localStorage.setItem(AI_TENT_CACHE_KEY, JSON.stringify(map));
+      } catch (e) {}
+    }
+    async function fetchAiTentSpecFromWeb(query) {
+      const cached = readAiTentCache(query);
+      if (cached && cached.ok && cached.tent) return { ...cached, fromLocalCache: true };
+      const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+      const apiUrl = isHttp ? `/api/tent-search?q=${encodeURIComponent(query)}` : null;
+      if (!apiUrl) {
+        return { ok: false, code: "LOCAL_PREVIEW", error: "로컬 미리보기 환경에서는 Vercel 배포 후 AI 웹 검색이 자동 연동됩니다." };
+      }
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 16000);
+      try {
+        const res = await fetch(apiUrl, { signal: ctrl.signal });
+        clearTimeout(timer);
+        const data = await res.json().catch(() => null);
+        if (res.ok && data && data.ok && data.tent) {
+          writeAiTentCache(query, data);
+          return data;
+        }
+        return data || { ok: false, code: "HTTP_ERR", error: "웹 제원 검색 결과를 찾지 못했습니다." };
+      } catch (err) {
+        clearTimeout(timer);
+        return { ok: false, code: "NETWORK_ERR", error: "AI 검색 서버 연결에 실패했습니다." };
+      }
+    }
+
+      function applyAiResultFull(data, originalQuery) {
+        const item = data.tent;
+        const label = `${item.brand ? item.brand + " " : ""}${item.name || originalQuery}`.trim();
+        state.selectedTentId = "custom_tent";
+        state.tentHeight = item.peakHeight;
+        state.tentWidth = item.tentWidth || 340;
+        state.jackHeight = item.jackHeight;
+        state.tentShape = item.shape === "cabin" ? "dome" : (item.shape || "dome");
+        if (["straight", "elbow45", "elbow90"].includes(item.defaultPath)) state.pathType = item.defaultPath;
+        const sel = document.getElementById("tentSelect");
+        if (sel) sel.value = "custom_tent";
+        if (typeof resetStoveAndJackPositions === "function") resetStoveAndJackPositions();
+        syncInputsFromState();
+        updateUI();
+        fallback.classList.add("hidden");
+        const srcHtml = (Array.isArray(data.sources) && data.sources.length > 0)
+          ? ` · <a href="${sanitizeUrl(data.sources[0].url)}" target="_blank" rel="noopener noreferrer" class="underline font-bold">출처 ↗</a>`
+          : "";
+        fb.className = "rounded-lg px-2.5 py-2 text-xs leading-relaxed bg-emerald-950/70 border border-emerald-500/40 text-emerald-300";
+        fb.innerHTML = `🤖 <strong>AI 웹 검색 자동입력 완료:</strong> ${escapeHtml(label)} (최고높이 ${item.peakHeight}cm · 폭 ${item.tentWidth}cm · 홀잭 ${item.jackHeight}cm${item.jackEstimated ? " 추정" : ""})${srcHtml}`;
+        fb.classList.remove("hidden");
+        showToast(`AI가 ${label} 제원을 찾아 자동 입력했습니다!`);
+      }
+
+      const runSearch = async (forceWebAi = false) => {
         const q = input.value.trim();
         if (!q) { showToast("검색할 텐트 모델명을 입력해 주세요."); return; }
-        const matches = searchTentCandidatesFull(q);
-        if (matches.length > 0) {
-          input.value = matches[0].displayName;
-          applySearchedTentFull(matches[0]);
+        suggest.classList.add("hidden");
+        if (!forceWebAi) {
+          const matches = searchTentCandidatesFull(q);
+          if (matches.length > 0) {
+            input.value = matches[0].displayName;
+            applySearchedTentFull(matches[0]);
+            return;
+          }
+        }
+        fallback.classList.add("hidden");
+        btn.disabled = true;
+        btn.textContent = "검색중...";
+        fb.className = "rounded-lg px-2.5 py-2 text-xs leading-relaxed bg-sky-950/70 border border-sky-500/40 text-sky-300";
+        fb.innerHTML = `🤖 AI가 인터넷(구글·네이버)에서 <strong>"${escapeHtml(q)}"</strong> 텐트 사이즈를 확인하는 중입니다...`;
+        fb.classList.remove("hidden");
+
+        const aiRes = await fetchAiTentSpecFromWeb(q);
+        btn.disabled = false;
+        btn.textContent = "AI 검색·적용";
+
+        if (aiRes && aiRes.ok && aiRes.tent) {
+          applyAiResultFull(aiRes, q);
         } else {
-          suggest.classList.add("hidden");
           fb.classList.add("hidden");
           const sq = encodeURIComponent(`${q} 텐트 높이 제원 규격`);
           naverLink.href = `https://search.naver.com/search.naver?query=${sq}`;
           googleLink.href = `https://www.google.com/search?q=${sq}`;
-          fbMsg.textContent = `"${q}" 모델이 내장 DB에 없습니다. 아래 버튼으로 공식 제원을 확인한 뒤 치수 문구를 붙여넣으면 자동으로 인식해 입력합니다.`;
+          const reason = (aiRes && aiRes.code === "NO_API_KEY")
+            ? "Vercel 환경변수(GEMINI_API_KEY)를 등록하면 AI 자동검색이 작동합니다. 지금은 아래에서 제원을 복사·붙여넣기해 주세요."
+            : (aiRes && aiRes.code === "LOCAL_PREVIEW")
+              ? "Vercel 배포 사이트에서는 AI가 인터넷에서 자동 검색합니다. 현재 미리보기에서는 아래 버튼으로 제원을 복사·붙여넣기해 주세요."
+              : `"${q}"의 공식 치수를 찾지 못했습니다. 아래에서 제원을 확인해 붙여넣으면 자동 입력됩니다.`;
+          fbMsg.textContent = reason;
           fallback.classList.remove("hidden");
         }
       };
 
       input.addEventListener("input", () => renderSuggestions(input.value));
       input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } });
-      btn.addEventListener("click", runSearch);
+      btn.addEventListener("click", () => runSearch(false));
       document.addEventListener("click", (e) => {
         if (!input.contains(e.target) && !suggest.contains(e.target)) suggest.classList.add("hidden");
       });
