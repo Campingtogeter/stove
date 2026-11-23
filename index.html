@@ -174,9 +174,6 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">캠핑투게더 난로·연통 시뮬레이터</h1>
-              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">
-                실측 제원 · 5cm 결속단축 반영
-              </span>
             </div>
             <p class="text-xs text-slate-400">
               텐트·난로·스탠드·홀잭 높이 기반 맞춤형 연통 경로 설계 및 구매 BOM 추천
@@ -209,8 +206,8 @@
         <button id="toggleCustomerModeBtn" type="button" class="hidden px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-100 hover:bg-slate-200 text-amber-700 border border-amber-300 transition">
           👁️ 고객용 심플뷰: OFF
         </button>
-        <button id="adminToggleHeaderBtn" type="button" class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
-          🔒 관리자
+        <button id="adminToggleHeaderBtn" type="button" title="관리자 설정" aria-label="관리자 설정" class="w-9 h-9 inline-flex items-center justify-center rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shrink-0">
+          🔒
         </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
            class="hidden md:inline-flex items-center gap-1.5 ml-2 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold whitespace-nowrap shadow-sm transition">
@@ -666,6 +663,12 @@
                 </button>
               </div>
             </div>
+            <!-- Share Link Preview Bar (Shown when Copy Link clicked for guaranteed copy access) -->
+            <div id="shareUrlPreviewBox" class="hidden rounded-xl bg-amber-50 border border-amber-300 p-2.5 flex flex-col sm:flex-row sm:items-center gap-2">
+              <span class="text-[11px] font-bold text-amber-800 whitespace-nowrap">🔗 생성된 세팅 링크:</span>
+              <input id="shareUrlPreviewInput" type="text" readonly class="flex-1 rounded-lg bg-white border border-amber-300 px-2.5 py-1 text-xs font-mono text-slate-800 select-all" />
+              <button id="closeSharePreviewBtn" type="button" class="px-2 py-1 rounded bg-white hover:bg-amber-100 text-slate-600 border border-amber-300 text-[11px] font-bold">닫기</button>
+            </div>
 
             <!-- Pipe Length Breakdown Bar -->
             <div id="pipeCalcDetailBox" class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 text-xs space-y-2">
@@ -707,18 +710,53 @@
     <!-- TAB 2: SMARTSTORE PRODUCTS DB              -->
     <!-- ========================================== -->
     <section id="tabPanel-products" class="hidden space-y-6">
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base sm:text-lg font-extrabold text-white">🔥 캠핑투게더 스마트스토어 난로·연통 수집 데이터</h2>
-          <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">smartstore.naver.com/camping-together</a>에서 수집한 화목난로, 연통 세트, 단품 직관, 엘보, 이중연통, 스탠드 및 안전 부속품 상세 제원입니다.
-          </p>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base sm:text-lg font-extrabold text-white">🔥 캠핑투게더 스마트스토어 난로·연통 DB</h2>
+              <span id="stockSyncStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                ✓ 동기화 대기
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+              <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">smartstore.naver.com/camping-together</a> 판매 품목의 제원·가격·판매상태(판매중/일시품절/예약)를 관리하며, 외부 구글 시트(CSV) 또는 JSON 피드를 연결하면 접속 시 자동 업데이트됩니다.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="syncStockNowBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">
+              🔄 판매상태 자동 동기화
+            </button>
+            <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 품목</button>
+            <button type="button" data-pcat="stove" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">화목·펠릿 난로</button>
+            <button type="button" data-pcat="pipe" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">연통 세트·직관·엘보</button>
+            <button type="button" data-pcat="safety" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">이중연통·보호망·스탠드</button>
+          </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 품목</button>
-          <button type="button" data-pcat="stove" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">화목·펠릿 난로</button>
-          <button type="button" data-pcat="pipe" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">연통 세트·직관·엘보</button>
-          <button type="button" data-pcat="safety" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">이중연통·보호망·스탠드</button>
+
+        <!-- Auto-Sync Feed Config (Visible when Admin Unlocked or Toggled) -->
+        <div id="stockAutoSyncPanel" class="hidden rounded-xl bg-slate-50 border border-slate-300 p-3.5 space-y-2.5 text-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="font-bold text-slate-800">⚙️ 관리자 전용 · 판매상태(판매중/품절) 및 가격 자동 업데이트 설정</div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="downloadStockCsvTemplateBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold transition">
+                📥 구글시트용 CSV 템플릿 다운
+              </button>
+              <button id="resetStockOverridesBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 font-bold transition">
+                ↺ 기본 상태 초기화
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="stockFeedUrlInput" type="url" placeholder="구글 시트 웹게시 CSV URL 또는 JSON URL 입력 (페이지 열릴 때 자동 반영)"
+                   class="flex-1 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs text-slate-900" />
+            <button id="saveAndSyncFeedBtn" type="button" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold whitespace-nowrap transition">
+              저장 및 즉시 동기화
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            • <strong>자동 연동 방법:</strong> 위 CSV 템플릿을 구글 시트에 올린 뒤 [파일 → 공유 → 웹에 게시 → 쉼표로 구분된 값(.csv)] 주소를 입력하면, 고객이 접속할 때마다 <strong>판매중 / 일시품절 / 가격</strong>이 자동 업데이트됩니다. 아래 각 상품 카드에서도 판매상태를 즉시 변경할 수 있습니다.
+          </p>
         </div>
       </div>
 
@@ -952,49 +990,9 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- ADMIN PASSWORD MODAL & COLLAPSIBLE BAR     -->
+    <!-- TAB 5: SALES PAGE EMBED KIT (ADMIN ONLY)   -->
     <!-- ========================================== -->
-    <div id="adminAccessBar" class="mt-8 rounded-2xl bg-white border border-slate-300 p-4 shadow-sm">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5">
-          <span id="adminStatusIcon" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-sm">🔒</span>
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900">관리자 전용: 판매페이지 탑재 · 배너 · 배포 설정</h3>
-              <span id="adminUnlockBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300">잠금 상태 (고객에게 숨김)</span>
-            </div>
-            <p class="text-xs text-slate-600 mt-0.5">관리자 비밀번호를 입력하면 판매페이지 탑재용 배너·코드 및 배포 도구를 펼치거나 숨길 수 있습니다.</p>
-          </div>
-        </div>
-
-        <!-- Password Input Form (Shown when locked) -->
-        <div id="adminPasswordBox" class="flex flex-wrap items-center gap-2">
-          <input id="adminPasswordInput" type="password" inputmode="numeric" placeholder="관리자 비밀번호 입력"
-                 class="w-44 rounded-xl bg-white border border-slate-300 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none" />
-          <button id="adminUnlockSubmitBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow-sm transition">
-            🔓 확인 및 펼치기
-          </button>
-        </div>
-
-        <!-- Expand / Collapse & Lock Controls (Shown when unlocked) -->
-        <div id="adminExpandCollapseControls" class="hidden flex flex-wrap items-center gap-2">
-          <button id="adminCollapseExpandBtn" type="button" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold shadow-sm transition">
-            🔼 판매페이지 탑재·배포 도구 접기 (숨김)
-          </button>
-          <button id="adminLockBtn" type="button" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold transition">
-            🔒 관리자 잠금
-          </button>
-        </div>
-      </div>
-      <p id="adminPasswordError" class="hidden text-xs font-bold text-rose-600 mt-2">
-        ⚠️ 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.
-      </p>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- TAB 5 / ADMIN DRAWER: SALES PAGE EMBED KIT -->
-    <!-- ========================================== -->
-    <section id="tabPanel-embed" class="hidden mt-4 space-y-6">
+    <section id="tabPanel-embed" class="hidden space-y-6">
 
       <!-- Top Intro Banner -->
       <div class="rounded-2xl bg-gradient-to-r from-indigo-50 via-white to-orange-50 border-2 border-indigo-200 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
@@ -1175,6 +1173,56 @@
         <button id="bpApplyToSimBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow transition">
           📐 이 텐트 단면도로 연통 시뮬레이션 적용
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ADMIN PASSWORD & CONTROL MODAL (HEADER 🔒) -->
+  <!-- ========================================== -->
+  <div id="adminAuthModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl bg-white border border-slate-300 shadow-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2">
+          <span id="adminModalIcon" class="text-lg">🔒</span>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">관리자 전용 설정</h3>
+        </div>
+        <button id="closeAdminModalBtn" type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">✕ 닫기</button>
+      </div>
+
+      <!-- Locked View: Password Input -->
+      <div id="adminModalLockedView" class="space-y-3">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          관리자 비밀번호를 입력하면 <strong>판매페이지 탑재·배포 키트</strong> 및 <strong>스토어 판매상태 자동 업데이트 관리</strong> 메뉴를 펼치거나 숨길 수 있습니다.
+        </p>
+        <div class="flex gap-2">
+          <input id="adminPasswordInput" type="password" inputmode="numeric" placeholder="비밀번호 입력"
+                 class="flex-1 rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none" />
+          <button id="adminUnlockSubmitBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow transition whitespace-nowrap">
+            🔓 확인
+          </button>
+        </div>
+        <p id="adminPasswordError" class="hidden text-xs font-bold text-rose-600">
+          ⚠️ 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.
+        </p>
+      </div>
+
+      <!-- Unlocked View: Expand / Collapse / Lock -->
+      <div id="adminModalUnlockedView" class="hidden space-y-3">
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 font-semibold">
+          ✓ 관리자 인증 완료 상태입니다. 상단의 <strong>📦 판매페이지 탑재·배포</strong> 탭과 스토어 DB 자동 동기화 설정을 사용할 수 있습니다.
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+          <button id="adminOpenEmbedTabBtn" type="button" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition">
+            📦 판매페이지 탑재·배포 탭 열기 / 펼치기
+          </button>
+          <button id="adminHideEmbedTabBtn" type="button" class="w-full py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm font-bold transition">
+            🔼 탑재·배포 메뉴 숨기기 (시뮬레이터로 이동)
+          </button>
+          <button id="adminLockBtn" type="button" class="w-full py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold transition">
+            🔒 관리자 잠금 (로그아웃)
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2278,7 +2326,9 @@
       adminUnlocked: false,
       adminDrawerOpen: false,
       deployBaseUrl: "https://camping-together-sim.vercel.app",
-      embedQueryPreset: "?embed=1"
+      embedQueryPreset: "?embed=1",
+      stockFeedUrl: "",
+      lastStockSyncTime: ""
     };
 
     // =========================================================================
@@ -3385,6 +3435,127 @@
     // =========================================================================
     // 7. RENDER TAB 2 (PRODUCTS DB) & TAB 3 (TENTS DB)
     // =========================================================================
+    function loadSavedStockSettings() {
+      try {
+        const savedFeed = localStorage.getItem("ct_stock_feed_url");
+        if (savedFeed) state.stockFeedUrl = savedFeed;
+        const savedOverrides = localStorage.getItem("ct_stock_overrides");
+        if (savedOverrides) {
+          const map = JSON.parse(savedOverrides);
+          STORE_PRODUCTS.forEach((p) => {
+            if (map[p.id]) {
+              if (map[p.id].status) p.status = map[p.id].status;
+              if (typeof map[p.id].price === "number" && map[p.id].price >= 0) p.price = map[p.id].price;
+            }
+          });
+          syncStoveModelsFromProducts();
+        }
+      } catch (err) {}
+    }
+
+    function saveStockOverrides() {
+      try {
+        const map = {};
+        STORE_PRODUCTS.forEach((p) => {
+          map[p.id] = { status: p.status, price: p.price };
+        });
+        localStorage.setItem("ct_stock_overrides", JSON.stringify(map));
+      } catch (err) {}
+    }
+
+    function syncStoveModelsFromProducts() {
+      const linkMap = {
+        mstove_v3: "p_mstove_v3",
+        lumora_ti_legs: "p_lumora_ti",
+        lumora_ti_body: "p_lumora_ti",
+        dweller_max3_legs: "p_dweller_max3",
+        dweller_max3_body: "p_dweller_max3"
+      };
+      STOVE_MODELS.forEach((s) => {
+        const pid = linkMap[s.id];
+        if (!pid) return;
+        const prod = STORE_PRODUCTS.find((p) => p.id === pid);
+        if (prod) {
+          s.status = prod.status;
+          s.price = prod.price;
+        }
+      });
+    }
+
+    function parseCsvLines(text) {
+      const lines = text.trim().split(/\r?\n/).filter((l) => l.trim());
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
+      return lines.slice(1).map((line) => {
+        const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        const row = {};
+        headers.forEach((h, idx) => { row[h] = cols[idx] || ""; });
+        return row;
+      });
+    }
+
+    async function syncStoreStockFromFeed(showNotify) {
+      const badge = document.getElementById("stockSyncStatusBadge");
+      const nowStr = new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+      if (!state.stockFeedUrl) {
+        if (badge) badge.textContent = `✓ 로컬 최신 (${nowStr})`;
+        if (showNotify) {
+          showToast("외부 피드 URL이 미설정되어 현재 저장된 재고 상태를 표시합니다. 관리자(🔒)에서 구글시트 CSV 주소를 연결하면 자동 동기화됩니다.");
+        }
+        return;
+      }
+      if (badge) badge.textContent = "⏳ 동기화 중...";
+      try {
+        const res = await fetch(state.stockFeedUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const text = await res.text();
+        let rows = [];
+        if (text.trim().startsWith("[") || text.trim().startsWith("{")) {
+          const parsed = JSON.parse(text);
+          rows = Array.isArray(parsed) ? parsed : (parsed.products || []);
+        } else {
+          rows = parseCsvLines(text);
+        }
+        let updatedCount = 0;
+        rows.forEach((r) => {
+          const id = (r.id || r.product_id || "").trim();
+          const name = (r.name || "").trim();
+          const target = STORE_PRODUCTS.find((p) => (id && p.id === id) || (name && p.name.includes(name)));
+          if (!target) return;
+          if (r.status) { target.status = String(r.status).trim(); updatedCount++; }
+          const parsedPrice = Number(String(r.price || "").replace(/[^0-9]/g, ""));
+          if (parsedPrice > 0) target.price = parsedPrice;
+        });
+        syncStoveModelsFromProducts();
+        saveStockOverrides();
+        populateStoveDropdown();
+        renderProductsTab();
+        updateUI();
+        state.lastStockSyncTime = nowStr;
+        if (badge) badge.textContent = `✓ 자동 동기화 완료 (${nowStr} · ${updatedCount}건)`;
+        if (showNotify) showToast(`스토어 판매상태 자동 동기화 완료 (${updatedCount}개 품목 반영)`);
+      } catch (err) {
+        if (badge) badge.textContent = `⚠️ 동기화 실패 (로컬 데이터 유지)`;
+        if (showNotify) showToast("피드 주소에 연결할 수 없습니다. 구글시트 '웹에 게시(CSV)' 공개 링크인지 확인해 주세요.");
+      }
+    }
+
+    function downloadStockCsvTemplate() {
+      const header = "id,name,status,price";
+      const rows = STORE_PRODUCTS.map((p) => `${p.id},"${p.name.replace(/"/g, '""')}",${p.status},${p.price}`);
+      const csv = "\uFEFF" + [header, ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "camping_together_stock_sync_template.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("구글 시트 연동용 판매상태 CSV 템플릿이 다운로드되었습니다.");
+    }
+
     function renderProductsTab() {
       const grid = document.getElementById("productCardsGrid");
       const filtered = STORE_PRODUCTS.filter((p) => {
@@ -3395,6 +3566,27 @@
       grid.innerHTML = filtered
         .map((p) => {
           const isSoldOut = p.status.includes("품절");
+          const isPreorder = p.status.includes("예약");
+          const statusColor = isSoldOut
+            ? "bg-rose-50 text-rose-700 border border-rose-300"
+            : isPreorder
+            ? "bg-amber-50 text-amber-800 border border-amber-300"
+            : "bg-emerald-50 text-emerald-700 border border-emerald-300";
+
+          const adminEditor = state.adminUnlocked
+            ? `
+              <div class="mt-2 pt-2 border-t border-dashed border-slate-300 flex items-center justify-between gap-2 text-[11px]">
+                <span class="font-bold text-slate-600">상태 변경:</span>
+                <select data-prod-status="${p.id}" class="prod-status-select rounded-lg bg-white border border-slate-300 px-2 py-1 text-[11px] font-bold text-slate-800">
+                  <option value="판매중" ${p.status === "판매중" ? "selected" : ""}>판매중</option>
+                  <option value="일시품절" ${p.status === "일시품절" ? "selected" : ""}>일시품절</option>
+                  <option value="판매중 (예약)" ${p.status === "판매중 (예약)" ? "selected" : ""}>판매중 (예약)</option>
+                  <option value="도킹툴 판매중" ${p.status === "도킹툴 판매중" ? "selected" : ""}>도킹툴 판매중</option>
+                </select>
+              </div>
+            `
+            : "";
+
           return `
             <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 flex flex-col justify-between gap-3 hover:border-slate-700 transition">
               <div class="space-y-2">
@@ -3408,11 +3600,12 @@
                   }">
                     ${p.category === "stove" ? "화목·펠릿 난로" : p.category === "pipe" ? "연통 세트·직관·엘보" : "이중연통·보호망·스탠드"}
                   </span>
-                  <span class="text-[11px] font-semibold ${isSoldOut ? "text-rose-400" : "text-emerald-400"}">${p.status}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${statusColor}">${p.status}</span>
                 </div>
                 <h3 class="text-sm font-bold text-white leading-snug">${p.name}</h3>
                 <p class="text-xs text-slate-300">${p.spec}</p>
                 <p class="text-[11px] text-slate-400">${p.note}</p>
+                ${adminEditor}
               </div>
               <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
                 <span class="text-base font-extrabold text-orange-400">${formatKRW(p.price)}</span>
@@ -3611,19 +3804,44 @@
       }, 2600);
     }
 
+    function openAdminAuthModal() {
+      const modal = document.getElementById("adminAuthModal");
+      const lockedView = document.getElementById("adminModalLockedView");
+      const unlockedView = document.getElementById("adminModalUnlockedView");
+      const modalIcon = document.getElementById("adminModalIcon");
+      const errEl = document.getElementById("adminPasswordError");
+      if (errEl) errEl.classList.add("hidden");
+      if (state.adminUnlocked) {
+        if (lockedView) lockedView.classList.add("hidden");
+        if (unlockedView) unlockedView.classList.remove("hidden");
+        if (modalIcon) modalIcon.textContent = "🔓";
+      } else {
+        if (lockedView) lockedView.classList.remove("hidden");
+        if (unlockedView) unlockedView.classList.add("hidden");
+        if (modalIcon) modalIcon.textContent = "🔒";
+      }
+      if (modal) modal.classList.remove("hidden");
+      if (!state.adminUnlocked) {
+        const pwInput = document.getElementById("adminPasswordInput");
+        if (pwInput) setTimeout(() => pwInput.focus(), 50);
+      }
+    }
+
+    function closeAdminAuthModal() {
+      const modal = document.getElementById("adminAuthModal");
+      if (modal) modal.classList.add("hidden");
+    }
+
     function switchTab(tabId) {
       if (tabId === "embed" && !state.adminUnlocked) {
-        const bar = document.getElementById("adminAccessBar");
-        if (bar) bar.scrollIntoView({ behavior: "smooth", block: "center" });
-        const pwInput = document.getElementById("adminPasswordInput");
-        if (pwInput) pwInput.focus();
-        showToast("관리자 비밀번호(07160818)를 입력하면 판매페이지 탑재·배포 도구가 열립니다.");
+        openAdminAuthModal();
         return;
       }
       state.activeTab = tabId;
-      ["simulator", "products", "tents", "rules"].forEach((id) => {
+      ["simulator", "products", "tents", "rules", "embed"].forEach((id) => {
         const panel = document.getElementById(`tabPanel-${id}`);
         const btn = document.getElementById(`tabBtn-${id}`);
+        if (!panel || !btn) return;
         if (id === tabId) {
           panel.classList.remove("hidden");
           btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap bg-orange-600 text-white shadow-sm transition";
@@ -3632,63 +3850,25 @@
           btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition";
         }
       });
-      if (tabId === "embed" && state.adminUnlocked) {
-        state.adminDrawerOpen = true;
-        renderAdminDrawerState();
-        const embedPanel = document.getElementById("tabPanel-embed");
-        if (embedPanel) embedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      renderAdminDrawerState();
     }
 
     function renderAdminDrawerState() {
-      const embedPanel = document.getElementById("tabPanel-embed");
       const tabEmbedBtn = document.getElementById("tabBtn-embed");
       const custModeBtn = document.getElementById("toggleCustomerModeBtn");
-      const pwBox = document.getElementById("adminPasswordBox");
-      const ctrlBox = document.getElementById("adminExpandCollapseControls");
-      const collapseBtn = document.getElementById("adminCollapseExpandBtn");
-      const badge = document.getElementById("adminUnlockBadge");
-      const icon = document.getElementById("adminStatusIcon");
       const headerAdminBtn = document.getElementById("adminToggleHeaderBtn");
-      const errEl = document.getElementById("adminPasswordError");
-
-      if (errEl) errEl.classList.add("hidden");
+      const stockAdminPanel = document.getElementById("stockAutoSyncPanel");
 
       if (!state.adminUnlocked) {
-        if (embedPanel) embedPanel.classList.add("hidden");
         if (tabEmbedBtn) tabEmbedBtn.classList.add("hidden");
         if (custModeBtn) custModeBtn.classList.add("hidden");
-        if (pwBox) pwBox.classList.remove("hidden");
-        if (ctrlBox) ctrlBox.classList.add("hidden");
-        if (badge) {
-          badge.textContent = "잠금 상태 (고객에게 숨김)";
-          badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-300";
-        }
-        if (icon) icon.textContent = "🔒";
-        if (headerAdminBtn) headerAdminBtn.textContent = "🔒 관리자";
+        if (stockAdminPanel) stockAdminPanel.classList.add("hidden");
+        if (headerAdminBtn) headerAdminBtn.textContent = "🔒";
       } else {
-        if (pwBox) pwBox.classList.add("hidden");
-        if (ctrlBox) ctrlBox.classList.remove("hidden");
         if (tabEmbedBtn && !state.customerSimpleMode) tabEmbedBtn.classList.remove("hidden");
         if (custModeBtn) custModeBtn.classList.remove("hidden");
-        if (icon) icon.textContent = "🔓";
-        if (headerAdminBtn) headerAdminBtn.textContent = state.adminDrawerOpen ? "🔓 관리자 (열림)" : "🔓 관리자 (접힘)";
-
-        if (state.adminDrawerOpen) {
-          if (embedPanel) embedPanel.classList.remove("hidden");
-          if (collapseBtn) collapseBtn.textContent = "🔼 판매페이지 탑재·배포 도구 접기 (숨김)";
-          if (badge) {
-            badge.textContent = "관리자 인증 완료 · 펼침 상태";
-            badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-          }
-        } else {
-          if (embedPanel) embedPanel.classList.add("hidden");
-          if (collapseBtn) collapseBtn.textContent = "🔽 판매페이지 탑재·배포 도구 펼치기";
-          if (badge) {
-            badge.textContent = "관리자 인증 완료 · 숨김(접힘) 상태";
-            badge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
-          }
-        }
+        if (stockAdminPanel) stockAdminPanel.classList.remove("hidden");
+        if (headerAdminBtn) headerAdminBtn.textContent = "🔓";
       }
     }
 
@@ -3700,11 +3880,12 @@
         state.adminUnlocked = true;
         state.adminDrawerOpen = true;
         if (pwInput) pwInput.value = "";
+        closeAdminAuthModal();
         renderAdminDrawerState();
+        renderProductsTab();
         updateEmbedCodeGenerator();
-        showToast("관리자 인증이 완료되어 판매페이지 탑재·배포 도구가 펼쳐졌습니다.");
-        const embedPanel = document.getElementById("tabPanel-embed");
-        if (embedPanel) embedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        switchTab("embed");
+        showToast("관리자 인증 완료! 판매페이지 탑재·배포 탭이 열렸습니다.");
       } else {
         if (errEl) errEl.classList.remove("hidden");
         showToast("비밀번호가 올바르지 않습니다.");
@@ -4052,7 +4233,9 @@
     }
 
     function buildCustomerShareUrl() {
-      const base = (state.deployBaseUrl || window.location.href.split("?")[0]).replace(/\/+$/, "");
+      const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+      const rawBase = isHttp ? window.location.href.split("?")[0] : (state.deployBaseUrl || "https://camping-together-sim.vercel.app");
+      const base = rawBase.replace(/\/+$/, "");
       const params = new URLSearchParams();
       params.set("embed", "1");
       params.set("tent", state.selectedTentId);
@@ -4060,6 +4243,7 @@
       params.set("th", String(state.tentHeight));
       params.set("jh", String(state.jackHeight));
       params.set("hd", String(state.horizDist));
+      params.set("pos", String(state.stovePosCm));
       params.set("stove", state.selectedStoveId);
       params.set("sh", String(state.stoveHeight));
       params.set("st", String(state.standHeight));
@@ -4067,6 +4251,42 @@
       params.set("pipe", state.pipeSystem);
       params.set("prot", state.protectionType);
       return `${base}/?${params.toString()}`;
+    }
+
+    function copyTextReliable(text, successMsg) {
+      let copied = false;
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "0";
+        ta.style.width = "1px";
+        ta.style.height = "1px";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        copied = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch (e) {
+        copied = false;
+      }
+
+      if (copied) {
+        showToast(successMsg);
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          () => showToast(successMsg),
+          () => showToast("아래 표시된 링크를 선택해 복사(Ctrl+C)해 주세요.")
+        );
+      } else {
+        showToast("아래 표시된 링크를 선택해 복사(Ctrl+C)해 주세요.");
+      }
     }
 
     function applyUrlQueryParams() {
@@ -4099,6 +4319,7 @@
         if (params.get("th")) state.tentHeight = Number(params.get("th")) || state.tentHeight;
         if (params.get("jh")) state.jackHeight = Number(params.get("jh")) || state.jackHeight;
         if (params.get("hd")) state.horizDist = Number(params.get("hd")) || 0;
+        if (params.get("pos")) state.stovePosCm = Number(params.get("pos")) || 0;
         if (params.get("sh")) state.stoveHeight = Number(params.get("sh")) || state.stoveHeight;
         if (params.get("st")) state.standHeight = Number(params.get("st")) || 0;
         if (params.get("path")) state.pathType = params.get("path");
@@ -4131,14 +4352,7 @@
           }
         }
       });
-      const adminBar = document.getElementById("adminAccessBar");
-      if (adminBar) {
-        if (state.customerSimpleMode && !state.adminUnlocked) {
-          adminBar.classList.add("hidden");
-        } else {
-          adminBar.classList.remove("hidden");
-        }
-      }
+
       renderAdminDrawerState();
       if (state.customerSimpleMode && state.activeTab !== "simulator") {
         switchTab("simulator");
@@ -4335,14 +4549,20 @@
       if (shareUrlBtn) {
         shareUrlBtn.addEventListener("click", () => {
           const shareUrl = buildCustomerShareUrl();
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(shareUrl).then(
-              () => showToast("현재 텐트·난로 세팅 공유 링크가 복사되었습니다!"),
-              () => fallbackCopy(shareUrl)
-            );
-          } else {
-            fallbackCopy(shareUrl);
+          const box = document.getElementById("shareUrlPreviewBox");
+          const inp = document.getElementById("shareUrlPreviewInput");
+          if (box && inp) {
+            inp.value = shareUrl;
+            box.classList.remove("hidden");
           }
+          copyTextReliable(shareUrl, "현재 텐트·난로 세팅 공유 링크가 복사되었습니다!");
+        });
+      }
+      const closeShareBtn = document.getElementById("closeSharePreviewBtn");
+      if (closeShareBtn) {
+        closeShareBtn.addEventListener("click", () => {
+          const box = document.getElementById("shareUrlPreviewBox");
+          if (box) box.classList.add("hidden");
         });
       }
       const deployInput = document.getElementById("deployUrlInput");
@@ -4382,16 +4602,16 @@
 
       const adminHeaderBtn = document.getElementById("adminToggleHeaderBtn");
       if (adminHeaderBtn) {
-        adminHeaderBtn.addEventListener("click", () => {
-          const bar = document.getElementById("adminAccessBar");
-          if (bar) bar.scrollIntoView({ behavior: "smooth", block: "center" });
-          if (!state.adminUnlocked) {
-            const pwInput = document.getElementById("adminPasswordInput");
-            if (pwInput) pwInput.focus();
-          } else {
-            state.adminDrawerOpen = !state.adminDrawerOpen;
-            renderAdminDrawerState();
-          }
+        adminHeaderBtn.addEventListener("click", openAdminAuthModal);
+      }
+
+      const closeAdminBtn = document.getElementById("closeAdminModalBtn");
+      if (closeAdminBtn) closeAdminBtn.addEventListener("click", closeAdminAuthModal);
+
+      const adminModalEl = document.getElementById("adminAuthModal");
+      if (adminModalEl) {
+        adminModalEl.addEventListener("click", (e) => {
+          if (e.target === adminModalEl) closeAdminAuthModal();
         });
       }
 
@@ -4408,11 +4628,20 @@
         });
       }
 
-      const collapseExpandBtn = document.getElementById("adminCollapseExpandBtn");
-      if (collapseExpandBtn) {
-        collapseExpandBtn.addEventListener("click", () => {
-          state.adminDrawerOpen = !state.adminDrawerOpen;
-          renderAdminDrawerState();
+      const openEmbedTabBtn = document.getElementById("adminOpenEmbedTabBtn");
+      if (openEmbedTabBtn) {
+        openEmbedTabBtn.addEventListener("click", () => {
+          closeAdminAuthModal();
+          switchTab("embed");
+        });
+      }
+
+      const hideEmbedTabBtn = document.getElementById("adminHideEmbedTabBtn");
+      if (hideEmbedTabBtn) {
+        hideEmbedTabBtn.addEventListener("click", () => {
+          closeAdminAuthModal();
+          switchTab("simulator");
+          showToast("판매페이지 탑재·배포 화면을 숨겼습니다.");
         });
       }
 
@@ -4421,10 +4650,68 @@
         lockBtn.addEventListener("click", () => {
           state.adminUnlocked = false;
           state.adminDrawerOpen = false;
+          closeAdminAuthModal();
+          if (state.activeTab === "embed") switchTab("simulator");
           renderAdminDrawerState();
-          showToast("관리자 도구가 숨김(잠금) 처리되었습니다.");
+          renderProductsTab();
+          showToast("관리자 잠금이 완료되었습니다.");
         });
       }
+
+      // Stock Auto-Sync & Inline Admin Status Edit Listeners
+      const syncNowBtn = document.getElementById("syncStockNowBtn");
+      if (syncNowBtn) syncNowBtn.addEventListener("click", () => syncStoreStockFromFeed(true));
+
+      const dlCsvBtn = document.getElementById("downloadStockCsvTemplateBtn");
+      if (dlCsvBtn) dlCsvBtn.addEventListener("click", downloadStockCsvTemplate);
+
+      const saveFeedBtn = document.getElementById("saveAndSyncFeedBtn");
+      if (saveFeedBtn) {
+        saveFeedBtn.addEventListener("click", () => {
+          const feedInp = document.getElementById("stockFeedUrlInput");
+          state.stockFeedUrl = (feedInp ? feedInp.value : "").trim();
+          try { localStorage.setItem("ct_stock_feed_url", state.stockFeedUrl); } catch (e) {}
+          syncStoreStockFromFeed(true);
+        });
+      }
+
+      const resetStockBtn = document.getElementById("resetStockOverridesBtn");
+      if (resetStockBtn) {
+        resetStockBtn.addEventListener("click", () => {
+          try {
+            localStorage.removeItem("ct_stock_overrides");
+            localStorage.removeItem("ct_stock_feed_url");
+          } catch (e) {}
+          state.stockFeedUrl = "";
+          const feedInp = document.getElementById("stockFeedUrlInput");
+          if (feedInp) feedInp.value = "";
+          showToast("재고 설정이 초기화되었습니다. 페이지를 새로고침하면 기본값으로 복원됩니다.");
+        });
+      }
+
+      const prodGrid = document.getElementById("productCardsGrid");
+      if (prodGrid) {
+        prodGrid.addEventListener("change", (e) => {
+          const sel = e.target.closest(".prod-status-select");
+          if (!sel) return;
+          const pid = sel.getAttribute("data-prod-status");
+          const prod = STORE_PRODUCTS.find((p) => p.id === pid);
+          if (prod) {
+            prod.status = sel.value;
+            syncStoveModelsFromProducts();
+            saveStockOverrides();
+            populateStoveDropdown();
+            renderProductsTab();
+            showToast(`"${prod.name}" 상태가 [${prod.status}]로 업데이트되었습니다.`);
+          }
+        });
+      }
+
+      loadSavedStockSettings();
+      const feedInpInit = document.getElementById("stockFeedUrlInput");
+      if (feedInpInit && state.stockFeedUrl) feedInpInit.value = state.stockFeedUrl;
+      populateStoveDropdown();
+      renderProductsTab();
 
       applyUrlQueryParams();
       resetStoveAndJackPositions(true);
@@ -4432,6 +4719,7 @@
       syncInputsFromState();
       updateUI();
       updateEmbedCodeGenerator();
+      syncStoreStockFromFeed(false);
     });
   </script>
 </body>
