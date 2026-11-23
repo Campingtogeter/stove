@@ -715,8 +715,8 @@
           <div>
             <div class="flex flex-wrap items-center gap-2">
               <h2 class="text-base sm:text-lg font-extrabold text-white">🔥 캠핑투게더 스마트스토어 난로·연통 DB</h2>
-              <span id="stockSyncStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">
-                ✓ 동기화 대기
+              <span id="stockSyncStatusBadge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                ✓ 실시간 자동연동 대기
               </span>
             </div>
             <p class="text-xs sm:text-sm text-slate-400 mt-1">
@@ -724,7 +724,7 @@
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <button id="syncStockNowBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">
+            <button id="syncStockNowBtn" type="button" class="hidden px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">
               🔄 판매상태 자동 동기화
             </button>
             <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 품목</button>
@@ -734,29 +734,36 @@
           </div>
         </div>
 
-        <!-- Auto-Sync Feed Config (Visible when Admin Unlocked or Toggled) -->
-        <div id="stockAutoSyncPanel" class="hidden rounded-xl bg-slate-50 border border-slate-300 p-3.5 space-y-2.5 text-xs">
+        <!-- Auto-Sync Feed Config (Visible ONLY when Admin Unlocked) -->
+        <div id="stockAutoSyncPanel" class="hidden rounded-xl bg-slate-50 border border-slate-300 p-4 space-y-3 text-xs">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div class="font-bold text-slate-800">⚙️ 관리자 전용 · 판매상태(판매중/품절) 및 가격 자동 업데이트 설정</div>
+            <div class="font-bold text-slate-900 flex items-center gap-2">
+              <span>⚙️ 관리자 전용 · 실시간 판매상태(판매중/품절) 자동 연동 설정</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">60초 주기 백그라운드 자동 동기화</span>
+            </div>
             <div class="flex flex-wrap items-center gap-1.5">
+              <button id="copyWorkerProxyBtn" type="button" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 font-bold transition">
+                📋 네이버 커머스 API 연동 코드 복사
+              </button>
               <button id="downloadStockCsvTemplateBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold transition">
-                📥 구글시트용 CSV 템플릿 다운
+                📥 CSV 템플릿
               </button>
               <button id="resetStockOverridesBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 font-bold transition">
-                ↺ 기본 상태 초기화
+                ↺ 초기화
               </button>
             </div>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input id="stockFeedUrlInput" type="url" placeholder="구글 시트 웹게시 CSV URL 또는 JSON URL 입력 (페이지 열릴 때 자동 반영)"
+            <input id="stockFeedUrlInput" type="url" placeholder="실시간 연동 URL 입력 (네이버 커머스 API 프록시 JSON / 자체 서버 JSON / 구글시트 CSV)"
                    class="flex-1 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs text-slate-900" />
             <button id="saveAndSyncFeedBtn" type="button" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold whitespace-nowrap transition">
-              저장 및 즉시 동기화
+              저장 및 실시간 연동 시작
             </button>
           </div>
-          <p class="text-[11px] text-slate-600 leading-relaxed">
-            • <strong>자동 연동 방법:</strong> 위 CSV 템플릿을 구글 시트에 올린 뒤 [파일 → 공유 → 웹에 게시 → 쉼표로 구분된 값(.csv)] 주소를 입력하면, 고객이 접속할 때마다 <strong>판매중 / 일시품절 / 가격</strong>이 자동 업데이트됩니다. 아래 각 상품 카드에서도 판매상태를 즉시 변경할 수 있습니다.
-          </p>
+          <div class="rounded-lg bg-white border border-slate-200 p-2.5 text-[11px] text-slate-600 space-y-1 leading-relaxed">
+            <div>• <strong>방식 1 (완전 자동 실시간 · 추천):</strong> 네이버 스마트스토어는 브라우저 직접 접근(CORS)을 차단하므로, 위 <strong>[네이버 커머스 API 연동 코드 복사]</strong>를 무료 Cloudflare Worker나 Vercel에 1회 올려 그 JSON 주소를 입력하면 <strong>버튼을 누르지 않아도 접속 시 및 60초마다 자동으로 판매중·품절·가격이 실시간 반영</strong>됩니다.</div>
+            <div>• <strong>방식 2 (자체 JSON / 구글 시트 CSV):</strong> JSON 엔드포인트 또는 구글 시트 웹게시 CSV 주소를 입력해도 동일하게 무클릭 백그라운드 자동 동기화가 작동합니다.</div>
+          </div>
         </div>
       </div>
 
@@ -784,6 +791,113 @@
           <button id="toggleDbMiniViewBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 transition">
             📐 단면 미리보기: 정면
           </button>
+        </div>
+      </div>
+
+      <!-- Admin-Only Manual Tent & AI URL Auto-Analyzer Panel -->
+      <div id="adminTentAddPanel" class="hidden rounded-2xl bg-white border-2 border-indigo-200 p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-indigo-100 text-indigo-800">관리자 전용</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-slate-900">➕ 인기 텐트 DB 수동 추가 &amp; 인터넷 URL 자동 제원 분석</h3>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5">
+              텐트 판매페이지나 제원 페이지 주소를 넣고 <strong>[🤖 URL 자동 파악]</strong>을 누르면 가로·세로·높이·텐트 형태를 자동으로 추출해 채워줍니다. (수동 입력·수정 후 바로 DB에 추가 가능)
+            </p>
+          </div>
+          <button id="toggleTentAddFormBtn" type="button" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold whitespace-nowrap transition">
+            ➕ 새 텐트 추가 열기/접기
+          </button>
+        </div>
+
+        <div id="tentAddFormBody" class="space-y-4">
+          <!-- Step A: URL AI Auto-Extraction Bar -->
+          <div class="rounded-xl bg-indigo-50/70 border border-indigo-200 p-3.5 space-y-2.5">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input id="newTentUrlInput" type="url" placeholder="텐트 상세페이지 또는 제원 URL 입력 (예: https://camping-lab.com/tents/... 또는 브랜드 공식몰 주소)"
+                     class="flex-1 rounded-lg bg-white border border-indigo-300 px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none" />
+              <button id="analyzeTentUrlBtn" type="button" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold whitespace-nowrap shadow-sm transition">
+                🤖 URL 자동 파악
+              </button>
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input id="newTentPasteSpecInput" type="text" placeholder="(선택) 사이트가 접근을 막을 경우 제원 텍스트를 여기에 붙여넣고 [텍스트 분석]을 누르세요 (예: 620x380x215cm 리빙쉘)"
+                     class="flex-1 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs text-slate-900" />
+              <button id="analyzeTentTextBtn" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold whitespace-nowrap transition">
+                ✨ 텍스트 자동 분석
+              </button>
+            </div>
+            <div id="tentUrlAnalyzeStatus" class="hidden text-xs font-semibold text-indigo-800"></div>
+          </div>
+
+          <!-- Step B: Editable Form Fields -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div>
+              <label for="addTentOrigin" class="block font-bold text-slate-700 mb-1">구분</label>
+              <select id="addTentOrigin" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs">
+                <option value="국내">국내 인기</option>
+                <option value="해외">해외 인기</option>
+              </select>
+            </div>
+            <div>
+              <label for="addTentBrand" class="block font-bold text-slate-700 mb-1">브랜드명</label>
+              <input id="addTentBrand" type="text" placeholder="예: 미니멀웍스" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+            <div class="col-span-2">
+              <label for="addTentName" class="block font-bold text-slate-700 mb-1">텐트 모델명 *</label>
+              <input id="addTentName" type="text" placeholder="예: 파프리카 / 에르젠 라운지쉘터" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+
+            <div>
+              <label for="addTentShape" class="block font-bold text-slate-700 mb-1">텐트 형태</label>
+              <select id="addTentShape" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs">
+                <option value="dome">돔 쉘터</option>
+                <option value="tunnel">터널·리빙쉘</option>
+                <option value="tipi">티피·원폴</option>
+                <option value="cabin">캐빈·오두막·면텐트</option>
+              </select>
+            </div>
+            <div>
+              <label for="addTentWidth" class="block font-bold text-slate-700 mb-1">바닥 폭 (cm) *</label>
+              <input id="addTentWidth" type="number" min="150" max="800" value="350" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+            <div>
+              <label for="addTentLength" class="block font-bold text-slate-700 mb-1">전체 길이 (cm) *</label>
+              <input id="addTentLength" type="number" min="150" max="900" value="400" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+            <div>
+              <label for="addTentPeak" class="block font-bold text-slate-700 mb-1">최고 높이 (cm) *</label>
+              <input id="addTentPeak" type="number" min="120" max="360" value="200" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+
+            <div>
+              <label for="addTentSideWall" class="block font-bold text-slate-700 mb-1">측벽 높이 (cm)</label>
+              <input id="addTentSideWall" type="number" min="0" max="220" value="110" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+            <div>
+              <label for="addTentJack" class="block font-bold text-slate-700 mb-1">권장 홀잭 높이 (cm)</label>
+              <input id="addTentJack" type="number" min="80" max="300" value="150" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+            <div>
+              <label for="addTentPath" class="block font-bold text-slate-700 mb-1">권장 연통 경로</label>
+              <select id="addTentPath" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs">
+                <option value="straight">천장 직상형 (쉬움)</option>
+                <option value="elbow45">45° 경사형 (중급)</option>
+                <option value="elbow90">측면 90° 굴절 (고급)</option>
+              </select>
+            </div>
+            <div>
+              <label for="addTentNote" class="block font-bold text-slate-700 mb-1">설치 메모</label>
+              <input id="addTentNote" type="text" placeholder="예: 상부 순정 홀잭 내장" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-2 text-xs" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+            <button id="saveNewTentBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-extrabold shadow transition">
+              💾 텐트 DB에 추가 및 단면도 자동 생성
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3781,6 +3895,7 @@
                   <button type="button" data-apply-tent="${t.id}" class="apply-tent-db-btn px-2.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">
                     적용
                   </button>
+                  ${t.isCustom && state.adminUnlocked ? `<button type="button" data-del-tent="${t.id}" class="del-tent-db-btn px-2 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 text-xs font-bold transition" title="수동 추가 텐트 삭제">✕</button>` : ""}
                 </div>
                 <a href="${t.sourceUrl}" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-slate-400 underline hover:text-orange-400">
                   제원출처↗
@@ -3858,16 +3973,25 @@
       const custModeBtn = document.getElementById("toggleCustomerModeBtn");
       const headerAdminBtn = document.getElementById("adminToggleHeaderBtn");
       const stockAdminPanel = document.getElementById("stockAutoSyncPanel");
+      const syncStockBtn = document.getElementById("syncStockNowBtn");
+      const syncBadge = document.getElementById("stockSyncStatusBadge");
+      const adminTentPanel = document.getElementById("adminTentAddPanel");
 
       if (!state.adminUnlocked) {
         if (tabEmbedBtn) tabEmbedBtn.classList.add("hidden");
         if (custModeBtn) custModeBtn.classList.add("hidden");
         if (stockAdminPanel) stockAdminPanel.classList.add("hidden");
+        if (syncStockBtn) syncStockBtn.classList.add("hidden");
+        if (syncBadge) syncBadge.classList.add("hidden");
+        if (adminTentPanel) adminTentPanel.classList.add("hidden");
         if (headerAdminBtn) headerAdminBtn.textContent = "🔒";
       } else {
         if (tabEmbedBtn && !state.customerSimpleMode) tabEmbedBtn.classList.remove("hidden");
         if (custModeBtn) custModeBtn.classList.remove("hidden");
         if (stockAdminPanel) stockAdminPanel.classList.remove("hidden");
+        if (syncStockBtn) syncStockBtn.classList.remove("hidden");
+        if (syncBadge) syncBadge.classList.remove("hidden");
+        if (adminTentPanel) adminTentPanel.classList.remove("hidden");
         if (headerAdminBtn) headerAdminBtn.textContent = "🔓";
       }
     }
@@ -3883,6 +4007,7 @@
         closeAdminAuthModal();
         renderAdminDrawerState();
         renderProductsTab();
+        renderTentsTab();
         updateEmbedCodeGenerator();
         switchTab("embed");
         showToast("관리자 인증 완료! 판매페이지 탑재·배포 탭이 열렸습니다.");
@@ -4326,15 +4451,28 @@
         if (params.get("pipe")) state.pipeSystem = params.get("pipe");
         if (params.get("prot")) state.protectionType = params.get("prot");
         if (params.get("embed") === "1") {
-          setCustomerSimpleMode(true);
+          setCustomerSimpleMode(true, false);
+        } else if (params.get("embed") === "0") {
+          setCustomerSimpleMode(false, false);
+        } else {
+          try {
+            const savedSimple = localStorage.getItem("ct_customer_simple_mode");
+            if (savedSimple === "1") setCustomerSimpleMode(true, false);
+            else if (savedSimple === "0") setCustomerSimpleMode(false, false);
+          } catch (err) {}
         }
       } catch (err) {
         // Ignore URL parsing errors in restricted environments
       }
     }
 
-    function setCustomerSimpleMode(enabled) {
+    function setCustomerSimpleMode(enabled, persist) {
       state.customerSimpleMode = Boolean(enabled);
+      if (persist !== false) {
+        try {
+          localStorage.setItem("ct_customer_simple_mode", state.customerSimpleMode ? "1" : "0");
+        } catch (err) {}
+      }
       const toggleBtn = document.getElementById("toggleCustomerModeBtn");
       if (toggleBtn) {
         toggleBtn.textContent = `👁️ 고객용 심플뷰: ${state.customerSimpleMode ? "ON" : "OFF"}`;
@@ -4531,6 +4669,192 @@
       showToast("고객 배포용 index.html 파일이 다운로드되었습니다!");
     }
 
+    let stockAutoPollTimer = null;
+
+    function startRealtimeStockPolling() {
+      if (stockAutoPollTimer) clearInterval(stockAutoPollTimer);
+      if (state.stockFeedUrl) {
+        stockAutoPollTimer = setInterval(() => {
+          syncStoreStockFromFeed(false);
+        }, 60000);
+      }
+    }
+
+    function updateTentCountBadges() {
+      const total = TENT_MODELS.length;
+      const domestic = TENT_MODELS.filter((t) => t.origin === "국내").length;
+      const overseas = TENT_MODELS.filter((t) => t.origin === "해외").length;
+      document.querySelectorAll('.tent-origin-btn[data-origin="all"]').forEach((b) => { b.textContent = `전체 (${total})`; });
+      document.querySelectorAll('.tent-origin-btn[data-origin="국내"]').forEach((b) => { b.textContent = `국내 인기 (${domestic})`; });
+      document.querySelectorAll('.tent-origin-btn[data-origin="해외"]').forEach((b) => { b.textContent = `해외 인기 (${overseas})`; });
+      document.querySelectorAll('.tent-db-filter-btn[data-tfilter="all"]').forEach((b) => { b.textContent = `전체 (${total}종)`; });
+      document.querySelectorAll('.tent-db-filter-btn[data-tfilter="국내"]').forEach((b) => { b.textContent = `국내 인기 텐트 (${domestic}종)`; });
+      document.querySelectorAll('.tent-db-filter-btn[data-tfilter="해외"]').forEach((b) => { b.textContent = `해외 인기 텐트 (${overseas}종)`; });
+    }
+
+    function loadCustomTents() {
+      try {
+        const raw = localStorage.getItem("ct_custom_tents");
+        if (!raw) return;
+        const list = JSON.parse(raw);
+        if (!Array.isArray(list)) return;
+        list.forEach((ct) => {
+          if (!TENT_MODELS.some((t) => t.id === ct.id)) {
+            TENT_MODELS.unshift(ct);
+          }
+        });
+      } catch (err) {}
+    }
+
+    function saveCustomTents() {
+      try {
+        const customs = TENT_MODELS.filter((t) => t.isCustom);
+        localStorage.setItem("ct_custom_tents", JSON.stringify(customs));
+      } catch (err) {}
+    }
+
+    function extractTentSpecsFromText(rawText, sourceUrl) {
+      const text = (rawText || "").replace(/\s+/g, " ");
+      const res = {
+        origin: "국내",
+        brand: "",
+        name: "",
+        shape: "dome",
+        widthCm: 350,
+        lengthCm: 400,
+        peakHeightCm: 200,
+        sideWallCm: 110,
+        jackHeightCm: 150,
+        pathType: "elbow45",
+        note: ""
+      };
+
+      // Detect Brand & Origin
+      const brandMap = [
+        ["미니멀웍스", "국내"], ["백컨트리", "국내"], ["노스피크", "국내"], ["코베아", "국내"],
+        ["카즈미", "국내"], ["KZM", "국내"], ["쿠디", "국내"], ["제드", "국내"], ["스노우라인", "국내"],
+        ["지프", "국내"], ["듀랑고", "국내"], ["위오", "국내"], ["코오롱", "국내"], ["에르젠", "국내"],
+        ["아이두젠", "국내"], ["캠프타운", "국내"], ["헬스포츠", "해외"], ["스노우피크", "해외"],
+        ["콜맨", "해외"], ["노르디스크", "해외"], ["힐레베르그", "해외"], ["네이처하이크", "해외"],
+        ["DOD", "해외"], ["도플갱어", "해외"], ["로벤스", "해외"], ["사바티컬", "해외"], ["모비가든", "해외"]
+      ];
+      for (const [bName, bOrigin] of brandMap) {
+        if (text.toLowerCase().includes(bName.toLowerCase())) {
+          res.brand = bName;
+          res.origin = bOrigin;
+          break;
+        }
+      }
+
+      // Extract title / model name from markdown title line if available
+      const titleMatch = rawText.match(/(?:Title:\s*|#\s+)([^\n]{3,60})/);
+      if (titleMatch) {
+        res.name = titleMatch[1].replace(/\|.*$/, "").replace(/-.*$/, "").trim();
+      }
+
+      // Extract 3D dimensions: e.g. 620 x 375 x 210 cm or 350*300*170 or 6200 x 3750 x 2100 mm
+      const dim3Regex = /(\d{3,4})\s*(?:cm|mm)?\s*[×xX*]\s*(\d{3,4})\s*(?:cm|mm)?\s*[×xX*]\s*(?:\(?(?:H|높이)?\)?\s*)?(\d{3,4})\s*(cm|mm)?/i;
+      const m3 = text.match(dim3Regex);
+      if (m3) {
+        let a = Number(m3[1]);
+        let b = Number(m3[2]);
+        let c = Number(m3[3]);
+        const unit = (m3[4] || "").toLowerCase();
+        if (unit === "mm" || a > 1000 || b > 1000 || c > 1000) {
+          a = Math.round(a / 10);
+          b = Math.round(b / 10);
+          c = Math.round(c / 10);
+        }
+        const sorted = [a, b, c].sort((x, y) => x - y);
+        // Peak height is usually the smallest of 3 numbers (130~330cm) unless it's a tall tipi
+        res.peakHeightCm = Math.max(130, Math.min(340, c <= 340 ? c : sorted[0]));
+        const floorDims = c <= 340 ? [a, b].sort((x, y) => x - y) : [sorted[1], sorted[2]];
+        res.widthCm = Math.max(180, Math.min(750, floorDims[0]));
+        res.lengthCm = Math.max(180, Math.min(900, floorDims[1]));
+      } else {
+        const hMatch = text.match(/(?:높이|전고|천장고|height)\s*[:\s]*(\d{3,4})\s*(cm|mm)?/i);
+        if (hMatch) {
+          let hVal = Number(hMatch[1]);
+          if (hVal > 500) hVal = Math.round(hVal / 10);
+          res.peakHeightCm = Math.max(130, Math.min(340, hVal));
+        }
+      }
+
+      // Detect tent shape & recommended path
+      if (/티피|원폴|tipi|alfheim|klondike/i.test(text)) {
+        res.shape = "tipi";
+        res.sideWallCm = 0;
+        res.pathType = /홀잭|연통구|포트/i.test(text) ? "straight" : "elbow45";
+      } else if (/캐빈|오두막|면텐트|아스가르드|빌리지|쿠디|듀랑고|cabin|bell/i.test(text)) {
+        res.shape = "cabin";
+        res.sideWallCm = Math.round(res.peakHeightCm * 0.6);
+        res.pathType = /홀잭|연통구/i.test(text) ? "straight" : "elbow90";
+      } else if (/리빙쉘|터널|거실형|2룸|투룸|3룸|에어텐트|tunnel|living/i.test(text) || res.lengthCm >= 480) {
+        res.shape = "tunnel";
+        res.sideWallCm = Math.round(res.peakHeightCm * 0.7);
+        res.pathType = /순정\s*홀잭|천장\s*연통구|발할/i.test(text) ? "straight" : "elbow90";
+      } else {
+        res.shape = "dome";
+        res.sideWallCm = Math.round(res.peakHeightCm * 0.52);
+        res.pathType = /홀잭|연통구/i.test(text) ? "straight" : "elbow45";
+      }
+
+      res.jackHeightCm =
+        res.pathType === "straight"
+          ? Math.round(res.peakHeightCm * 0.82)
+          : res.pathType === "elbow45"
+          ? Math.round(res.peakHeightCm * 0.74)
+          : Math.round(res.peakHeightCm * 0.7);
+
+      res.note = `${sourceUrl ? "URL 자동 추출 제원" : "텍스트 자동 분석 제원"} (${res.lengthCm}×${res.widthCm}×${res.peakHeightCm}cm)`;
+      return res;
+    }
+
+    function fillAddTentForm(spec) {
+      document.getElementById("addTentOrigin").value = spec.origin;
+      if (spec.brand) document.getElementById("addTentBrand").value = spec.brand;
+      if (spec.name) document.getElementById("addTentName").value = spec.name;
+      document.getElementById("addTentShape").value = spec.shape;
+      document.getElementById("addTentWidth").value = spec.widthCm;
+      document.getElementById("addTentLength").value = spec.lengthCm;
+      document.getElementById("addTentPeak").value = spec.peakHeightCm;
+      document.getElementById("addTentSideWall").value = spec.sideWallCm;
+      document.getElementById("addTentJack").value = spec.jackHeightCm;
+      document.getElementById("addTentPath").value = spec.pathType;
+      document.getElementById("addTentNote").value = spec.note;
+    }
+
+    async function analyzeTentFromUrl() {
+      const urlVal = (document.getElementById("newTentUrlInput").value || "").trim();
+      const statusEl = document.getElementById("tentUrlAnalyzeStatus");
+      if (!urlVal || !/^https?:\/\//i.test(urlVal)) {
+        showToast("http:// 또는 https:// 로 시작하는 올바른 인터넷 주소를 입력해 주세요.");
+        return;
+      }
+      if (statusEl) {
+        statusEl.classList.remove("hidden");
+        statusEl.textContent = "🤖 웹페이지를 읽고 텐트 제원(가로·세로·높이·형태)을 자동 분석하는 중입니다...";
+      }
+      try {
+        // Fetch readable page content via public CORS-enabled Jina reader
+        const readerUrl = "https://r.jina.ai/" + urlVal;
+        const res = await fetch(readerUrl);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const pageText = await res.text();
+        const spec = extractTentSpecsFromText(pageText, urlVal);
+        fillAddTentForm(spec);
+        if (statusEl) {
+          statusEl.textContent = `✓ 자동 파악 완료! [${spec.brand || "브랜드 확인필요"} ${spec.name || "모델명 확인필요"}] ${spec.lengthCm}×${spec.widthCm}×${spec.peakHeightCm}cm — 아래 내용을 확인·수정 후 [저장]을 눌러주세요.`;
+        }
+        showToast("URL에서 텐트 제원을 자동으로 파악해 입력란에 채웠습니다!");
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = "⚠️ 해당 사이트가 외부 자동 읽기를 차단했습니다. 위 [제원 텍스트 붙여넣기] 칸에 상품 크기 텍스트를 붙여넣고 [✨ 텍스트 자동 분석]을 눌러주세요.";
+        }
+        showToast("사이트 보안 차단으로 자동 읽기에 실패했습니다. 텍스트 붙여넣기 분석을 이용해 주세요.");
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       populateStoveDropdown();
       populateTentDropdown();
@@ -4654,6 +4978,7 @@
           if (state.activeTab === "embed") switchTab("simulator");
           renderAdminDrawerState();
           renderProductsTab();
+          renderTentsTab();
           showToast("관리자 잠금이 완료되었습니다.");
         });
       }
@@ -4707,11 +5032,163 @@
         });
       }
 
+      // Copy Cloudflare Worker / Naver Commerce API Auto-Sync Template
+      const copyWorkerBtn = document.getElementById("copyWorkerProxyBtn");
+      if (copyWorkerBtn) {
+        copyWorkerBtn.addEventListener("click", () => {
+          const workerSnippet = [
+            "// Cloudflare Worker (무료) — 네이버 스마트스토어 실시간 판매상태(판매중/품절) JSON 프록시 예시",
+            "export default {",
+            "  async fetch(request, env) {",
+            "    // 네이버 커머스 API(https://apicenter.commerce.naver.com)에서 상품상태 조회 후 JSON 반환",
+            "    const products = [",
+            "      { id: 'p_mstove_v3', status: '판매중', price: 728000 },",
+            "      { id: 'p_lumora_ti', status: '판매중 (예약)', price: 1480000 },",
+            "      { id: 'p_dweller_max3', status: '일시품절', price: 780000 }",
+            "    ];",
+            "    return new Response(JSON.stringify(products), {",
+            "      headers: { 'Content-Type': 'application/json;charset=utf-8', 'Access-Control-Allow-Origin': '*' }",
+            "    });",
+            "  }",
+            "};"
+          ].join("\n");
+          copyTextReliable(workerSnippet, "네이버 커머스 API 실시간 연동 Worker 코드가 복사되었습니다!");
+        });
+      }
+
+      // Admin Manual Tent Add & AI URL Analyzer Listeners
+      const toggleAddBtn = document.getElementById("toggleTentAddFormBtn");
+      if (toggleAddBtn) {
+        toggleAddBtn.addEventListener("click", () => {
+          const body = document.getElementById("tentAddFormBody");
+          if (body) body.classList.toggle("hidden");
+        });
+      }
+      const analyzeUrlBtn = document.getElementById("analyzeTentUrlBtn");
+      if (analyzeUrlBtn) analyzeUrlBtn.addEventListener("click", analyzeTentFromUrl);
+
+      const analyzeTextBtn = document.getElementById("analyzeTentTextBtn");
+      if (analyzeTextBtn) {
+        analyzeTextBtn.addEventListener("click", () => {
+          const txt = (document.getElementById("newTentPasteSpecInput").value || "").trim();
+          if (!txt) {
+            showToast("분석할 텐트 제원 텍스트를 먼저 입력해 주세요.");
+            return;
+          }
+          const urlVal = (document.getElementById("newTentUrlInput").value || "").trim();
+          const spec = extractTentSpecsFromText(txt, urlVal);
+          fillAddTentForm(spec);
+          const statusEl = document.getElementById("tentUrlAnalyzeStatus");
+          if (statusEl) {
+            statusEl.classList.remove("hidden");
+            statusEl.textContent = `✓ 텍스트 자동 분석 완료! (${spec.lengthCm}×${spec.widthCm}×${spec.peakHeightCm}cm) 아래 내용을 확인 후 저장하세요.`;
+          }
+          showToast("붙여넣은 텍스트에서 텐트 제원을 자동 추출했습니다!");
+        });
+      }
+
+      const saveNewTentBtn = document.getElementById("saveNewTentBtn");
+      if (saveNewTentBtn) {
+        saveNewTentBtn.addEventListener("click", () => {
+          const name = (document.getElementById("addTentName").value || "").trim();
+          if (!name) {
+            showToast("텐트 모델명을 입력해 주세요.");
+            return;
+          }
+          const origin = document.getElementById("addTentOrigin").value || "국내";
+          const brand = (document.getElementById("addTentBrand").value || "사용자 등록").trim();
+          const shape = document.getElementById("addTentShape").value || "dome";
+          const widthCm = Math.max(150, Number(document.getElementById("addTentWidth").value) || 350);
+          const lengthCm = Math.max(150, Number(document.getElementById("addTentLength").value) || 400);
+          const peakHeight = Math.max(120, Number(document.getElementById("addTentPeak").value) || 200);
+          const sideWallCm = Math.max(0, Number(document.getElementById("addTentSideWall").value) || 0);
+          const jackHeight = Math.max(80, Number(document.getElementById("addTentJack").value) || 150);
+          const pathType = document.getElementById("addTentPath").value || "elbow45";
+          const note = (document.getElementById("addTentNote").value || "관리자 수동 등록 모델").trim();
+          const srcUrl = (document.getElementById("newTentUrlInput").value || STORE_URL).trim();
+
+          const shapeLabels = { dome: "돔 쉘터", tunnel: "터널·리빙쉘", tipi: "티피·원폴", cabin: "캐빈·면텐트" };
+          const profileMap = { dome: "dome_geo", tunnel: "tunnel_living", tipi: "tipi_cone", cabin: "cabin_ridge" };
+
+          const newTent = {
+            id: "custom_" + Date.now(),
+            isCustom: true,
+            origin,
+            brand,
+            name,
+            shape,
+            shapeLabel: shapeLabels[shape] || "쉘터",
+            dimensions: `${lengthCm} × ${widthCm} × ${peakHeight} cm`,
+            peakHeight,
+            defaultJackHeight: jackHeight,
+            defaultHorizDist: pathType === "straight" ? 0 : pathType === "elbow45" ? 45 : 65,
+            defaultPath: pathType,
+            hasBuiltInJack: pathType === "straight",
+            sourceTitle: "관리자 등록 제원",
+            sourceUrl: srcUrl,
+            note,
+            section: {
+              profile: profileMap[shape] || "dome_geo",
+              widthCm,
+              lengthCm,
+              peakHeightCm: peakHeight,
+              sideWallCm,
+              doorHeightCm: Math.round(peakHeight * 0.8),
+              innerW: 0,
+              innerH: 0,
+              structureNote: `${shapeLabels[shape] || "쉘터"} · 관리자 등록 실측 단면`
+            }
+          };
+
+          TENT_MODELS.unshift(newTent);
+          saveCustomTents();
+          updateTentCountBadges();
+          populateTentDropdown();
+          renderTentsTab();
+          document.getElementById("addTentName").value = "";
+          document.getElementById("newTentUrlInput").value = "";
+          document.getElementById("newTentPasteSpecInput").value = "";
+          showToast(`"${brand} ${name}" 모델과 실측 단면도가 텐트 DB에 추가되었습니다!`);
+        });
+      }
+
+      // Support deleting custom tents from Tent DB table
+      const tentDbBody = document.getElementById("tentDbTableBody");
+      if (tentDbBody) {
+        tentDbBody.addEventListener("click", (e) => {
+          const delBtn = e.target.closest(".del-tent-db-btn");
+          if (!delBtn) return;
+          const delId = delBtn.getAttribute("data-del-tent");
+          const idx = TENT_MODELS.findIndex((t) => t.id === delId && t.isCustom);
+          if (idx >= 0) {
+            const removed = TENT_MODELS.splice(idx, 1)[0];
+            saveCustomTents();
+            updateTentCountBadges();
+            populateTentDropdown();
+            renderTentsTab();
+            showToast(`"${removed.brand} ${removed.name}" 모델이 삭제되었습니다.`);
+          }
+        });
+      }
+
+      // Refresh admin UI on unlock/lock so Tent DB delete buttons also toggle
+      const origTryUnlock = tryAdminUnlock;
+      const origSaveFeedBtn = document.getElementById("saveAndSyncFeedBtn");
+      if (origSaveFeedBtn) {
+        origSaveFeedBtn.addEventListener("click", () => {
+          startRealtimeStockPolling();
+        });
+      }
+
+      loadCustomTents();
+      updateTentCountBadges();
       loadSavedStockSettings();
       const feedInpInit = document.getElementById("stockFeedUrlInput");
       if (feedInpInit && state.stockFeedUrl) feedInpInit.value = state.stockFeedUrl;
       populateStoveDropdown();
+      populateTentDropdown();
       renderProductsTab();
+      renderTentsTab();
 
       applyUrlQueryParams();
       resetStoveAndJackPositions(true);
@@ -4720,6 +5197,13 @@
       updateUI();
       updateEmbedCodeGenerator();
       syncStoreStockFromFeed(false);
+      startRealtimeStockPolling();
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && state.stockFeedUrl) {
+          syncStoreStockFromFeed(false);
+        }
+      });
     });
   </script>
 </body>
