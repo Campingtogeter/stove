@@ -15,7 +15,7 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -67,10 +67,10 @@
           <span>🛠️ 상세 버전</span>
         </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
-         class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
-        <span>스마트스토어</span>
-        <span>↗</span>
-      </a>
+           class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+          <span>스마트스토어</span>
+          <span>↗</span>
+        </a>
       </div>
     </div>
   </header>
@@ -128,7 +128,7 @@
             <span id="canvasTentLabel">헬스포츠 발할 (780×300×210cm)</span>
           </div>
           <div class="absolute top-3 right-3 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[11px] font-bold text-orange-700 shadow-sm">
-            🖐️ 난로를 좌우로 끌어보세요
+            🖐️ 난로(좌우) · 홀잭(가로·세로) 드래그
           </div>
           <svg id="heroSvg" viewBox="0 0 800 440" class="w-full h-auto block select-none" style="touch-action: pan-y;"></svg>
         </div>
@@ -164,7 +164,7 @@
             <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">1</span>
             <span>텐트 · 홀잭 높이</span>
           </h2>
-          <span class="text-[11px] font-semibold text-slate-400">36종 + 직접입력</span>
+          <span class="text-[11px] font-semibold text-slate-400">36종 + AI검색</span>
         </div>
 
         <div class="space-y-1.5 relative">
@@ -180,27 +180,15 @@
           </div>
           <div id="sTentSuggestBox" class="hidden max-h-44 overflow-y-auto rounded-xl bg-white border border-slate-200 divide-y divide-slate-100 shadow-lg"></div>
           <div id="sTentSearchFeedback" class="hidden rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed"></div>
-          <div id="sTentFallbackBox" class="hidden rounded-xl bg-amber-50 border border-amber-200 p-2.5 space-y-2">
-            <p id="sTentFallbackMsg" class="text-[11px] font-semibold text-amber-900 leading-snug"></p>
-            <div class="flex flex-wrap gap-1.5">
-              <a id="sTentNaverLink" href="#" target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition">
-                네이버 제원 검색 ↗
-              </a>
-              <a id="sTentGoogleLink" href="#" target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold transition">
-                구글 제원 검색 ↗
-              </a>
+          <div id="sTentResultsBox" class="hidden rounded-xl bg-slate-50 border border-slate-200 p-2.5 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span id="sTentResultsTitle" class="text-[11px] font-bold text-slate-700">검색된 텐트 모델 선택</span>
+              <button id="sTentResultsClose" type="button" class="text-[11px] text-slate-400 hover:text-slate-600 font-bold">닫기 ✕</button>
             </div>
-            <div class="flex gap-1.5">
-              <input id="sTentSpecPasteInput" type="text"
-                placeholder="제원 붙여넣기 (예: 640×350×215cm)"
-                class="flex-1 min-w-0 rounded-lg bg-white border border-amber-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-orange-500 focus:outline-none" />
-              <button id="sTentSpecParseBtn" type="button"
-                class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold whitespace-nowrap transition">
-                자동추출
-              </button>
-            </div>
+            <div id="sTentResultsList" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
+            <button id="sTentForceAiBtn" type="button" class="hidden w-full py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-[11px] font-bold transition">
+              🤖 찾는 모델이 없나요? AI로 인터넷에서 더 검색하기
+            </button>
           </div>
         </div>
 
@@ -469,6 +457,9 @@
       jackPosCm: 42,
       excluded: {},
       dragging: false,
+      dragTarget: null,
+      dragGeom: null,
+      lockedMaxH: null,
       geom: null,
       lastQuoteText: ""
     };
@@ -586,7 +577,7 @@
       const swCm = Math.round(sim.H_tent * (t.h > 0 ? t.sw / t.h : 0.45));
       const swY = yOf(swCm);
 
-      st.geom = { cx, scaleX };
+      st.geom = { cx, scaleX, gY, scaleY, span: sim.span };
 
       let tentD = "";
       if (t.shape === "tipi") tentD = `M ${lx},${gY} L ${cx},${py} L ${rx},${gY} Z`;
@@ -616,7 +607,6 @@
         jackPt = { x: jx, y: jY, ang: 90 }; topPt = { x: outX, y: topY };
       }
 
-      // Arc-length pipe segments + ticks + numbered diameter badges
       const edges = [];
       let totalPx = 0;
       for (let i = 0; i < pts.length - 1; i++) {
@@ -694,11 +684,15 @@
 
       const sleevePx = Math.max(22, Math.round(50 * scaleY));
       const jackHtml = `
-        <g transform="translate(${jackPt.x},${jackPt.y}) rotate(${jackPt.ang})">
-          <rect x="-9" y="${-sleevePx / 2}" width="18" height="${sleevePx}" rx="4" fill="#0ea5e9" fill-opacity="0.32" stroke="#0284c7" stroke-width="2"/>
-          <circle cx="0" cy="0" r="3.5" fill="#ea580c"/>
+        <g id="sDragJack" transform="translate(${jackPt.x},${jackPt.y})" style="cursor: move; touch-action: none;">
+          <circle cx="0" cy="0" r="24" fill="transparent"/>
+          <g transform="rotate(${jackPt.ang})">
+            <rect x="-10" y="${-sleevePx / 2}" width="20" height="${sleevePx}" rx="5" fill="#0ea5e9" fill-opacity="0.34" stroke="#0284c7" stroke-width="2.2"/>
+            <circle cx="0" cy="0" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+          </g>
+          <rect x="14" y="-13" width="136" height="20" rx="10" fill="#ffffff" fill-opacity="0.94" stroke="#0284c7" stroke-width="1.2"/>
+          <text x="82" y="1" fill="#0369a1" font-size="10" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm (드래그)</text>
         </g>
-        <text x="${jackPt.x + 16}" y="${jackPt.y - 3}" fill="#0369a1" font-size="10.5" font-weight="bold">홀잭 ${sim.H_jack}cm · 50cm 보호</text>
       `;
 
       let dimHtml = "";
@@ -818,7 +812,6 @@
         alertEl.classList.add("hidden");
       }
 
-      // Highlight active stand & path buttons
       document.querySelectorAll(".s-stand-btn").forEach((b) => {
         const active = Number(b.getAttribute("data-stand")) === Number(st.standH);
         b.className = active
@@ -834,7 +827,6 @@
 
       drawSvg(sim);
 
-      // Render BOM Cards
       const items = buildBom(sim);
       let sum = 0, qtySum = 0;
       const cards = items.map((it) => {
@@ -911,6 +903,37 @@
       document.getElementById("sStandH").value = st.standH;
       document.getElementById("sPipeSys").value = st.pipeSys;
       document.getElementById("sProtSys").value = st.protSys;
+    }
+
+    const EXTRA_TENT_CATALOG = [
+      { id: "ext_coleman_cocoon3", brand: "콜맨", name: "마스터시리즈 4S 와이드 2룸 코쿤3", aliases: "coleman cocoon3 코쿤3 2룸", shape: "tunnel", w: 360, l: 670, h: 220, jh: 155, path: "elbow90" },
+      { id: "ext_coleman_curve", brand: "콜맨", name: "4S 와이드 2룸 커브", aliases: "coleman curve 커브 2룸", shape: "tunnel", w: 300, l: 580, h: 200, jh: 145, path: "elbow90" },
+      { id: "ext_snowpeak_landlock", brand: "스노우피크", name: "랜드락 (TP-671R)", aliases: "snowpeak landlock 랜드락 리빙쉘", shape: "tunnel", w: 405, l: 625, h: 205, jh: 150, path: "elbow90" },
+      { id: "ext_snowpeak_livingshell", brand: "스노우피크", name: "리빙쉘 롱 프로 (TP-660)", aliases: "snowpeak living shell long pro 리빙쉘 롱프로", shape: "tunnel", w: 360, l: 530, h: 220, jh: 155, path: "elbow90" },
+      { id: "ext_sabbatical_mg", brand: "사바티컬", name: "모닝글로리 TC", aliases: "sabbatical morning glory 모닝글로리 티피", shape: "tipi", w: 440, l: 470, h: 270, jh: 185, path: "straight" },
+      { id: "ext_sabbatical_arnica", brand: "사바티컬", name: "아르니카", aliases: "sabbatical arnica 아르니카 터널", shape: "tunnel", w: 320, l: 620, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_zanearts_lolo", brand: "제인아트", name: "로로 (LOLO)", aliases: "zanearts lolo 로로 원폴 쉘터", shape: "tipi", w: 440, l: 520, h: 285, jh: 195, path: "straight" },
+      { id: "ext_zanearts_zekum", brand: "제인아트", name: "제쿠 M (ZEKU-M)", aliases: "zanearts zeku 제쿠엠", shape: "tipi", w: 440, l: 380, h: 250, jh: 175, path: "straight" },
+      { id: "ext_dod_kamaboko3m", brand: "DOD", name: "가마보코 3M", aliases: "도플갱어 dod kamaboko 가마보코 터널", shape: "tunnel", w: 300, l: 640, h: 195, jh: 140, path: "elbow90" },
+      { id: "ext_kovea_nestw", brand: "코베아", name: "네스트 W", aliases: "kovea nest w 네스트w 리빙쉘", shape: "tunnel", w: 345, l: 585, h: 205, jh: 148, path: "elbow90" },
+      { id: "ext_kovea_ghost_phantom", brand: "코베아", name: "고스트 팬텀", aliases: "kovea ghost phantom 고스트팬텀 쉘터", shape: "dome", w: 360, l: 375, h: 195, jh: 145, path: "elbow45" },
+      { id: "ext_robens_klondike", brand: "로벤스", name: "클론다이크 (6인용)", aliases: "robens klondike 클론다이크 벨텐트 면텐트", shape: "tipi", w: 390, l: 370, h: 270, jh: 190, path: "straight" },
+      { id: "ext_robens_klondike_g", brand: "로벤스", name: "클론다이크 그랑데 (9인용)", aliases: "robens klondike grande 클론다이크 그랑데 벨텐트", shape: "tipi", w: 460, l: 500, h: 300, jh: 210, path: "straight" },
+      { id: "ext_kzm_attica", brand: "카즈미", name: "아티카 리빙쉘", aliases: "kzm kazmi attica 아티카", shape: "tunnel", w: 360, l: 620, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_kzm_vivadome", brand: "카즈미", name: "비바 돔 쉘터 플러스", aliases: "kzm kazmi viva dome 비바돔", shape: "dome", w: 360, l: 360, h: 195, jh: 145, path: "elbow45" },
+      { id: "ext_wiwo_jenes", brand: "위오", name: "제네스 2룸 / 야크돔 550", aliases: "wiwo yakdome 야크돔550 쉘터", shape: "dome", w: 550, l: 550, h: 230, jh: 170, path: "elbow45" },
+      { id: "ext_wiwo_yak460", brand: "위오", name: "야크돔 460", aliases: "wiwo yakdome 460 야크돔460 돔텐트", shape: "dome", w: 460, l: 440, h: 210, jh: 160, path: "elbow45" },
+      { id: "ext_nordisk_reisa6", brand: "노르디스크", name: "레이사 6", aliases: "nordisk reisa6 레이사6 터널", shape: "tunnel", w: 295, l: 645, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_jeep_silvester", brand: "지프", name: "실베스터 2", aliases: "jeep silvester 실베스터 거실형", shape: "tunnel", w: 360, l: 630, h: 215, jh: 155, path: "elbow90" },
+      { id: "ext_coody_136", brand: "쿠디", name: "에어텐트 13.6", aliases: "coody 13.6 에어텐트 면에어", shape: "cabin", w: 360, l: 380, h: 220, jh: 160, path: "elbow45" },
+      { id: "ext_coody_172", brand: "쿠디", name: "에어텐트 17.2", aliases: "coody 17.2 에어텐트 대형", shape: "cabin", w: 360, l: 480, h: 220, jh: 160, path: "elbow45" },
+      { id: "ext_tentmark_circus", brand: "텐트마크디자인", name: "서커스 TC DX", aliases: "tentmark circus tc 서커스tc 티피", shape: "tipi", w: 420, l: 442, h: 280, jh: 195, path: "straight" },
+      { id: "ext_hilleberg_stalon", brand: "힐레베르그", name: "스탈론 XL", aliases: "hilleberg stalon xl 스탈론", shape: "tunnel", w: 290, l: 630, h: 205, jh: 155, path: "straight" },
+      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" }
+    ];
+
+    function normalizeSearchStr(s) {
+      return String(s || "").toLowerCase().replace(/[\s\-_·.,()\[\]\/]+/g, "");
     }
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -990,7 +1013,7 @@
         document.getElementById("formulaBox").classList.toggle("hidden");
       });
 
-      // Quick Stove Move & Direct SVG Drag
+      // Quick Stove Move & Direct SVG Drag (Stove X + Jack X/Y)
       document.querySelectorAll(".pos-quick-btn").forEach((b) => b.addEventListener("click", () => {
         const a = b.getAttribute("data-pos-act");
         if (a === "left") st.stovePosCm = clampPos(-Math.round(getSpan() * 0.28));
@@ -1002,9 +1025,12 @@
 
       const svg = document.getElementById("heroSvg");
       svg.addEventListener("pointerdown", (e) => {
-        if (!e.target.closest("#sDragStove")) return;
+        const isJack = Boolean(e.target.closest("#sDragJack"));
+        const isStove = Boolean(e.target.closest("#sDragStove"));
+        if (!isJack && !isStove) return;
         st.dragging = true;
-        st.dragGeom = st.geom ? { cx: st.geom.cx, scaleX: st.geom.scaleX } : { cx: 365, scaleX: 1 };
+        st.dragTarget = isJack ? "jack" : "stove";
+        st.dragGeom = st.geom ? { ...st.geom } : { cx: 365, scaleX: 1, gY: 394, scaleY: 1, span: 300 };
         const curSim = compute();
         st.lockedMaxH = Math.max(curSim.H_tent + 150, curSim.topH + 25, 395);
         try { svg.setPointerCapture(e.pointerId); } catch (err) {}
@@ -1013,12 +1039,34 @@
       svg.addEventListener("pointermove", (e) => {
         if (!st.dragging || !st.dragGeom) return;
         const r = svg.getBoundingClientRect();
-        if (!r.width) return;
+        if (!r.width || !r.height) return;
         const xSvg = ((e.clientX - r.left) / r.width) * 800;
-        st.stovePosCm = clampPos((xSvg - st.dragGeom.cx) / st.dragGeom.scaleX);
+        const ySvg = ((e.clientY - r.top) / r.height) * 440;
+        if (st.dragTarget === "jack") {
+          const halfSpan = Math.max(80, (st.dragGeom.span || getSpan()) / 2 - 12);
+          const rawX = (xSvg - st.dragGeom.cx) / st.dragGeom.scaleX;
+          st.jackPosCm = Math.round(Math.max(-halfSpan, Math.min(halfSpan, rawX)));
+          const rawH = (st.dragGeom.gY - ySvg) / st.dragGeom.scaleY;
+          const maxJackH = Math.max(105, Math.round(st.tentH) - 5);
+          st.jackH = Math.round(Math.max(100, Math.min(maxJackH, rawH)));
+          const jIn = document.getElementById("sJackH");
+          const jRg = document.getElementById("sJackHRange");
+          if (jIn) jIn.value = st.jackH;
+          if (jRg) jRg.value = st.jackH;
+        } else {
+          st.stovePosCm = clampPos((xSvg - st.dragGeom.cx) / st.dragGeom.scaleX);
+        }
         scheduleRender();
       });
-      const stopDrag = (e) => { if (!st.dragging) return; st.dragging = false; st.dragGeom = null; st.lockedMaxH = null; try { svg.releasePointerCapture(e.pointerId); } catch (err) {} render(); };
+      const stopDrag = (e) => {
+        if (!st.dragging) return;
+        st.dragging = false;
+        st.dragTarget = null;
+        st.dragGeom = null;
+        st.lockedMaxH = null;
+        try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+        render();
+      };
       svg.addEventListener("pointerup", stopDrag);
       svg.addEventListener("pointercancel", stopDrag);
 
@@ -1050,105 +1098,9 @@
         document.body.removeChild(ta);
       });
 
-      
-    const EXTRA_TENT_CATALOG = [
-      { id: "ext_coleman_cocoon3", brand: "콜맨", name: "마스터시리즈 4S 와이드 2룸 코쿤3", aliases: "coleman cocoon3 코쿤3 2룸", shape: "tunnel", w: 360, l: 670, h: 220, jh: 155, path: "elbow90" },
-      { id: "ext_coleman_curve", brand: "콜맨", name: "4S 와이드 2룸 커브", aliases: "coleman curve 커브 2룸", shape: "tunnel", w: 300, l: 580, h: 200, jh: 145, path: "elbow90" },
-      { id: "ext_snowpeak_landlock", brand: "스노우피크", name: "랜드락 (TP-671R)", aliases: "snowpeak landlock 랜드락 리빙쉘", shape: "tunnel", w: 405, l: 625, h: 205, jh: 150, path: "elbow90" },
-      { id: "ext_snowpeak_livingshell", brand: "스노우피크", name: "리빙쉘 롱 프로 (TP-660)", aliases: "snowpeak living shell long pro 리빙쉘 롱프로", shape: "tunnel", w: 360, l: 530, h: 220, jh: 155, path: "elbow90" },
-      { id: "ext_sabbatical_mg", brand: "사바티컬", name: "모닝글로리 TC", aliases: "sabbatical morning glory 모닝글로리 티피", shape: "tipi", w: 440, l: 470, h: 270, jh: 185, path: "straight" },
-      { id: "ext_sabbatical_arnica", brand: "사바티컬", name: "아르니카", aliases: "sabbatical arnica 아르니카 터널", shape: "tunnel", w: 320, l: 620, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_zanearts_lolo", brand: "제인아트", name: "로로 (LOLO)", aliases: "zanearts lolo 로로 원폴 쉘터", shape: "tipi", w: 440, l: 520, h: 285, jh: 195, path: "straight" },
-      { id: "ext_zanearts_zekum", brand: "제인아트", name: "제쿠 M (ZEKU-M)", aliases: "zanearts zeku 제쿠엠", shape: "tipi", w: 440, l: 380, h: 250, jh: 175, path: "straight" },
-      { id: "ext_dod_kamaboko3m", brand: "DOD", name: "가마보코 3M", aliases: "도플갱어 dod kamaboko 가마보코 터널", shape: "tunnel", w: 300, l: 640, h: 195, jh: 140, path: "elbow90" },
-      { id: "ext_kovea_nestw", brand: "코베아", name: "네스트 W", aliases: "kovea nest w 네스트w 리빙쉘", shape: "tunnel", w: 345, l: 585, h: 205, jh: 148, path: "elbow90" },
-      { id: "ext_kovea_ghost_phantom", brand: "코베아", name: "고스트 팬텀", aliases: "kovea ghost phantom 고스트팬텀 쉘터", shape: "dome", w: 360, l: 375, h: 195, jh: 145, path: "elbow45" },
-      { id: "ext_robens_klondike", brand: "로벤스", name: "클론다이크 (6인용)", aliases: "robens klondike 클론다이크 벨텐트 면텐트", shape: "bell", w: 390, l: 370, h: 270, jh: 190, path: "straight" },
-      { id: "ext_robens_klondike_g", brand: "로벤스", name: "클론다이크 그랑데 (9인용)", aliases: "robens klondike grande 클론다이크 그랑데 벨텐트", shape: "bell", w: 460, l: 500, h: 300, jh: 210, path: "straight" },
-      { id: "ext_kzm_attica", brand: "카즈미", name: "아티카 리빙쉘", aliases: "kzm kazmi attica 아티카", shape: "tunnel", w: 360, l: 620, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_kzm_vivadome", brand: "카즈미", name: "비바 돔 쉘터 플러스", aliases: "kzm kazmi viva dome 비바돔", shape: "dome", w: 360, l: 360, h: 195, jh: 145, path: "elbow45" },
-      { id: "ext_wiwo_jenes", brand: "위오", name: "제네스 2룸 / 야크돔 550", aliases: "wiwo yakdome 야크돔550 쉘터", shape: "dome", w: 550, l: 550, h: 230, jh: 170, path: "elbow45" },
-      { id: "ext_wiwo_yak460", brand: "위오", name: "야크돔 460", aliases: "wiwo yakdome 460 야크돔460 돔텐트", shape: "dome", w: 460, l: 440, h: 210, jh: 160, path: "elbow45" },
-      { id: "ext_nordisk_reisa6", brand: "노르디스크", name: "레이사 6", aliases: "nordisk reisa6 레이사6 터널", shape: "tunnel", w: 295, l: 645, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_jeep_silvester", brand: "지프", name: "실베스터 2", aliases: "jeep silvester 실베스터 거실형", shape: "tunnel", w: 360, l: 630, h: 215, jh: 155, path: "elbow90" },
-      { id: "ext_coody_136", brand: "쿠디", name: "에어텐트 13.6", aliases: "coody 13.6 에어텐트 면에어", shape: "cabin", w: 360, l: 380, h: 220, jh: 160, path: "elbow45" },
-      { id: "ext_coody_172", brand: "쿠디", name: "에어텐트 17.2", aliases: "coody 17.2 에어텐트 대형", shape: "cabin", w: 360, l: 480, h: 220, jh: 160, path: "elbow45" },
-      { id: "ext_tentmark_circus", brand: "텐트마크디자인", name: "서커스 TC DX", aliases: "tentmark circus tc 서커스tc 티피", shape: "tipi", w: 420, l: 442, h: 280, jh: 195, path: "straight" },
-      { id: "ext_hilleberg_stalon", brand: "힐레베르그", name: "스탈론 XL", aliases: "hilleberg stalon xl 스탈론", shape: "tunnel", w: 290, l: 630, h: 205, jh: 155, path: "straight" },
-      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" }
-    ];
-
-    function normalizeSearchStr(s) {
-      return String(s || "").toLowerCase().replace(/[\s\-_·.,()\[\]\/]+/g, "");
-    }
-
-    function parseTentSpecText(rawText, fallbackName) {
-      const text = String(rawText || "").trim();
-      if (!text) return null;
-      const toCm = (val, unit) => {
-        let n = parseFloat(val);
-        if (!Number.isFinite(n) || n <= 0) return null;
-        if (unit && unit.toLowerCase() === "m") n = n * 100;
-        else if (unit && unit.toLowerCase() === "mm") n = n / 10;
-        else if (n >= 1000) n = n / 10;
-        else if (n < 10) n = n * 100;
-        return Math.round(n);
-      };
-
-      let h = null, w = null, jh = null;
-      // 1) Explicit jack height
-      const jm = text.match(/(?:홀잭|연통구|연통\s*구멍|연통\s*홀|jack)\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|mm|m)?/i);
-      if (jm) jh = toCm(jm[1], jm[2]);
-
-      // 2) Explicit height
-      const hm = text.match(/(?:최고\s*높이|센터\s*높이|높이|전고|\(h\)|h\s*[:=])\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|mm|m)?/i);
-      if (hm) h = toCm(hm[1], hm[2]);
-
-      // 3) Explicit width
-      const wm = text.match(/(?:폭|너비|가로|\(w\)|w\s*[:=])\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(cm|mm|m)?/i);
-      if (wm) w = toCm(wm[1], wm[2]);
-
-      // 4) 3-dimension pattern: e.g. 640 x 350 x 215cm or 640×350×(H)215
-      const dim3 = text.match(/(\d+(?:\.\d+)?)\s*(?:cm|mm|m)?\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:cm|mm|m)?\s*[xX×*]\s*(?:\(?[hH]\)?\s*)?(\d+(?:\.\d+)?)\s*(cm|mm|m)?/);
-      if (dim3) {
-        const unit = dim3[4] || (text.toLowerCase().includes("mm") ? "mm" : "");
-        const a = toCm(dim3[1], unit), b = toCm(dim3[2], unit), c = toCm(dim3[3], unit);
-        if (!h && c && c >= 120 && c <= 380) h = c;
-        if (!w && a && b) w = Math.min(a, b);
-      }
-
-      if (!h) {
-        // Fallback: find any reasonable height number 130~350cm
-        const nums = text.match(/\b(\d{3,4})\b/g);
-        if (nums) {
-          for (const raw of nums) {
-            const c = toCm(raw, "");
-            if (c >= 140 && c <= 340) { h = c; break; }
-          }
-        }
-      }
-      if (!h) return null;
-
-      h = Math.max(130, Math.min(350, h));
-      w = w ? Math.max(200, Math.min(600, w)) : 340;
-      const combined = (text + " " + (fallbackName || "")).toLowerCase();
-      let shape = "dome";
-      if (/티피|tipi|원폴|서커스|모닝글로리|알페임|로로|제쿠/.test(combined)) shape = "tipi";
-      else if (/벨텐트|bell|아스가르드|클론다이크/.test(combined)) shape = "bell";
-      else if (/터널|리빙쉘|2룸|거실형|tunnel|발할|레이사|아르니카|가마보코|랜드락|코쿤/.test(combined)) shape = "tunnel";
-      else if (/캐빈|에어|쿠디|cabin|잭/.test(combined)) shape = "cabin";
-
-      let jhEstimated = false;
-      if (!jh || jh < 90 || jh > h - 5) {
-        const ratio = (shape === "tipi" || shape === "bell") ? 0.70 : 0.75;
-        jh = Math.max(100, Math.min(h - 15, Math.round((h * ratio) / 5) * 5));
-        jhEstimated = true;
-      }
-      return { h, w, jh, shape, jhEstimated };
-    }
-
+      // Search & AI Tent Auto-Fill
       function getAllSearchableTentsSimple() {
-        const main = TENTS.filter((t) => t.id !== "custom").map((t) => ({
+        const main = TENTS.filter((t) => t.id !== "custom_tent").map((t) => ({
           source: "main",
           id: t.id,
           displayName: t.name.replace(/^\[[^\]]+\]\s*/, ""),
@@ -1198,20 +1150,20 @@
       function applySearchedTentSimple(item) {
         const suggest = document.getElementById("sTentSuggestBox");
         const fb = document.getElementById("sTentSearchFeedback");
-        const fallback = document.getElementById("sTentFallbackBox");
+        const resBox = document.getElementById("sTentResultsBox");
         suggest.classList.add("hidden");
-        fallback.classList.add("hidden");
+        if (resBox) resBox.classList.add("hidden");
 
         if (item.source === "main") {
           st.tentId = item.id;
           const t = TENTS.find((x) => x.id === item.id);
           if (t) { st.tentH = t.h; st.jackH = t.jh; st.path = t.path; }
         } else {
-          st.tentId = "custom";
+          st.tentId = "custom_tent";
           st.tentH = item.h;
           st.jackH = item.jh;
           st.path = item.path || "elbow45";
-          const cust = TENTS.find((x) => x.id === "custom");
+          const cust = TENTS.find((x) => x.id === "custom_tent");
           if (cust) { cust.w = item.w; cust.h = item.h; cust.jh = item.jh; cust.shape = item.shape || "dome"; }
         }
         resetPos();
@@ -1223,93 +1175,66 @@
         showToast(`${item.displayName} 제원이 자동 입력되었습니다!`);
       }
 
-      // Bind Simple Tent Search
       const sInput = document.getElementById("sTentSearchInput");
       const sBtn = document.getElementById("sTentSearchBtn");
       const sSuggest = document.getElementById("sTentSuggestBox");
       const sFb = document.getElementById("sTentSearchFeedback");
-      const sFallback = document.getElementById("sTentFallbackBox");
-      const sFbMsg = document.getElementById("sTentFallbackMsg");
-      const sNaver = document.getElementById("sTentNaverLink");
-      const sGoogle = document.getElementById("sTentGoogleLink");
-      const sPaste = document.getElementById("sTentSpecPasteInput");
-      const sParseBtn = document.getElementById("sTentSpecParseBtn");
+      const sResBox = document.getElementById("sTentResultsBox");
+      const sResTitle = document.getElementById("sTentResultsTitle");
+      const sResList = document.getElementById("sTentResultsList");
+      const sResClose = document.getElementById("sTentResultsClose");
+      const sForceAiBtn = document.getElementById("sTentForceAiBtn");
 
-      const renderSimpleSuggestions = (q) => {
-        const matches = searchTentCandidatesSimple(q);
-        if (!q.trim() || matches.length === 0) {
-          sSuggest.classList.add("hidden");
-          sSuggest.innerHTML = "";
-          return;
-        }
-        sSuggest.innerHTML = matches.map((m, idx) => `
-          <button type="button" data-ssidx="${idx}" class="w-full text-left px-3 py-2 hover:bg-orange-50 transition flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-slate-900 truncate">${escapeHtml(m.displayName)}</span>
-            <span class="text-[11px] text-slate-500 whitespace-nowrap">${m.h}cm · 홀잭 ${m.jh}cm</span>
-          </button>
-        `).join("");
-        sSuggest.classList.remove("hidden");
-        sSuggest.querySelectorAll("button[data-ssidx]").forEach((b) => {
-          b.addEventListener("click", () => {
-            const chosen = matches[Number(b.getAttribute("data-ssidx"))];
-            if (chosen) {
-              sInput.value = chosen.displayName;
-              applySearchedTentSimple(chosen);
-            }
-          });
-        });
-      };
-
-
-    const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v1";
-    function readAiTentCache(q) {
-      try {
-        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
-        return map[normalizeSearchStr(q)] || null;
-      } catch (e) { return null; }
-    }
-    function writeAiTentCache(q, payload) {
-      try {
-        const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
-        map[normalizeSearchStr(q)] = payload;
-        const keys = Object.keys(map);
-        if (keys.length > 50) delete map[keys[0]];
-        localStorage.setItem(AI_TENT_CACHE_KEY, JSON.stringify(map));
-      } catch (e) {}
-    }
-    async function fetchAiTentSpecFromWeb(query) {
-      const cached = readAiTentCache(query);
-      if (cached && cached.ok && cached.tent) return { ...cached, fromLocalCache: true };
-      const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
-      const apiUrl = isHttp ? `/api/tent-search?q=${encodeURIComponent(query)}` : null;
-      if (!apiUrl) {
-        return { ok: false, code: "LOCAL_PREVIEW", error: "로컬 미리보기 환경에서는 Vercel 배포 후 AI 웹 검색이 자동 연동됩니다." };
+      const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v2";
+      function readAiTentCache(q) {
+        try {
+          const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+          return map[normalizeSearchStr(q)] || null;
+        } catch (e) { return null; }
       }
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 16000);
-      try {
-        const res = await fetch(apiUrl, { signal: ctrl.signal });
-        clearTimeout(timer);
-        const data = await res.json().catch(() => null);
-        if (res.ok && data && data.ok && data.tent) {
-          writeAiTentCache(query, data);
-          return data;
-        }
-        return data || { ok: false, code: "HTTP_ERR", error: "웹 제원 검색 결과를 찾지 못했습니다." };
-      } catch (err) {
-        clearTimeout(timer);
-        return { ok: false, code: "NETWORK_ERR", error: "AI 검색 서버 연결에 실패했습니다." };
+      function writeAiTentCache(q, payload) {
+        try {
+          const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
+          map[normalizeSearchStr(q)] = payload;
+          const keys = Object.keys(map);
+          if (keys.length > 50) delete map[keys[0]];
+          localStorage.setItem(AI_TENT_CACHE_KEY, JSON.stringify(map));
+        } catch (e) {}
       }
-    }
+      async function fetchAiTentSpecFromWeb(query) {
+        const cached = readAiTentCache(query);
+        if (cached && cached.ok && (Array.isArray(cached.candidates) ? cached.candidates.length > 0 : cached.tent)) {
+          return { ...cached, fromLocalCache: true };
+        }
+        const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+        if (!isHttp) {
+          return { ok: false, code: "LOCAL_PREVIEW", error: "Vercel 배포 사이트에서 AI 자동 웹 검색이 실시간으로 작동합니다." };
+        }
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 18000);
+        try {
+          const res = await fetch(`/api/tent-search?q=${encodeURIComponent(query)}`, { signal: ctrl.signal });
+          clearTimeout(timer);
+          const data = await res.json().catch(() => null);
+          if (res.ok && data && data.ok) {
+            writeAiTentCache(query, data);
+            return data;
+          }
+          return data || { ok: false, code: "HTTP_ERR", error: "검색 결과를 찾지 못했습니다." };
+        } catch (err) {
+          clearTimeout(timer);
+          return { ok: false, code: "NETWORK_ERR", error: "AI 검색 서버에 연결하지 못했습니다." };
+        }
+      }
 
-      function applyAiResultSimple(data, originalQuery) {
-        const t = data.tent;
+      function applyAiCandidateSimple(t, sources, originalQuery) {
         const label = `${t.brand ? t.brand + " " : ""}${t.name || originalQuery}`.trim();
-        st.tentId = "custom";
+        sInput.value = label;
+        st.tentId = "custom_tent";
         st.tentH = t.peakHeight;
         st.jackH = t.jackHeight;
         if (["straight", "elbow45", "elbow90"].includes(t.defaultPath)) st.path = t.defaultPath;
-        const cust = TENTS.find((x) => x.id === "custom");
+        const cust = TENTS.find((x) => x.id === "custom_tent");
         if (cust) {
           cust.w = t.tentWidth || 340;
           cust.l = t.tentLength || 420;
@@ -1320,80 +1245,146 @@
         resetPos();
         syncInputs();
         render();
-        sFallback.classList.add("hidden");
-        const srcHtml = (Array.isArray(data.sources) && data.sources.length > 0)
-          ? ` · <a href="${sanitizeUrl(data.sources[0].url)}" target="_blank" rel="noopener noreferrer" class="underline font-bold">출처 확인 ↗</a>`
+        sResBox.classList.add("hidden");
+        sSuggest.classList.add("hidden");
+        const srcHtml = (Array.isArray(sources) && sources.length > 0)
+          ? ` · <a href="${sanitizeUrl(sources[0].url)}" target="_blank" rel="noopener noreferrer" class="underline font-bold">출처 ↗</a>`
           : "";
         sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
-        sFb.innerHTML = `🤖 <strong>AI 웹 검색 자동입력 완료:</strong> ${escapeHtml(label)} (최고높이 ${t.peakHeight}cm · 폭 ${t.tentWidth}cm · 홀잭 ${t.jackHeight}cm${t.jackEstimated ? " 추정" : ""})${srcHtml}`;
+        sFb.innerHTML = `🤖 <strong>AI 자동입력 완료:</strong> ${escapeHtml(label)} (최고높이 ${t.peakHeight}cm · 폭 ${t.tentWidth}cm · 홀잭 ${t.jackHeight}cm${t.jackEstimated ? " 추정" : ""})${srcHtml}`;
         sFb.classList.remove("hidden");
-        showToast(`AI가 ${label} 제원을 찾아 자동 입력했습니다!`);
+        showToast(`${label} 사이즈가 자동 입력되었습니다!`);
+      }
+
+      function showCandidatePickerSimple(title, items, isAi, sources, originalQuery) {
+        sResTitle.textContent = title;
+        sResList.innerHTML = items.map((m, idx) => {
+          const label = m.displayName || `${m.brand ? m.brand + " " : ""}${m.name || ""}`.trim();
+          const h = m.h || m.peakHeight;
+          const w = m.w || m.tentWidth;
+          const jh = m.jh || m.jackHeight;
+          const sub = m.summary ? m.summary : `최고높이 ${h}cm · 폭 ${w}cm · 홀잭 ${jh}cm`;
+          return `
+            <button type="button" data-pick-idx="${idx}" class="w-full text-left px-3 py-2 rounded-xl bg-white hover:bg-orange-50 border border-slate-200 hover:border-orange-300 transition flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-xs font-extrabold text-slate-900 truncate">${escapeHtml(label)}</div>
+                <div class="text-[11px] text-slate-500 truncate">${escapeHtml(sub)}</div>
+              </div>
+              <span class="px-2 py-1 rounded-lg bg-orange-500 text-white text-[11px] font-bold whitespace-nowrap">선택</span>
+            </button>
+          `;
+        }).join("");
+        sForceAiBtn.classList.toggle("hidden", isAi);
+        sResBox.classList.remove("hidden");
+        sResList.querySelectorAll("button[data-pick-idx]").forEach((b) => {
+          b.addEventListener("click", () => {
+            const chosen = items[Number(b.getAttribute("data-pick-idx"))];
+            if (!chosen) return;
+            if (isAi) {
+              applyAiCandidateSimple(chosen, sources, originalQuery);
+            } else {
+              sInput.value = chosen.displayName;
+              sResBox.classList.add("hidden");
+              applySearchedTentSimple(chosen);
+            }
+          });
+        });
       }
 
       const runSimpleSearch = async (forceWebAi = false) => {
         const q = sInput.value.trim();
         if (!q) { showToast("검색할 텐트 모델명을 입력해 주세요."); return; }
         sSuggest.classList.add("hidden");
+
         if (!forceWebAi) {
           const matches = searchTentCandidatesSimple(q);
-          if (matches.length > 0) {
+          if (matches.length === 1) {
             sInput.value = matches[0].displayName;
+            sResBox.classList.add("hidden");
             applySearchedTentSimple(matches[0]);
+            return;
+          } else if (matches.length > 1) {
+            sFb.classList.add("hidden");
+            showCandidatePickerSimple(`"${q}" 검색 결과 ${matches.length}건 — 모델을 선택하세요`, matches, false, [], q);
             return;
           }
         }
-        // Not in built-in DB (or forced): Call Live Web AI Search (/api/tent-search)
-        sFallback.classList.add("hidden");
+
+        sResBox.classList.add("hidden");
         sBtn.disabled = true;
-        sBtn.textContent = "검색중...";
+        sBtn.textContent = "AI 검색중...";
         sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-sky-50 border border-sky-200 text-sky-800";
-        sFb.innerHTML = `🤖 AI가 인터넷(구글·네이버)에서 <strong>"${escapeHtml(q)}"</strong> 텐트 사이즈를 확인하는 중입니다...`;
+        sFb.innerHTML = `🤖 AI가 인터넷에서 <strong>"${escapeHtml(q)}"</strong> 텐트 모델과 사이즈를 자동 확인 중입니다...`;
         sFb.classList.remove("hidden");
 
         const aiRes = await fetchAiTentSpecFromWeb(q);
         sBtn.disabled = false;
         sBtn.textContent = "AI 검색";
 
-        if (aiRes && aiRes.ok && aiRes.tent) {
-          applyAiResultSimple(aiRes, q);
+        if (aiRes && aiRes.ok) {
+          const list = Array.isArray(aiRes.candidates) && aiRes.candidates.length > 0
+            ? aiRes.candidates
+            : (aiRes.tent ? [aiRes.tent] : []);
+          if (list.length === 1) {
+            applyAiCandidateSimple(list[0], aiRes.sources, q);
+          } else if (list.length > 1) {
+            sFb.classList.add("hidden");
+            showCandidatePickerSimple(`🤖 AI 검색 결과 ${list.length}건 — 보유 모델을 선택하세요`, list, true, aiRes.sources, q);
+          }
         } else {
-          sFb.classList.add("hidden");
-          const sq = encodeURIComponent(`${q} 텐트 높이 제원 규격`);
-          sNaver.href = `https://search.naver.com/search.naver?query=${sq}`;
-          sGoogle.href = `https://www.google.com/search?q=${sq}`;
-          const reason = (aiRes && aiRes.code === "NO_API_KEY")
-            ? "Vercel 환경변수(GEMINI_API_KEY) 설정 후 AI 자동검색이 작동합니다. 지금은 아래에서 제원을 복사·붙여넣기해 바로 적용할 수 있습니다."
+          sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-amber-50 border border-amber-200 text-amber-800";
+          const msg = (aiRes && aiRes.code === "NO_API_KEY")
+            ? "Vercel 환경변수(GEMINI_API_KEY)가 설정되면 AI가 인터넷에서 자동으로 사이즈를 찾아 입력합니다."
             : (aiRes && aiRes.code === "LOCAL_PREVIEW")
-              ? "실제 배포 사이트(Vercel)에서는 AI가 인터넷에서 자동 검색합니다. 현재 미리보기에서는 아래 버튼으로 제원을 복사·붙여넣기해 주세요."
-              : `"${q}"의 정확한 공식 치수를 찾지 못했습니다. 아래에서 제원을 확인해 붙여넣으면 자동 입력됩니다.`;
-          sFbMsg.textContent = reason;
-          sFallback.classList.remove("hidden");
+              ? "배포된 사이트(Vercel)에서 AI가 인터넷을 검색해 텐트 사이즈를 자동 입력합니다. 아래 슬라이더로 직접 높이를 조정할 수도 있습니다."
+              : `"${escapeHtml(q)}"의 공식 규격을 찾지 못했습니다. 브랜드명과 모델명을 함께 입력해 다시 검색해 보세요.`;
+          sFb.innerHTML = msg;
+          sFb.classList.remove("hidden");
         }
       };
 
+      const renderSimpleSuggestions = (q) => {
+        const matches = searchTentCandidatesSimple(q);
+        if (!q.trim()) {
+          sSuggest.classList.add("hidden");
+          sSuggest.innerHTML = "";
+          return;
+        }
+        const rowsHtml = matches.map((m, idx) => `
+          <button type="button" data-ssidx="${idx}" class="w-full text-left px-3 py-2 hover:bg-orange-50 transition flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-slate-900 truncate">${escapeHtml(m.displayName)}</span>
+            <span class="text-[11px] text-slate-500 whitespace-nowrap">${m.h}cm · 홀잭 ${m.jh}cm</span>
+          </button>
+        `).join("");
+        const aiRowHtml = `
+          <button type="button" id="sSuggestAiTrigger" class="w-full text-left px-3 py-2 bg-sky-50/70 hover:bg-sky-100 transition flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-sky-700 truncate">🤖 "${escapeHtml(q.trim())}" AI로 인터넷에서 자동 검색</span>
+            <span class="text-[11px] font-bold text-sky-600 whitespace-nowrap">실시간 ↗</span>
+          </button>
+        `;
+        sSuggest.innerHTML = rowsHtml + aiRowHtml;
+        sSuggest.classList.remove("hidden");
+        sSuggest.querySelectorAll("button[data-ssidx]").forEach((b) => {
+          b.addEventListener("click", () => {
+            const chosen = matches[Number(b.getAttribute("data-ssidx"))];
+            if (chosen) {
+              sInput.value = chosen.displayName;
+              sResBox.classList.add("hidden");
+              applySearchedTentSimple(chosen);
+            }
+          });
+        });
+        const aiTrig = document.getElementById("sSuggestAiTrigger");
+        if (aiTrig) aiTrig.addEventListener("click", () => runSimpleSearch(true));
+      };
+
       sInput.addEventListener("input", () => renderSimpleSuggestions(sInput.value));
-      sInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runSimpleSearch(); } });
+      sInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runSimpleSearch(false); } });
       sBtn.addEventListener("click", () => runSimpleSearch(false));
+      sResClose.addEventListener("click", () => sResBox.classList.add("hidden"));
+      sForceAiBtn.addEventListener("click", () => runSimpleSearch(true));
       document.addEventListener("click", (e) => {
         if (!sInput.contains(e.target) && !sSuggest.contains(e.target)) sSuggest.classList.add("hidden");
-      });
-
-      sParseBtn.addEventListener("click", () => {
-        const parsed = parseTentSpecText(sPaste.value, sInput.value);
-        if (!parsed) { showToast("높이 수치(예: 640×350×215cm)를 찾지 못했습니다."); return; }
-        st.tentId = "custom";
-        st.tentH = parsed.h;
-        st.jackH = parsed.jh;
-        const cust = TENTS.find((x) => x.id === "custom");
-        if (cust) { cust.w = parsed.w; cust.h = parsed.h; cust.jh = parsed.jh; cust.shape = parsed.shape || "dome"; }
-        resetPos();
-        syncInputs();
-        render();
-        sFallback.classList.add("hidden");
-        sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
-        sFb.textContent = `✅ ${sInput.value || "직접 입력 텐트"} 제원 자동 추출 완료 (최고높이 ${parsed.h}cm · 폭 ${parsed.w}cm · 홀잭 ${parsed.jh}cm${parsed.jhEstimated ? " 추정" : ""})`;
-        sFb.classList.remove("hidden");
-        showToast("제원 문구에서 텐트 사이즈를 자동 추출했습니다!");
       });
 
       // Cross-Navigation to Pro / Full Version (preserves current inputs)
@@ -1405,13 +1396,13 @@
         const curTent = TENTS.find((x) => x.id === st.tentId);
         const params = new URLSearchParams();
         params.set("tent", st.tentId);
-        if (curTent && curTent.id !== "custom") params.set("tname", curTent.name.replace(/^\[[^\]]+\]\s*/, "").replace(/\s*\(.*$/, ""));
+        if (curTent && curTent.id !== "custom_tent") params.set("tname", curTent.name.replace(/^\[[^\]]+\]\s*/, "").replace(/\s*\(.*$/, ""));
         params.set("th", String(st.tentH));
         params.set("jh", String(st.jackH));
         params.set("sh", String(st.stoveH));
         params.set("st", String(st.standH));
         params.set("path", st.path);
-        params.set("pipe", st.pipe);
+        params.set("pipe", st.pipeSys);
         window.location.href = `${targetFile}?${params.toString()}`;
       });
 
@@ -1439,7 +1430,7 @@
           const sh = Number(p.get("sh")); if (Number.isFinite(sh) && sh >= 20 && sh <= 90) st.stoveH = sh;
           const stH = Number(p.get("st")); if (Number.isFinite(stH) && stH >= 0 && stH <= 80) st.standH = stH;
           const path = p.get("path"); if (["straight", "elbow45", "elbow90"].includes(path)) st.path = path;
-          const pipe = p.get("pipe"); if (["set_70_76", "single_75"].includes(pipe)) st.pipe = pipe;
+          const pipe = p.get("pipe"); if (["tapered_70_73_76", "single_70", "single_75"].includes(pipe)) st.pipeSys = pipe;
         } catch (err) {}
       })();
 
