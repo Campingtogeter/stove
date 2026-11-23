@@ -3,7 +3,7 @@
 // 필수 환경변수: Vercel Project Settings -> Environment Variables -> GEMINI_API_KEY
 
 const MEMORY_CACHE = new Map();
-const MAX_CACHE_ITEMS = 200;
+const MAX_CACHE_ITEMS = 250;
 
 function sanitizeNum(val, min, max, fallback) {
   const n = Math.round(Number(val));
@@ -24,8 +24,36 @@ function extractJsonObject(text) {
   }
 }
 
+function normalizeCandidate(raw, fallbackQuery) {
+  if (!raw || !raw.peakHeight) return null;
+  const peakHeight = sanitizeNum(raw.peakHeight, 130, 350, 210);
+  const tentWidth = sanitizeNum(raw.tentWidth, 200, 620, 340);
+  const tentLength = sanitizeNum(raw.tentLength, 200, 900, 420);
+  const allowedShapes = ["dome", "tunnel", "tipi", "bell", "cabin"];
+  const shape = allowedShapes.includes(raw.shape) ? raw.shape : "dome";
+  const allowedPaths = ["straight", "elbow45", "elbow90"];
+  const defaultPath = allowedPaths.includes(raw.defaultPath)
+    ? raw.defaultPath
+    : (shape === "tunnel" ? "elbow90" : (shape === "tipi" || shape === "bell" ? "straight" : "elbow45"));
+
+  const defaultJack = Math.max(100, Math.min(peakHeight - 15, Math.round((peakHeight * 0.72) / 5) * 5));
+  const jackHeight = sanitizeNum(raw.jackHeight, 95, Math.max(100, peakHeight - 10), defaultJack);
+
+  return {
+    brand: String(raw.brand || "").trim().slice(0, 40),
+    name: String(raw.name || fallbackQuery).trim().slice(0, 80),
+    peakHeight,
+    tentWidth,
+    tentLength,
+    jackHeight,
+    jackEstimated: Boolean(raw.jackEstimated !== false),
+    shape,
+    defaultPath,
+    summary: String(raw.summary || `설치 크기 약 ${tentLength}×${tentWidth}×${peakHeight}cm`).trim().slice(0, 140)
+  };
+}
+
 module.exports = async function handler(req, res) {
-  // CORS headers (same-origin + Vercel preview support)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -62,22 +90,27 @@ module.exports = async function handler(req, res) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
   const prompt = [
-    `한국 캠핑 시장(네이버 쇼핑, 다나와, 브랜드 공식 홈페이지, 해외 공식 사이트)에서 "${query}" 텐트(또는 쉘터)의 공식 설치 규격(cm)을 웹 검색으로 확인해 주세요.`,
+    `한국 캠핑 시장(네이버 쇼핑, 다나와, 브랜드 공식 홈페이지, 해외 공식 사이트)에서 "${query}"와 일치하거나 관련된 캠핑 텐트(또는 쉘터)의 공식 설치 규격(cm)을 웹 검색으로 확인해 주세요.`,
+    `만약 정확히 하나의 모델이면 candidates 배열에 1개만 넣고, 브랜드명이나 시리즈명처럼 여러 세부 모델(예: M/L, 13.6/17.2, 플러스/프로 등)이 존재하면 인기 순으로 최대 5개까지 candidates 배열에 담아 주세요.`,
     `반드시 아래 JSON 형식만 단독으로 출력하세요(설명 문장이나 마크다운 코드블록 없이 JSON 객체만 출력):`,
     `{`,
     `  "found": true 또는 false,`,
-    `  "brand": "브랜드명",`,
-    `  "name": "공식 모델명",`,
-    `  "peakHeight": 최고높이_cm_정수,`,
-    `  "tentWidth": 폭_cm_정수,`,
-    `  "tentLength": 길이_cm_정수,`,
-    `  "jackHeight": 홀잭높이_cm_정수_없으면_최고높이의_72퍼센트_추정정수,`,
-    `  "jackEstimated": 공식홀잭높이_미확인시_true_확인시_false,`,
-    `  "shape": "dome" | "tunnel" | "tipi" | "bell" | "cabin",`,
-    `  "defaultPath": "straight" | "elbow45" | "elbow90",`,
-    `  "summary": "확인된 공식 설치 규격 한 줄 요약 (예: 설치크기 640×350×215cm)"`,
+    `  "candidates": [`,
+    `    {`,
+    `      "brand": "브랜드명",`,
+    `      "name": "공식 모델명",`,
+    `      "peakHeight": 최고높이_cm_정수,`,
+    `      "tentWidth": 폭_cm_정수,`,
+    `      "tentLength": 길이_cm_정수,`,
+    `      "jackHeight": 홀잭높이_cm_정수_없으면_최고높이의_72퍼센트_추정정수,`,
+    `      "jackEstimated": 공식홀잭높이_미확인시_true_확인시_false,`,
+    `      "shape": "dome" | "tunnel" | "tipi" | "bell" | "cabin",`,
+    `      "defaultPath": "straight" | "elbow45" | "elbow90",`,
+    `      "summary": "설치크기 예: 640×350×215cm"`,
+    `    }`,
+    `  ]`,
     `}`,
-    `규칙: 텐트가 아니거나 실제 규격을 찾을 수 없으면 {"found": false}만 반환하세요. mm 단위는 반드시 cm로 변환하세요.`
+    `규칙: 텐트가 아니거나 실제 규격을 찾을 수 없으면 {"found": false, "candidates": []}만 반환하세요. mm 단위는 반드시 cm로 변환하세요.`
   ].join("\n");
 
   try {
@@ -112,28 +145,23 @@ module.exports = async function handler(req, res) {
     const text = parts.map((p) => p.text || "").join("\n");
     const parsed = extractJsonObject(text);
 
-    if (!parsed || parsed.found !== true || !parsed.peakHeight) {
+    const rawList = parsed && Array.isArray(parsed.candidates)
+      ? parsed.candidates
+      : (parsed && parsed.peakHeight ? [parsed] : []);
+
+    const candidates = rawList
+      .map((item) => normalizeCandidate(item, query))
+      .filter(Boolean)
+      .slice(0, 5);
+
+    if (!parsed || parsed.found === false || candidates.length === 0) {
       return res.status(404).json({
         ok: false,
         code: "NOT_FOUND",
-        error: `"${query}"의 공식 텐트 높이를 찾지 못했습니다.`
+        error: `"${query}"의 공식 텐트 규격을 찾지 못했습니다.`
       });
     }
 
-    const peakHeight = sanitizeNum(parsed.peakHeight, 130, 350, 210);
-    const tentWidth = sanitizeNum(parsed.tentWidth, 200, 620, 340);
-    const tentLength = sanitizeNum(parsed.tentLength, 200, 900, 420);
-    const allowedShapes = ["dome", "tunnel", "tipi", "bell", "cabin"];
-    const shape = allowedShapes.includes(parsed.shape) ? parsed.shape : "dome";
-    const allowedPaths = ["straight", "elbow45", "elbow90"];
-    const defaultPath = allowedPaths.includes(parsed.defaultPath)
-      ? parsed.defaultPath
-      : (shape === "tunnel" ? "elbow90" : (shape === "tipi" || shape === "bell" ? "straight" : "elbow45"));
-
-    const defaultJack = Math.max(100, Math.min(peakHeight - 15, Math.round((peakHeight * 0.72) / 5) * 5));
-    const jackHeight = sanitizeNum(parsed.jackHeight, 95, Math.max(100, peakHeight - 10), defaultJack);
-
-    // Extract verified grounding source URL if present
     const chunks = candidate && candidate.groundingMetadata && Array.isArray(candidate.groundingMetadata.groundingChunks)
       ? candidate.groundingMetadata.groundingChunks
       : [];
@@ -144,18 +172,8 @@ module.exports = async function handler(req, res) {
 
     const resultPayload = {
       ok: true,
-      tent: {
-        brand: String(parsed.brand || "").trim().slice(0, 40),
-        name: String(parsed.name || query).trim().slice(0, 80),
-        peakHeight,
-        tentWidth,
-        tentLength,
-        jackHeight,
-        jackEstimated: Boolean(parsed.jackEstimated !== false),
-        shape,
-        defaultPath,
-        summary: String(parsed.summary || `설치 크기 약 ${tentLength}×${tentWidth}×${peakHeight}cm`).trim().slice(0, 140)
-      },
+      tent: candidates[0],
+      candidates,
       sources: webSources
     };
 
@@ -174,4 +192,4 @@ module.exports = async function handler(req, res) {
       error: "AI 검색 처리 중 오류가 발생했습니다."
     });
   }
-}
+};
