@@ -5,15 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>캠핑투게더 화목난로·연통 경로 시뮬레이터 & 맞춤 추천 가이드</title>
   <meta name="description" content="내 텐트와 화목난로·스탠드·홀잭 높이를 입력하면 마디당 5cm 결속 단축을 반영한 실시간 연통 경로 도면과 필요한 연통 구성품(BOM)을 즉시 추천해 드립니다." />
+  <link rel="canonical" href="https://stove-iota.vercel.app/" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://stove-iota.vercel.app/" />
+  <meta property="og:locale" content="ko_KR" />
   <meta property="og:title" content="캠핑투게더 화목난로·연통 경로 시뮬레이터" />
-  <meta property="og:description" content="국내·해외 인기 텐트 28종 실측 단면도 지원! 내 텐트에 딱 맞는 연통 본수와 엘보·이중연통 구성을 10초 만에 계산하세요." />
+  <meta property="og:description" content="국내·해외 인기 텐트 36종 실측 단면도 지원! 내 텐트에 딱 맞는 연통 본수와 엘보·이중연통 구성을 10초 만에 계산하세요." />
   <meta property="og:site_name" content="캠핑투게더 (Camping Together)" />
+  <meta property="og:image" content="https://stove-iota.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="텐트 단면도 위에 화목난로 연통 경로가 그려진 캠핑투게더 시뮬레이터" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://stove-iota.vercel.app/og-image.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -84,6 +92,8 @@
     body.light-theme .bg-orange-600.text-white,
     body.light-theme .bg-emerald-600.text-white,
     body.light-theme .bg-indigo-600.text-white,
+    body.light-theme .bg-sky-600.text-white,
+    body.light-theme .bg-rose-700.text-white,
     body.light-theme .bg-slate-900.text-white {
       color: #ffffff !important;
     }
@@ -590,10 +600,10 @@
                 <button id="openBlueprintModalBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-300 transition">
                   🔍 실측 단면도 상세
                 </button>
-                <button id="toggleDimBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                <button id="toggleDimBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white border border-sky-600 shadow-sm transition">
                   📏 치수선: ON
                 </button>
-                <button id="toggleNodeBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                <button id="toggleNodeBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-600 shadow-sm transition">
                   🔩 마디·번호: ON
                 </button>
               </div>
@@ -2635,7 +2645,7 @@
       customerSimpleMode: false,
       adminUnlocked: false,
       adminDrawerOpen: false,
-      deployBaseUrl: "https://camping-together-sim.vercel.app",
+      deployBaseUrl: "https://stove-iota.vercel.app",
       embedQueryPreset: "?embed=1",
       stockFeedUrl: "",
       lastStockSyncTime: "",
@@ -2970,6 +2980,15 @@
         warnings.push(
           `[입력 오류] 홀잭 높이(${H_jack}cm)가 텐트 최고 높이(${H_tent}cm)보다 같거나 높습니다. 텐트 천장고보다 낮게 설정해 주세요.`
         );
+      }
+      if (effectivePathMode === "elbow45" && D_horiz > 0) {
+        const availVertFor45 = H_jack - (H_start + effDamperLen);
+        if (availVertFor45 < D_horiz - 15) {
+          const approxDeg = Math.round((Math.atan2(Math.max(1, availVertFor45), D_horiz) * 180) / Math.PI);
+          warnings.push(
+            `[45° 기하 각도 주의] 현재 수평 이동(${D_horiz}cm) 대비 상승 여유 높이(${Math.max(0, Math.round(availVertFor45))}cm)가 부족해 실제 경사가 약 ${approxDeg}°입니다. 45° 엘보 2개를 정확히 연결하려면 난로를 홀잭 쪽으로 더 가까이 이동하거나 측면 90° 경로를 선택하세요.`
+          );
+        }
       }
       if (actualRoofClearance < 35) {
         warnings.push(
@@ -3490,9 +3509,11 @@
 
       function pickProduct(id, fallbackName, fallbackPrice, fallbackUrl, suffix) {
         const p = getStoreProduct(id);
-        const baseName = p ? `${p.name}${p.status.includes("품절") ? " (품절)" : ""}` : fallbackName;
+        const isSoldOut = p ? /품절/.test(p.status) : false;
+        const baseName = p ? p.name : fallbackName;
         return {
           prodId: id,
+          soldOut: isSoldOut,
           name: suffix ? `${baseName} · ${suffix}` : baseName,
           unitPrice: p ? p.price : fallbackPrice,
           url: p ? p.url : fallbackUrl
@@ -3812,7 +3833,7 @@
       const extraNote =
         state.pipeSystem === "tapered_70_73_76"
           ? sim.totalSegments <= 12
-            ? `캠핑투게더 <strong>3.3m 기본 연통 세트(총 12본, 유효 330cm)</strong> 1세트만으로 목표 높이를 여유 있게 충족합니다${sim.totalSegments < 12 ? ` (현장 상황에 따라 직관 ${12 - sim.totalSegments}본을 빼고 ${sim.totalSegments}본만 조립 가능)` : ""}.`
+            ? `캠핑투게더 <strong>3.3m 기본 연통 세트(총 12본, N-1마디 단축 시 유효 336cm)</strong> 1세트만으로 목표 높이를 여유 있게 충족합니다${sim.totalSegments < 12 ? ` (현장 상황에 따라 직관 ${12 - sim.totalSegments}본을 빼고 ${sim.totalSegments}본만 조립 가능)` : ""}.`
             : `텐트 천장고 및 굴절 경로가 길어 <strong>3.3m 기본 연통 세트(12본)</strong>에 <strong>연장 직관 ${sim.totalSegments - 12}본</strong>을 추가한 총 ${sim.totalSegments}본 구성을 추천합니다.`
           : `단품 조합 기준 <strong>댐퍼/레듀셔 1본 + 직관 ${sim.straightPipeCount}본 (총 ${sim.totalSegments}본)</strong> 구성으로 유효 길이 <strong>${sim.actualEffTotalLen}cm</strong>를 확보합니다.`;
 
@@ -3835,7 +3856,7 @@
 
       items.forEach((item, idx) => {
         const key = item.prodId || `${item.category}_${idx}`;
-        const isIncluded = !state.bomExcludedKeys[key];
+        const isIncluded = !item.soldOut && !state.bomExcludedKeys[key];
         const isVisited = Boolean(state.bomVisitedKeys[key]);
         if (isVisited) visitedCount++;
 
@@ -3845,10 +3866,15 @@
           totalQtyCount += item.qty;
         }
 
-        const rowOpacity = isIncluded ? "" : "opacity-45 line-through";
-        const visitedBadge = isVisited
-          ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">✓ 확인됨</span>`
+        const rowOpacity = isIncluded ? "" : "opacity-50 line-through";
+        const soldOutBadge = item.soldOut
+          ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold">품절·합계제외</span>`
           : "";
+        const visitedBadge =
+          soldOutBadge +
+          (isVisited
+            ? `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">링크 열람</span>`
+            : "");
 
         rowsHtml.push(`
           <tr class="hover:bg-slate-800/40 transition ${rowOpacity}">
@@ -3895,9 +3921,19 @@
       const visProg = document.getElementById("bomVisitedProgress");
       if (visProg) visProg.textContent = `스토어 확인 ${visitedCount} / ${items.length}개`;
 
-      document.getElementById("bomTotalQty").textContent = `총 ${totalQtyCount}개 선택`;
+      const copyBomBtnEl = document.getElementById("copyBomBtn");
+      if (sim.isPhysicallyBlocked) {
+        document.getElementById("kpiPipeCount").textContent = "설치 불가";
+        document.getElementById("kpiTopHeight").textContent = "보정 필요";
+        document.getElementById("bomTotalQty").textContent = "추천 보류";
+        document.getElementById("bomTotalPrice").textContent = "설치 조건 보정 필요";
+        if (copyBomBtnEl) copyBomBtnEl.disabled = true;
+      } else {
+        document.getElementById("bomTotalQty").textContent = `총 ${totalQtyCount}개 선택`;
+        document.getElementById("bomTotalPrice").textContent = formatKRW(totalAccessoriesPrice);
+        if (copyBomBtnEl) copyBomBtnEl.disabled = false;
+      }
       const withStoveTotal = selectedStove.price > 0 ? totalAccessoriesPrice + selectedStove.price : totalAccessoriesPrice;
-      document.getElementById("bomTotalPrice").textContent = formatKRW(totalAccessoriesPrice);
       const stoveNoteEl = document.getElementById("bomStoveCombinedNote");
       if (stoveNoteEl) {
         stoveNoteEl.textContent =
@@ -3968,16 +4004,17 @@
         mstove_v3: "p_mstove_v3",
         lumora_ti_legs: "p_lumora_ti",
         lumora_ti_body: "p_lumora_ti",
-        dweller_max3_legs: "p_dweller_max3",
-        dweller_max3_body: "p_dweller_max3"
+        dweller_max_ti3_legs: "p_dweller_max_ti3",
+        dweller_max3_legs: "p_dweller_max3"
       };
       STOVE_MODELS.forEach((s) => {
-        const pid = linkMap[s.id];
+        const pid = s.productId || linkMap[s.id];
         if (!pid) return;
         const prod = STORE_PRODUCTS.find((p) => p.id === pid);
         if (prod) {
           s.status = prod.status;
           s.price = prod.price;
+          s.url = prod.url;
         }
       });
     }
@@ -4039,7 +4076,9 @@
           const name = (r.name || "").trim();
           const target = STORE_PRODUCTS.find((p) => (id && p.id === id) || (name && p.name.includes(name)));
           if (!target) return;
-          if (r.status) { target.status = String(r.status).trim(); updatedCount++; }
+          const allowedStatuses = ["판매중", "품절", "일시품절", "판매중 (예약)", "도킹툴 판매중"];
+          const cleanStatus = String(r.status || "").trim();
+          if (allowedStatuses.includes(cleanStatus)) { target.status = cleanStatus; updatedCount++; }
           const parsedPrice = Number(String(r.price || "").replace(/[^0-9]/g, ""));
           if (parsedPrice > 0) target.price = parsedPrice;
         });
@@ -4787,6 +4826,11 @@
       document.querySelectorAll(".tent-shape-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.tentShape = btn.getAttribute("data-shape");
+          if (state.selectedTentId !== "custom_tent") {
+            state.selectedTentId = "custom_tent";
+            const sel = document.getElementById("tentSelect");
+            if (sel) sel.value = "custom_tent";
+          }
           updateUI();
         });
       });
@@ -4820,20 +4864,50 @@
         });
       });
 
+      let uiRafId = 0;
+      const scheduleUpdateUI = () => {
+        if (uiRafId) return;
+        uiRafId = requestAnimationFrame(() => {
+          uiRafId = 0;
+          updateUI();
+        });
+      };
+
       const linkInputPair = (numId, rangeId, stateKey) => {
         const numEl = document.getElementById(numId);
         const rangeEl = document.getElementById(rangeId);
+        const minV = Number(numEl.min);
+        const maxV = Number(numEl.max);
         numEl.addEventListener("input", () => {
-          state[stateKey] = Number(numEl.value) || 0;
-          rangeEl.value = state[stateKey];
+          const raw = Number(numEl.value);
+          if (!Number.isFinite(raw) || raw < minV || raw > maxV) return;
+          state[stateKey] = raw;
+          rangeEl.value = raw;
+          scheduleUpdateUI();
+        });
+        numEl.addEventListener("blur", () => {
+          const raw = Number(numEl.value);
+          const clamped = Number.isFinite(raw) ? Math.max(minV, Math.min(maxV, raw)) : minV;
+          state[stateKey] = clamped;
+          numEl.value = clamped;
+          rangeEl.value = clamped;
           updateUI();
         });
         rangeEl.addEventListener("input", () => {
           state[stateKey] = Number(rangeEl.value) || 0;
           numEl.value = state[stateKey];
-          updateUI();
+          scheduleUpdateUI();
         });
       };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const bp = document.getElementById("blueprintModal");
+          if (bp && !bp.classList.contains("hidden")) bp.classList.add("hidden");
+          const am = document.getElementById("adminAuthModal");
+          if (am && !am.classList.contains("hidden")) closeAdminAuthModal();
+        }
+      });
 
       linkInputPair("tentHeightInput", "tentHeightSlider", "tentHeight");
       linkInputPair("jackHeightInput", "jackHeightSlider", "jackHeight");
@@ -4868,12 +4942,18 @@
 
       document.getElementById("toggleDimBtn").addEventListener("click", (e) => {
         state.showDimensions = !state.showDimensions;
-        e.currentTarget.textContent = `📏 치수선 표시: ${state.showDimensions ? "ON" : "OFF"}`;
+        e.currentTarget.textContent = `📏 치수선: ${state.showDimensions ? "ON" : "OFF"}`;
+        e.currentTarget.className = state.showDimensions
+          ? "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white border border-sky-600 shadow-sm transition"
+          : "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-300 transition";
         updateUI();
       });
       document.getElementById("toggleNodeBtn").addEventListener("click", (e) => {
         state.showPipeNodes = !state.showPipeNodes;
         e.currentTarget.textContent = `🔩 마디·번호: ${state.showPipeNodes ? "ON" : "OFF"}`;
+        e.currentTarget.className = state.showPipeNodes
+          ? "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white border border-orange-600 shadow-sm transition"
+          : "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-300 transition";
         updateUI();
       });
 
@@ -5062,7 +5142,7 @@
 
     function buildCustomerShareUrl() {
       const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
-      const rawBase = isHttp ? window.location.href.split("?")[0] : (state.deployBaseUrl || "https://camping-together-sim.vercel.app");
+      const rawBase = isHttp ? window.location.href.split("?")[0] : (state.deployBaseUrl || "https://stove-iota.vercel.app");
       const base = rawBase.replace(/\/+$/, "");
       const params = new URLSearchParams();
       params.set("embed", "1");
@@ -5078,6 +5158,8 @@
       params.set("path", state.pathType);
       params.set("pipe", state.pipeSystem);
       params.set("prot", state.protectionType);
+      params.set("ov", String(state.overlapCm));
+      params.set("cl", String(state.clearanceCm));
       return `${base}/?${params.toString()}`;
     }
 
@@ -5144,25 +5226,26 @@
             state.selectedTentId = "custom_tent";
           }
         }
-        if (params.get("shape")) state.tentShape = params.get("shape");
-        if (params.get("th")) state.tentHeight = Number(params.get("th")) || state.tentHeight;
-        if (params.get("jh")) state.jackHeight = Number(params.get("jh")) || state.jackHeight;
+        if (["dome", "tipi", "tunnel", "cabin"].includes(params.get("shape"))) state.tentShape = params.get("shape");
+        if (params.get("th")) state.tentHeight = Math.max(130, Math.min(350, Number(params.get("th")) || state.tentHeight));
+        if (params.get("jh")) state.jackHeight = Math.max(80, Math.min(320, Number(params.get("jh")) || state.jackHeight));
+        if (["straight", "elbow45", "elbow90"].includes(params.get("path"))) state.pathType = params.get("path");
+        if (["tapered_70_73_76", "single_70", "single_75"].includes(params.get("pipe"))) state.pipeSystem = params.get("pipe");
+        if (["double_pipe", "mesh_guard", "both_guard"].includes(params.get("prot"))) state.protectionType = params.get("prot");
+        if (params.get("sh")) state.stoveHeight = Math.max(20, Math.min(90, Number(params.get("sh")) || state.stoveHeight));
+        if (params.get("st") !== null) state.standHeight = Math.max(0, Math.min(80, Number(params.get("st")) || 0));
+        if (params.get("ov")) state.overlapCm = Math.max(3, Math.min(8, Number(params.get("ov")) || 5));
+        if (params.get("cl")) state.clearanceCm = Math.max(30, Math.min(120, Number(params.get("cl")) || 55));
         if (params.get("hd") !== null) {
-          state.horizDist = Math.max(0, Number(params.get("hd")) || 0);
+          state.horizDist = Math.max(0, Math.min(180, Number(params.get("hd")) || 0));
           hasPosParam = true;
         }
         if (params.get("pos") !== null) {
-          // Initialize jackPosCm first based on tent/path, then preserve exact shared stovePosCm!
           resetStoveAndJackPositions(true);
           state.stovePosCm = clampStovePos(Number(params.get("pos")) || 0);
           state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
           hasPosParam = true;
         }
-        if (params.get("sh")) state.stoveHeight = Number(params.get("sh")) || state.stoveHeight;
-        if (params.get("st")) state.standHeight = Number(params.get("st")) || 0;
-        if (params.get("path")) state.pathType = params.get("path");
-        if (params.get("pipe")) state.pipeSystem = params.get("pipe");
-        if (params.get("prot")) state.protectionType = params.get("prot");
         if (params.get("embed") === "1") {
           setCustomerSimpleMode(true, false);
         } else if (params.get("embed") === "0") {
@@ -5216,7 +5299,7 @@
       const presetSelect = document.getElementById("embedPresetSelect");
       if (!baseInput || !presetSelect) return;
 
-      const rawBase = (baseInput.value || "https://camping-together-sim.vercel.app").trim().replace(/\/+$/, "");
+      const rawBase = (baseInput.value || "https://stove-iota.vercel.app").trim().replace(/\/+$/, "");
       state.deployBaseUrl = rawBase;
       state.embedQueryPreset = presetSelect.value;
 
@@ -5341,7 +5424,7 @@
 
       ctx.fillStyle = "#cbd5e1";
       ctx.font = "16px sans-serif";
-      ctx.fillText("국내·해외 인기 텐트 15종 선택 또는 내 텐트·난로·스탠드·홀잭 높이 입력!", 36, 138);
+      ctx.fillText(`국내·해외 인기 텐트 ${TENT_MODELS.length}종 선택 또는 내 텐트·난로·스탠드·홀잭 높이 입력!`, 36, 138);
       ctx.fillText("마디당 5cm 결속 단축까지 계산해 추천 연통 구성과 도면을 바로 보여드립니다.", 36, 164);
 
       // CTA Button on Banner
