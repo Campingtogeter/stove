@@ -720,7 +720,10 @@
               </span>
             </div>
             <p class="text-xs sm:text-sm text-slate-400 mt-1">
-              <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">smartstore.naver.com/camping-together</a> 판매 품목의 제원·가격·판매상태(판매중/일시품절/예약)를 관리하며, 외부 구글 시트(CSV) 또는 JSON 피드를 연결하면 접속 시 자동 업데이트됩니다.
+              <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer" class="text-orange-400 underline hover:text-orange-300">캠핑투게더 스마트스토어</a>에서 판매 중인 화목난로, 연통 세트, 단품 직관·엘보·댐퍼, 이중연통·보호망 및 스탠드 주요 규격 안내입니다.
+            </p>
+            <p id="productsAdminSubtitle" class="hidden text-xs text-indigo-700 font-semibold mt-1">
+              ⚙️ 관리자 모드: 각 상품의 판매상태·가격·개별 상품 상세 URL을 직접 수정하거나 새 연통 품목을 추가할 수 있으며, 외부 JSON/CSV 피드 연결 시 자동 업데이트됩니다.
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
@@ -764,6 +767,26 @@
             <div>• <strong>방식 1 (완전 자동 실시간 · 추천):</strong> 네이버 스마트스토어는 브라우저 직접 접근(CORS)을 차단하므로, 위 <strong>[네이버 커머스 API 연동 코드 복사]</strong>를 무료 Cloudflare Worker나 Vercel에 1회 올려 그 JSON 주소를 입력하면 <strong>버튼을 누르지 않아도 접속 시 및 60초마다 자동으로 판매중·품절·가격이 실시간 반영</strong>됩니다.</div>
             <div>• <strong>방식 2 (자체 JSON / 구글 시트 CSV):</strong> JSON 엔드포인트 또는 구글 시트 웹게시 CSV 주소를 입력해도 동일하게 무클릭 백그라운드 자동 동기화가 작동합니다.</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Admin-Only Add New Store Product Panel -->
+      <div id="adminAddProductPanel" class="hidden rounded-2xl bg-white border-2 border-orange-200 p-4 space-y-3 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="text-xs sm:text-sm font-extrabold text-slate-900">➕ 관리자 전용 · 스토어 연통/난로 상품 수동 추가</div>
+          <span class="text-[11px] text-slate-500">개별 상품 URL(smartstore.naver.com/camping-together/products/...)을 바로 등록할 수 있습니다.</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+          <select id="addProdCat" class="rounded-lg bg-white border border-slate-300 px-2 py-1.5">
+            <option value="pipe">연통·직관·엘보</option>
+            <option value="safety">이중연통·보호망·스탠드</option>
+            <option value="stove">화목·펠릿 난로</option>
+          </select>
+          <input id="addProdName" type="text" placeholder="상품명 *" class="col-span-2 rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+          <input id="addProdPrice" type="number" placeholder="가격(원)" value="6500" class="rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+          <input id="addProdSpec" type="text" placeholder="규격 (예: Ø75 · 32cm)" class="col-span-2 rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+          <input id="addProdUrl" type="url" placeholder="개별 상품 상세 URL (https://smartstore.naver.com/camping-together/products/...)" class="col-span-2 sm:col-span-5 rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+          <button id="saveNewProdBtn" type="button" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-bold transition">➕ 상품 추가</button>
         </div>
       </div>
 
@@ -1447,6 +1470,7 @@
     ];
 
     const STORE_PRODUCTS = [
+      // --- 화목·펠릿 난로 ---
       {
         id: "p_mstove_v3",
         category: "stove",
@@ -1455,6 +1479,7 @@
         price: 728000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/12412109224",
+        directLink: true,
         note: "3.3m 연통 결합 시 총 높이 365cm / IGT 원유닛 스탠드 호환"
       },
       {
@@ -1465,6 +1490,7 @@
         price: 1480000,
         status: "판매중 (예약)",
         url: "https://smartstore.naver.com/camping-together/products/13876525264",
+        directLink: true,
         note: "티타늄 소재 경량 벽난로형 스토브"
       },
       {
@@ -1475,6 +1501,7 @@
         price: 780000,
         status: "일시품절",
         url: "https://smartstore.naver.com/camping-together/products/11241535740",
+        directLink: true,
         note: "70파이 스텐 직관 및 70파이 이중연통 기본 호환"
       },
       {
@@ -1485,8 +1512,11 @@
         price: 9500,
         status: "도킹툴 판매중",
         url: "https://smartstore.naver.com/camping-together/search?q=%ED%8E%A0%EB%A6%BF",
+        directLink: false,
         note: "엠스토브 시리즈에 펠릿 연소기를 결합할 때 사용"
       },
+
+      // --- 연통 세트 · 직관 · 엘보 · 댐퍼 · 레듀셔 (누락 품목 포함 전면 보강) ---
       {
         id: "p_set_33m",
         category: "pipe",
@@ -1495,16 +1525,29 @@
         price: 86000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/11196831287",
-        note: "단품 총합 391cm → 12본 연결 시 11개 마디(N-1) × 5cm = 55cm 단축 (유효 길이 약 336cm / 공칭 3.3m 세트)"
+        directLink: true,
+        note: "단품 총합 391cm → 12본 연결 시 11개 마디(N-1) × 5cm 단축 (공칭 3.3m 세트)"
+      },
+      {
+        id: "p_damper_70",
+        category: "pipe",
+        name: "70파이 댐퍼 연통 (화력·배기 조절용 / 스테인리스)",
+        spec: "직경 Ø70mm · 길이 280mm (28cm) · 난로 상단 1번째 기본관 장착",
+        price: 17000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=%EB%8C%90%ED%8D%BC",
+        directLink: false,
+        note: "엠스토브·포몰리 등 Ø70mm 난로 배기구에 직접 결합하는 화력 조절 댐퍼"
       },
       {
         id: "p_pipe_70",
         category: "pipe",
         name: "70파이 연통 직관 (33cm / 스테인리스)",
-        spec: "직경 Ø70mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.3~0.4mm",
+        spec: "직경 Ø70mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장)",
         price: 5500,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=70%ED%8C%8C%EC%9D%B4%20%EC%A7%81%EA%B4%80",
+        directLink: false,
         note: "엠스토브 v2·v3 하단부 및 포몰리 70파이 난로 연장용"
       },
       {
@@ -1514,7 +1557,8 @@
         spec: "직경 Ø73mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.5mm",
         price: 6000,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=73%ED%8C%8C%EC%9D%B4%20%EC%97%B0%ED%86%B5",
+        directLink: false,
         note: "3.3m 연통 세트 중단부 추가 연장용"
       },
       {
@@ -1524,18 +1568,31 @@
         spec: "직경 Ø76mm · 기본 길이 33cm (추가 연결 시 마디당 5cm 단축 → +28cm 연장) · 두께 0.3mm",
         price: 6500,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=76%ED%8C%8C%EC%9D%B4%20%EC%97%B0%ED%86%B5",
+        directLink: false,
         note: "3.3m 연통 세트 상단부 추가 연장용"
       },
       {
         id: "p_pipe_75_elbow",
         category: "pipe",
         name: "75파이 연통 직관(32cm) 및 엘보 45° / 90°",
-        spec: "직경 Ø75mm · 기본 32cm (추가 연결 시 마디당 5cm 단축 → +27cm 연장) · 두께 0.3mm 스테인리스",
+        spec: "직경 Ø75mm · 기본 32cm (추가 연결 시 마디당 5cm 단축 → +27cm 연장) · 두께 0.3mm",
         price: 6000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/12692680424",
+        directLink: true,
         note: "75파이 직관 6,000원 / 75파이 엘보 단품 6,500원"
+      },
+      {
+        id: "p_pipe_80",
+        category: "pipe",
+        name: "80파이 연통 직관 및 엘보 45° / 90° (대형 화목·펠릿난로용)",
+        spec: "직경 Ø80mm · 스테인리스 직관 및 굴절 엘보 (80파이 대형 난로·이중연통 호환)",
+        price: 7000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=80%ED%8C%8C%EC%9D%B4%20%EC%97%B0%ED%86%B5",
+        directLink: false,
+        note: "80파이 규격 화목난로·펠릿난로 전용 연장 직관 및 엘보"
       },
       {
         id: "p_elbow_70",
@@ -1544,8 +1601,20 @@
         spec: "직경 Ø70mm · 두께 0.3mm · 각도 변경 굴절 연통",
         price: 6000,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=70%ED%8C%8C%EC%9D%B4%20%EC%97%98%EB%B3%B4",
+        directLink: false,
         note: "경사 홀잭(45°×2) 또는 리빙쉘 측면 창문 통과(90°×2) 필수 부속"
+      },
+      {
+        id: "p_ti_elbow_70",
+        category: "pipe",
+        name: "포몰리 티타늄 70파이 엘보 45° / 90° (초경량 티타늄)",
+        spec: "직경 Ø70mm · 티타늄 소재 · 포몰리 루모라 Ti / 드웰러 호환",
+        price: 64000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=%ED%8B%B0%ED%83%80%EB%8A%84%20%EC%97%98%EB%B3%B4",
+        directLink: false,
+        note: "경량 티타늄 난로 세팅 시 무게 부담을 줄여주는 티타늄 굴절 엘보"
       },
       {
         id: "p_reducer_70_75",
@@ -1554,9 +1623,12 @@
         spec: "하단 Ø70mm(수) → 상단 Ø75mm(암) 변환 · 길이 30cm · STS 304",
         price: 9000,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=%EB%A0%88%EB%93%80%EC%85%94",
+        directLink: false,
         note: "70파이 난로 배기구에 75파이 범용 연통을 연결할 때 사용"
       },
+
+      // --- 이중연통 · 보호망 · 스탠드 · 고정링 · 불티캡 ---
       {
         id: "p_double_70",
         category: "safety",
@@ -1565,7 +1637,30 @@
         price: 29000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/11318998547",
-        note: "텐트 홀잭 관통 구간의 스킨 열손상 방지 (75파이 27,000원 / 80파이 29,000원 별도 구비)"
+        directLink: true,
+        note: "70파이 연통이 텐트 홀잭을 관통할 때 스킨 열손상을 방지"
+      },
+      {
+        id: "p_double_75",
+        category: "safety",
+        name: "75파이 이중 연통 캠핑 화목난로 (스테인리스 304)",
+        spec: "내경 Ø75mm / 외경 Ø115mm · 길이 500mm (50cm) · 텐트 홀잭 단열 보호",
+        price: 27000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=75%ED%8C%8C%EC%9D%B4%20%EC%9D%B4%EC%A4%91",
+        directLink: false,
+        note: "75파이 단일 연통 구성 시 홀잭 관통 구간 스킨 보호용"
+      },
+      {
+        id: "p_double_80",
+        category: "safety",
+        name: "80파이 이중 연통 캠핑 화목난로 (스테인리스 304)",
+        spec: "내경 Ø80mm / 외경 Ø120mm · 길이 500mm (50cm) · 텐트 홀잭 단열 보호",
+        price: 29000,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=80%ED%8C%8C%EC%9D%B4%20%EC%9D%B4%EC%A4%91",
+        directLink: false,
+        note: "80파이 대형 연통 또는 76파이 상단부 외피 보호용"
       },
       {
         id: "p_mesh_guard",
@@ -1575,6 +1670,7 @@
         price: 33000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/12670070982",
+        directLink: true,
         note: "볼트 조절식으로 70~76파이 테이퍼드 연통 어느 구간에나 장착 가능"
       },
       {
@@ -1585,6 +1681,7 @@
         price: 115000,
         status: "판매중",
         url: "https://smartstore.naver.com/camping-together/products/12412259304",
+        directLink: true,
         note: "난로 높이를 55cm 높여 장작 투입 편의성 향상 및 필요 연통 2본 절감"
       },
       {
@@ -1594,18 +1691,31 @@
         spec: "직경 Ø76mm 호환 · 3방향 가이라인(스트링) 연결 고리 내장",
         price: 8500,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=%EA%B3%A0%EC%A0%95%EB%A7%81",
+        directLink: false,
         note: "외부 돌출 연통의 강풍 흔들림 및 전도 방지 필수 부품"
       },
       {
-        id: "p_spark_cap",
+        id: "p_spark_cap_75",
         category: "safety",
-        name: "이중 불티캡 75파이 / 80파이 최상단 (불티·빗물유입 방지)",
-        spec: "75파이(19,500원) / 80파이(20,500원) · 상단 빗물 및 불티 비산 억제",
+        name: "이중 불티캡 75파이 최상단 (불티·빗물유입 방지)",
+        spec: "직경 Ø75mm · 상단 빗물 유입 차단 및 불티 비산 억제",
         price: 19500,
         status: "판매중",
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
-        note: "단일 직경(75파이 등) 구성 시 최상단 마감용"
+        url: "https://smartstore.naver.com/camping-together/search?q=%EB%B6%88%ED%8B%B0%EC%BA%A1",
+        directLink: false,
+        note: "75파이 단일 직경 구성 시 최상단 마감용"
+      },
+      {
+        id: "p_spark_cap_80",
+        category: "safety",
+        name: "이중 불티캡 80파이 최상단 (불티·빗물유입 방지)",
+        spec: "직경 Ø80mm · 대형 연통 최상단 빗물·불티 비산 방지",
+        price: 20500,
+        status: "판매중",
+        url: "https://smartstore.naver.com/camping-together/search?q=80%ED%8C%8C%EC%9D%B4%20%EB%B6%88%ED%8B%B0",
+        directLink: false,
+        note: "80파이 연통 구성 시 최상단 마감용"
       }
     ];
 
@@ -3158,7 +3268,7 @@
             name: `76파이(또는 73파이) 연장 스텐 직관 연통 (기본 33cm + 연결 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
             qty: extraCount,
             unitPrice: 6500,
-            url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+            url: "https://smartstore.naver.com/camping-together/search?q=76%ED%8C%8C%EC%9D%B4%20%EC%97%B0%ED%86%B5",
             required: true
           });
         }
@@ -3168,7 +3278,7 @@
           name: "70파이 댐퍼 연통 (1번째 기본관 · 길이 28cm · 자체 마디 단축 없음)",
           qty: 1,
           unitPrice: 17000,
-          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          url: "https://smartstore.naver.com/camping-together/search?q=%EB%8C%90%ED%8D%BC",
           required: true
         });
         items.push({
@@ -3176,7 +3286,7 @@
           name: `70파이 스테인리스 직관 연통 (기본 33cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
           qty: sim.straightPipeCount,
           unitPrice: 5500,
-          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          url: "https://smartstore.naver.com/camping-together/search?q=70%ED%8C%8C%EC%9D%B4%20%EC%A7%81%EA%B4%80",
           required: true
         });
       } else {
@@ -3185,7 +3295,7 @@
           name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (1번째 기본관 · 304SS)",
           qty: 1,
           unitPrice: 9000,
-          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          url: "https://smartstore.naver.com/camping-together/search?q=%EB%A0%88%EB%93%80%EC%85%94",
           required: true
         });
         items.push({
@@ -3201,7 +3311,7 @@
           name: "이중 불티캡 75파이 최상단 (불티·빗물유입 방지)",
           qty: 1,
           unitPrice: 19500,
-          url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+          url: "https://smartstore.naver.com/camping-together/search?q=%EB%B6%88%ED%8B%B0%EC%BA%A1",
           required: true
         });
       }
@@ -3215,7 +3325,7 @@
           unitPrice: is75 ? 6500 : 6000,
           url: is75
             ? "https://smartstore.naver.com/camping-together/products/12692680424"
-            : "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+            : "https://smartstore.naver.com/camping-together/search?q=70%ED%8C%8C%EC%9D%B4%20%EC%97%98%EB%B3%B4",
           required: true
         });
       }
@@ -3249,7 +3359,7 @@
         name: "화목난로 연통 고정링 홀더 가이드링 (티타늄 76파이 · 스테인리스 호환)",
         qty: sim.actualTopHeight > 390 || state.pathType === "elbow90" ? 2 : 1,
         unitPrice: 8500,
-        url: "https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1",
+        url: "https://smartstore.naver.com/camping-together/search?q=%EA%B3%A0%EC%A0%95%EB%A7%81",
         required: true
       });
 
@@ -3556,10 +3666,20 @@
         const savedOverrides = localStorage.getItem("ct_stock_overrides");
         if (savedOverrides) {
           const map = JSON.parse(savedOverrides);
+          const savedCustomProds = localStorage.getItem("ct_custom_products");
+          if (savedCustomProds) {
+            const cList = JSON.parse(savedCustomProds);
+            if (Array.isArray(cList)) {
+              cList.forEach((cp) => {
+                if (!STORE_PRODUCTS.some((x) => x.id === cp.id)) STORE_PRODUCTS.push(cp);
+              });
+            }
+          }
           STORE_PRODUCTS.forEach((p) => {
             if (map[p.id]) {
               if (map[p.id].status) p.status = map[p.id].status;
               if (typeof map[p.id].price === "number" && map[p.id].price >= 0) p.price = map[p.id].price;
+              if (map[p.id].url) p.url = map[p.id].url;
             }
           });
           syncStoveModelsFromProducts();
@@ -3571,9 +3691,11 @@
       try {
         const map = {};
         STORE_PRODUCTS.forEach((p) => {
-          map[p.id] = { status: p.status, price: p.price };
+          map[p.id] = { status: p.status, price: p.price, url: p.url };
         });
         localStorage.setItem("ct_stock_overrides", JSON.stringify(map));
+        const customProds = STORE_PRODUCTS.filter((p) => p.isCustom);
+        localStorage.setItem("ct_custom_products", JSON.stringify(customProds));
       } catch (err) {}
     }
 
@@ -3689,14 +3811,22 @@
 
           const adminEditor = state.adminUnlocked
             ? `
-              <div class="mt-2 pt-2 border-t border-dashed border-slate-300 flex items-center justify-between gap-2 text-[11px]">
-                <span class="font-bold text-slate-600">상태 변경:</span>
-                <select data-prod-status="${p.id}" class="prod-status-select rounded-lg bg-white border border-slate-300 px-2 py-1 text-[11px] font-bold text-slate-800">
-                  <option value="판매중" ${p.status === "판매중" ? "selected" : ""}>판매중</option>
-                  <option value="일시품절" ${p.status === "일시품절" ? "selected" : ""}>일시품절</option>
-                  <option value="판매중 (예약)" ${p.status === "판매중 (예약)" ? "selected" : ""}>판매중 (예약)</option>
-                  <option value="도킹툴 판매중" ${p.status === "도킹툴 판매중" ? "selected" : ""}>도킹툴 판매중</option>
-                </select>
+              <div class="mt-2 pt-2 border-t border-dashed border-slate-300 space-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-bold text-slate-600">상태 / 가격:</span>
+                  <div class="flex items-center gap-1.5">
+                    <select data-prod-status="${p.id}" class="prod-status-select rounded-lg bg-white border border-slate-300 px-1.5 py-1 text-[11px] font-bold text-slate-800">
+                      <option value="판매중" ${p.status === "판매중" ? "selected" : ""}>판매중</option>
+                      <option value="일시품절" ${p.status === "일시품절" ? "selected" : ""}>일시품절</option>
+                      <option value="판매중 (예약)" ${p.status === "판매중 (예약)" ? "selected" : ""}>판매중 (예약)</option>
+                      <option value="도킹툴 판매중" ${p.status === "도킹툴 판매중" ? "selected" : ""}>도킹툴 판매중</option>
+                    </select>
+                    <input type="number" data-prod-price="${p.id}" value="${p.price}" class="prod-price-input w-20 rounded-lg bg-white border border-slate-300 px-1.5 py-1 text-[11px] text-right font-bold" />
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <input type="url" data-prod-url="${p.id}" value="${p.url}" placeholder="개별 상품 URL 입력" class="prod-url-input flex-1 rounded-lg bg-white border border-slate-300 px-2 py-1 text-[10px] font-mono text-slate-700" />
+                </div>
               </div>
             `
             : "";
@@ -3725,7 +3855,7 @@
                 <span class="text-base font-extrabold text-orange-400">${formatKRW(p.price)}</span>
                 <a href="${p.url}" target="_blank" rel="noopener noreferrer"
                    class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">
-                  스마트스토어 상세 ↗
+                  ${p.url.includes("/products/") ? "상품 바로가기 ↗" : "스토어 품목 검색 ↗"}
                 </a>
               </div>
             </div>
@@ -3947,10 +4077,25 @@
       if (modal) modal.classList.add("hidden");
     }
 
+    function applySimpleModeNavVisibility() {
+      ["products", "tents", "rules"].forEach((id) => {
+        const b = document.getElementById(`tabBtn-${id}`);
+        if (!b) return;
+        if (state.customerSimpleMode) {
+          b.classList.add("hidden");
+        } else {
+          b.classList.remove("hidden");
+        }
+      });
+    }
+
     function switchTab(tabId) {
       if (tabId === "embed" && !state.adminUnlocked) {
         openAdminAuthModal();
         return;
+      }
+      if (state.customerSimpleMode && tabId !== "simulator") {
+        tabId = "simulator";
       }
       state.activeTab = tabId;
       ["simulator", "products", "tents", "rules", "embed"].forEach((id) => {
@@ -3965,6 +4110,7 @@
           btn.className = "nav-tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition";
         }
       });
+      applySimpleModeNavVisibility();
       renderAdminDrawerState();
     }
 
@@ -3976,6 +4122,8 @@
       const syncStockBtn = document.getElementById("syncStockNowBtn");
       const syncBadge = document.getElementById("stockSyncStatusBadge");
       const adminTentPanel = document.getElementById("adminTentAddPanel");
+      const prodAdminSub = document.getElementById("productsAdminSubtitle");
+      const adminAddProdPanel = document.getElementById("adminAddProductPanel");
 
       if (!state.adminUnlocked) {
         if (tabEmbedBtn) tabEmbedBtn.classList.add("hidden");
@@ -3984,6 +4132,8 @@
         if (syncStockBtn) syncStockBtn.classList.add("hidden");
         if (syncBadge) syncBadge.classList.add("hidden");
         if (adminTentPanel) adminTentPanel.classList.add("hidden");
+        if (prodAdminSub) prodAdminSub.classList.add("hidden");
+        if (adminAddProdPanel) adminAddProdPanel.classList.add("hidden");
         if (headerAdminBtn) headerAdminBtn.textContent = "🔒";
       } else {
         if (tabEmbedBtn && !state.customerSimpleMode) tabEmbedBtn.classList.remove("hidden");
@@ -3992,6 +4142,8 @@
         if (syncStockBtn) syncStockBtn.classList.remove("hidden");
         if (syncBadge) syncBadge.classList.remove("hidden");
         if (adminTentPanel) adminTentPanel.classList.remove("hidden");
+        if (prodAdminSub) prodAdminSub.classList.remove("hidden");
+        if (adminAddProdPanel) adminAddProdPanel.classList.remove("hidden");
         if (headerAdminBtn) headerAdminBtn.textContent = "🔓";
       }
     }
@@ -5018,17 +5170,74 @@
       if (prodGrid) {
         prodGrid.addEventListener("change", (e) => {
           const sel = e.target.closest(".prod-status-select");
-          if (!sel) return;
-          const pid = sel.getAttribute("data-prod-status");
-          const prod = STORE_PRODUCTS.find((p) => p.id === pid);
-          if (prod) {
-            prod.status = sel.value;
-            syncStoveModelsFromProducts();
-            saveStockOverrides();
-            populateStoveDropdown();
-            renderProductsTab();
-            showToast(`"${prod.name}" 상태가 [${prod.status}]로 업데이트되었습니다.`);
+          if (sel) {
+            const pid = sel.getAttribute("data-prod-status");
+            const prod = STORE_PRODUCTS.find((p) => p.id === pid);
+            if (prod) {
+              prod.status = sel.value;
+              syncStoveModelsFromProducts();
+              saveStockOverrides();
+              populateStoveDropdown();
+              renderProductsTab();
+              showToast(`"${prod.name}" 상태가 [${prod.status}]로 업데이트되었습니다.`);
+            }
+            return;
           }
+          const priceInp = e.target.closest(".prod-price-input");
+          if (priceInp) {
+            const pid = priceInp.getAttribute("data-prod-price");
+            const prod = STORE_PRODUCTS.find((p) => p.id === pid);
+            if (prod) {
+              prod.price = Math.max(0, Number(priceInp.value) || 0);
+              syncStoveModelsFromProducts();
+              saveStockOverrides();
+              populateStoveDropdown();
+              renderProductsTab();
+              updateUI();
+              showToast(`"${prod.name}" 가격이 ${formatKRW(prod.price)}으로 수정되었습니다.`);
+            }
+            return;
+          }
+          const urlInp = e.target.closest(".prod-url-input");
+          if (urlInp) {
+            const pid = urlInp.getAttribute("data-prod-url");
+            const prod = STORE_PRODUCTS.find((p) => p.id === pid);
+            if (prod && urlInp.value.trim()) {
+              prod.url = urlInp.value.trim();
+              saveStockOverrides();
+              renderProductsTab();
+              showToast(`"${prod.name}" 상세 링크가 저장되었습니다.`);
+            }
+          }
+        });
+      }
+
+      const saveNewProdBtn = document.getElementById("saveNewProdBtn");
+      if (saveNewProdBtn) {
+        saveNewProdBtn.addEventListener("click", () => {
+          const name = (document.getElementById("addProdName").value || "").trim();
+          if (!name) { showToast("추가할 상품명을 입력해 주세요."); return; }
+          const category = document.getElementById("addProdCat").value || "pipe";
+          const price = Math.max(0, Number(document.getElementById("addProdPrice").value) || 0);
+          const spec = (document.getElementById("addProdSpec").value || "캠핑투게더 정품 규격").trim();
+          const url = (document.getElementById("addProdUrl").value || ("https://smartstore.naver.com/camping-together/search?q=" + encodeURIComponent(name))).trim();
+          STORE_PRODUCTS.push({
+            id: "p_custom_" + Date.now(),
+            isCustom: true,
+            category,
+            name,
+            spec,
+            price,
+            status: "판매중",
+            url,
+            note: "관리자 수동 등록 상품"
+          });
+          saveStockOverrides();
+          renderProductsTab();
+          document.getElementById("addProdName").value = "";
+          document.getElementById("addProdSpec").value = "";
+          document.getElementById("addProdUrl").value = "";
+          showToast(`"${name}" 상품이 스토어 DB에 추가되었습니다!`);
         });
       }
 
