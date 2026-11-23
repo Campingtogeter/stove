@@ -251,11 +251,14 @@
             <span class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">2</span>
             <span class="truncate">난로 · 스탠드</span>
           </h2>
-          <span id="sStartBadge" class="text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full shrink-0">출발 35cm</span>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span id="sMaterialBadge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">🔩 스텐</span>
+            <span id="sStartBadge" class="text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">출발 35cm</span>
+          </div>
         </div>
 
         <div>
-          <label for="sStoveSelect" class="block text-xs font-semibold text-slate-500 mb-1">난로 모델 선택</label>
+          <label for="sStoveSelect" class="block text-xs font-semibold text-slate-500 mb-1">난로 모델 선택 (소재별 전용 연통 자동 매칭)</label>
           <select id="sStoveSelect" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"></select>
         </div>
 
@@ -319,20 +322,20 @@
         </div>
 
         <div>
-          <label for="sPipeSys" class="block text-xs font-semibold text-slate-500 mb-1">연통 규격</label>
+          <label for="sPipeSys" class="block text-xs font-semibold text-slate-500 mb-1">연통 규격 <span id="sPipeMatHint" class="text-[10px] font-bold text-slate-400">(스테인리스 전용)</span></label>
           <select id="sPipeSys" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none">
-            <option value="tapered_70_73_76">70-73-76파이 세트 (추천)</option>
-            <option value="single_70">70파이 단일 직관</option>
-            <option value="single_75">75파이 단일 직관</option>
+            <option value="tapered_70_73_76">스텐 70-73-76파이 3.3m 세트 (추천)</option>
+            <option value="single_70">스텐 70파이 단일 직관</option>
+            <option value="single_75">스텐 75파이 단일 직관</option>
           </select>
         </div>
 
         <div>
           <label for="sProtSys" class="block text-xs font-semibold text-slate-500 mb-1">스킨 보호</label>
           <select id="sProtSys" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none">
-            <option value="double_pipe">이중연통 50cm (기본)</option>
-            <option value="mesh_guard">메쉬 텐트 보호망 50cm</option>
-            <option value="both_guard">이중연통 + 메쉬망 (2중)</option>
+            <option value="double_pipe">스텐 이중연통 50cm (기본)</option>
+            <option value="mesh_guard">스텐 메쉬 텐트 보호망 50cm</option>
+            <option value="both_guard">스텐 이중연통 + 메쉬망 (2중)</option>
           </select>
         </div>
       </div>
@@ -402,31 +405,112 @@
     }
 
     const PRODUCTS = {
-      p_mstove_v3: { id: "p_mstove_v3", name: "캠핑투게더 엠스토브 v3 3도어 IGT", price: 728000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12412109224" },
-      p_lumora_ti: { id: "p_lumora_ti", name: "포몰리 루모라 Ti 티타늄 화목난로", price: 1480000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/13876525264" },
-      p_dweller_ti3: { id: "p_dweller_ti3", name: "포몰리 드웰러 맥스 티아이 3", price: 1180000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/9935043562" },
-      p_set_33m: { id: "p_set_33m", name: "70-73-76파이 3.3m 연통 세트 (12본)", price: 86000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11196831287" },
-      p_damper_70: { id: "p_damper_70", name: "70파이 댐퍼 연통 (28cm)", price: 17000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11471381958" },
-      p_pipe_70: { id: "p_pipe_70", name: "70파이 연통 직관 (33cm)", price: 5500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209918526" },
-      p_pipe_76: { id: "p_pipe_76", name: "76파이 연장 직관 (33cm)", price: 6500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209936765" },
-      p_reducer_70_75: { id: "p_reducer_70_75", name: "레듀셔 Ø70수-75암 (30cm)", price: 9000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/13851610962" },
-      p_pipe_75: { id: "p_pipe_75", name: "75파이 연통 직관 (32cm)", price: 6000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12692680424" },
-      p_spark_cap_75: { id: "p_spark_cap_75", name: "이중 불티캡 75파이 최상단", price: 19500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12691610683" },
-      p_elbow_70: { id: "p_elbow_70", name: "70파이 연통 엘보 45°/90°", price: 7500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11320456470" },
-      p_elbow_75: { id: "p_elbow_75", name: "75파이 연통 엘보 45°/90°", price: 6500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12692644054" },
-      p_double_70: { id: "p_double_70", name: "70파이 이중연통 (50cm)", price: 29000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11318998547" },
-      p_double_75: { id: "p_double_75", name: "75파이 이중연통 (50cm)", price: 27000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11427862458" },
-      p_mesh_guard: { id: "p_mesh_guard", name: "메쉬 텐트 보호망 (50cm·130mm)", price: 33000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12670070982" },
-      p_guide_ring: { id: "p_guide_ring", name: "티타늄 76파이 연통 고정링", price: 8500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12673273220" },
-      p_stand_550: { id: "p_stand_550", name: "유니버셜 스탠드 550 (55cm)", price: 115000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12412259304" }
+      // === 스테인리스 화목난로 ===
+      p_mstove_v3: { id: "p_mstove_v3", mat: "stainless", name: "캠핑투게더 엠스토브 v3 3도어 IGT", price: 728000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12412109224" },
+      p_mstove_v2_down: { id: "p_mstove_v2_down", mat: "stainless", name: "캠핑투게더 엠스토브 v2 다운사이징", price: 724000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11193147629" },
+      p_mjolnir_ddakkung: { id: "p_mjolnir_ddakkung", mat: "stainless", name: "캠핑투게더 묠니르 + 따꿍 화목난로 키트", price: 157000, status: "판매중", url: "https://campingtogether.co.kr/product/%EB%94%B0%EA%BF%8D-%ED%99%94%EB%AA%A9%EB%82%9C%EB%A1%9C-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C-%ED%82%A4%ED%8A%B8-%EB%AC%A0%EB%8B%88%EB%A5%B4-%ED%99%94%EB%A1%9C%EB%8C%80-%EC%A0%84%EC%9A%A9/15/" },
+      p_dweller_max3: { id: "p_dweller_max3", mat: "stainless", name: "포몰리 드웰러 맥스 3 (스테인리스)", price: 780000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11241535740" },
+
+      // === 티타늄 화목난로 ===
+      p_lumora_ti: { id: "p_lumora_ti", mat: "titanium", name: "포몰리 루모라 Ti 티타늄 화목난로", price: 1480000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/13876525264" },
+      p_dweller_ti3: { id: "p_dweller_ti3", mat: "titanium", name: "포몰리 드웰러 맥스 티아이 3 (티타늄)", price: 1180000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/9935043562" },
+      p_pomoly_xti5: { id: "p_pomoly_xti5", mat: "titanium", name: "포몰리 엑스-티아이 5 (X-Ti 5 티타늄)", price: 680000, status: "판매중", url: "https://campingtogether.co.kr/product/%ED%8F%AC%EB%AA%B0%EB%A6%AC-%EC%97%91%EC%8A%A4-%ED%8B%B0%EC%95%84%EC%9D%B4-5-%ED%8B%B0%ED%83%80%EB%8A%84-%EC%BA%A0%ED%95%91-%ED%99%94%EB%AA%A9%EB%82%9C%EB%A1%9C-pomoly-x-ti-5/52/" },
+
+      // === 스테인리스 전용 연통·부속 ===
+      p_set_33m: { id: "p_set_33m", mat: "stainless", name: "스텐 70-73-76파이 3.3m 연통 세트 (12본)", price: 86000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11196831287" },
+      p_damper_70: { id: "p_damper_70", mat: "stainless", name: "스텐 70파이 댐퍼 연통 (28cm)", price: 17000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11471381958" },
+      p_pipe_70: { id: "p_pipe_70", mat: "stainless", name: "스텐 70파이 연통 직관 (33cm)", price: 5500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209918526" },
+      p_pipe_76: { id: "p_pipe_76", mat: "stainless", name: "스텐 76파이 연장 직관 (33cm)", price: 6500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209936765" },
+      p_reducer_70_75: { id: "p_reducer_70_75", mat: "stainless", name: "스텐 레듀셔 Ø70수-75암 (30cm)", price: 9000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/13851610962" },
+      p_pipe_75: { id: "p_pipe_75", mat: "stainless", name: "스텐 75파이 연통 직관 (32cm)", price: 6000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12692680424" },
+      p_spark_cap_75: { id: "p_spark_cap_75", mat: "stainless", name: "스텐 이중 불티캡 75파이 최상단", price: 19500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12691610683" },
+      p_elbow_70: { id: "p_elbow_70", mat: "stainless", name: "스텐 70파이 연통 엘보 45°/90°", price: 7500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11320456470" },
+      p_elbow_75: { id: "p_elbow_75", mat: "stainless", name: "스텐 75파이 연통 엘보 45°/90°", price: 6500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12692644054" },
+      p_double_70: { id: "p_double_70", mat: "stainless", name: "스텐 70파이 이중연통 (50cm)", price: 29000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11318998547" },
+      p_double_75: { id: "p_double_75", mat: "stainless", name: "스텐 75파이 이중연통 (50cm)", price: 27000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11427862458" },
+      p_mesh_guard: { id: "p_mesh_guard", mat: "stainless", name: "스텐 메쉬 텐트 보호망 (50cm·130mm)", price: 33000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12670070982" },
+
+      // === 티타늄 전용 연통·부속 ===
+      p_ti_set_70_76: { id: "p_ti_set_70_76", mat: "titanium", name: "포몰리 티타늄 70-76파이 네스티드 연통 세트", price: 375000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11564393919" },
+      p_ti_set_83_89: { id: "p_ti_set_83_89", mat: "titanium", name: "포몰리 티타늄 83-89파이 대형 연통 세트", price: 405000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12456936065" },
+      p_ti_pipe_70_76: { id: "p_ti_pipe_70_76", mat: "titanium", name: "포몰리 티타늄 연통 70·76파이 단품 (Nested)", price: 55000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11564468737" },
+      p_ti_damper_base: { id: "p_ti_damper_base", mat: "titanium", name: "포몰리 티타늄 댐퍼 베이스 후렌지 70파이", price: 85000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11469982000" },
+      p_ti_elbow_70: { id: "p_ti_elbow_70", mat: "titanium", name: "포몰리 티타늄 70파이 엘보 45°/90°", price: 64000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12456831949" },
+      p_ti_guard_70: { id: "p_ti_guard_70", mat: "titanium", name: "포몰리 티타늄 스킨 홀잭 보호망 (가변형·70/60파이)", price: 198000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11247319252" },
+
+      // === 공용 부속 및 스탠드 ===
+      p_guide_ring: { id: "p_guide_ring", mat: "both", name: "티타늄 76파이 연통 고정링 (가이드링)", price: 8500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12673273220" },
+      p_stand_550: { id: "p_stand_550", mat: "both", name: "유니버셜 스탠드 550 (55cm)", price: 115000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/12412259304" }
     };
 
     const STOVES = [
-      { id: "mstove_v3", name: "엠스토브 v3 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v3" },
-      { id: "lumora_ti", name: "포몰리 루모라 Ti 다리펼침 (49cm)", h: 49, pipe: "tapered_70_73_76", pid: "p_lumora_ti" },
-      { id: "dweller_ti3", name: "포몰리 드웰러 맥스 Ti 3 (49cm)", h: 49, pipe: "single_70", pid: "p_dweller_ti3" },
-      { id: "custom", name: "직접 입력 (내 난로 높이)", h: 40, pipe: "tapered_70_73_76", pid: null }
+      // 스테인리스 난로 (스테인리스 연통 전용)
+      { id: "mstove_v3", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v3 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v3" },
+      { id: "mstove_v2_down", mat: "stainless", name: "[스텐] 캠핑투게더 엠스토브 v2 다운사이징 (35cm)", h: 35, pipe: "tapered_70_73_76", pid: "p_mstove_v2_down" },
+      { id: "mjolnir_ddakkung", mat: "stainless", name: "[스텐] 캠핑투게더 묠니르 + 따꿍 키트 (38cm)", h: 38, pipe: "tapered_70_73_76", pid: "p_mjolnir_ddakkung" },
+      { id: "dweller_max3", mat: "stainless", name: "[스텐] 포몰리 드웰러 맥스 3 다리펼침 (49cm)", h: 49, pipe: "single_70", pid: "p_dweller_max3" },
+      // 티타늄 난로 (티타늄 연통 전용)
+      { id: "lumora_ti", mat: "titanium", name: "[티타늄] 포몰리 루모라 Ti 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_lumora_ti" },
+      { id: "dweller_ti3", mat: "titanium", name: "[티타늄] 포몰리 드웰러 맥스 티아이 3 다리펼침 (49cm)", h: 49, pipe: "ti_nested_70_76", pid: "p_dweller_ti3" },
+      { id: "pomoly_xti5", mat: "titanium", name: "[티타늄] 포몰리 엑스-티아이 5 / X-Ti 5 (35cm)", h: 35, pipe: "ti_nested_70_76", pid: "p_pomoly_xti5" }
     ];
+
+    function getActiveStove() {
+      return STOVES.find((s) => s.id === st.stoveId) || STOVES[0];
+    }
+
+    function syncMaterialSelectors() {
+      const stoveObj = getActiveStove();
+      const isTi = stoveObj.mat === "titanium";
+      const pipeEl = document.getElementById("sPipeSys");
+      const protEl = document.getElementById("sProtSys");
+      const hintEl = document.getElementById("sPipeMatHint");
+      const matBadge = document.getElementById("sMaterialBadge");
+
+      if (matBadge) {
+        if (isTi) {
+          matBadge.textContent = "🪶 티타늄 전용";
+          matBadge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200";
+        } else {
+          matBadge.textContent = "🔩 스텐 전용";
+          matBadge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200";
+        }
+      }
+      if (hintEl) {
+        hintEl.textContent = isTi ? "(티타늄 난로 → 티타늄 연통 전용)" : "(스테인리스 난로 → 스텐 연통 전용)";
+        hintEl.className = isTi ? "text-[10px] font-bold text-indigo-600" : "text-[10px] font-bold text-slate-500";
+      }
+
+      if (pipeEl) {
+        const opts = isTi
+          ? [
+              { v: "ti_nested_70_76", t: "티타늄 70-76파이 네스티드 세트" },
+              { v: "ti_single_70_76", t: "티타늄 70·76파이 단품 조합 (판매중)" },
+              { v: "ti_nested_83_89", t: "티타늄 83-89파이 대형 세트" }
+            ]
+          : [
+              { v: "tapered_70_73_76", t: "스텐 70-73-76파이 3.3m 세트 (추천)" },
+              { v: "single_70", t: "스텐 70파이 단일 직관" },
+              { v: "single_75", t: "스텐 75파이 단일 직관" }
+            ];
+        if (!opts.some((o) => o.v === st.pipeSys)) st.pipeSys = opts[0].v;
+        pipeEl.innerHTML = opts.map((o) => `<option value="${o.v}">${o.t}</option>`).join("");
+        pipeEl.value = st.pipeSys;
+      }
+
+      if (protEl) {
+        const pOpts = isTi
+          ? [{ v: "ti_guard_70", t: "포몰리 티타늄 스킨 보호망 (가변형)" }]
+          : [
+              { v: "double_pipe", t: "스텐 이중연통 50cm (기본)" },
+              { v: "mesh_guard", t: "스텐 메쉬 텐트 보호망 50cm" },
+              { v: "both_guard", t: "스텐 이중연통 + 메쉬망 (2중)" }
+            ];
+        if (!pOpts.some((o) => o.v === st.protSys)) st.protSys = pOpts[0].v;
+        protEl.innerHTML = pOpts.map((o) => `<option value="${o.v}">${o.t}</option>`).join("");
+        protEl.value = st.protSys;
+      }
+    }
 
     const TENTS = [
       { id: "valhall", name: "[해외] 헬스포츠 발할 (780×300×210)", shape: "tunnel", w: 300, l: 780, h: 210, sw: 135, jh: 180, path: "straight" },
@@ -765,8 +849,17 @@
         accW += w;
         const d1 = (accW / totalW) * safeTotalPx;
         const isExtraAdded = sim.actualExtraPipes > 0 && i >= sim.totalSeg - sim.actualExtraPipes;
+        const isTiMat = getActiveStove().mat === "titanium";
         let dia = "Ø70", col = "#f59e0b";
-        if (st.pipeSys === "tapered_70_73_76") {
+        if (isTiMat) {
+          if (st.pipeSys === "ti_nested_83_89") {
+            dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
+            col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
+          } else {
+            dia = i === 0 ? "Ti Ø70댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø70" : "Ti Ø76");
+            col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#8b5cf6";
+          }
+        } else if (st.pipeSys === "tapered_70_73_76") {
           if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
           else if (i <= 4) { dia = "Ø70"; col = "#f59e0b"; }
           else if (i === 5) { dia = "Ø70-73"; col = "#ea580c"; }
@@ -903,50 +996,71 @@
         if (!p) return;
         list.push({ id: pid, cat, name: note ? `${p.name} · ${note}` : p.name, qty, unit: p.price, url: p.url, soldOut: /품절/.test(p.status) });
       };
-      if (st.pipeSys === "tapered_70_73_76") {
-        add("p_set_33m", 1, "기본 세트");
-        if (sim.totalSeg > 12) add("p_pipe_76", sim.totalSeg - 12, "추가 직관");
-      } else if (st.pipeSys === "single_70") {
-        add("p_damper_70", 1, "하단 댐퍼");
-        add("p_pipe_70", sim.straightCnt, "직관 연통");
+      const isTi = getActiveStove().mat === "titanium";
+
+      if (isTi) {
+        // 티타늄 난로 -> 100% 티타늄 연통·부속 전용 구성
+        if (st.pipeSys === "ti_nested_83_89") {
+          add("p_ti_set_83_89", 1, "티타늄 연통 세트");
+          if (sim.totalSeg > 10) add("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+        } else if (st.pipeSys === "ti_single_70_76") {
+          add("p_ti_damper_base", 1, "티타늄 댐퍼 베이스");
+          add("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
+        } else {
+          add("p_ti_set_70_76", 1, "티타늄 연통 세트");
+          if (sim.totalSeg > 10) add("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+        }
+        if (sim.elbowCnt > 0) add("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
+        add("p_ti_guard_70", 1, "스킨 보호");
+        add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "티타늄 외부 고정링");
       } else {
-        add("p_reducer_70_75", 1, "구경 레듀셔");
-        add("p_pipe_75", sim.straightCnt, "직관 연통");
-        add("p_spark_cap_75", 1, "최상단 불티캡");
+        // 스테인리스 난로 -> 100% 스테인리스 연통·부속 전용 구성
+        if (st.pipeSys === "tapered_70_73_76") {
+          add("p_set_33m", 1, "스텐 기본 세트");
+          if (sim.totalSeg > 12) add("p_pipe_76", sim.totalSeg - 12, "스텐 추가 직관");
+        } else if (st.pipeSys === "single_70") {
+          add("p_damper_70", 1, "스텐 하단 댐퍼");
+          add("p_pipe_70", sim.straightCnt, "스텐 직관 연통");
+        } else {
+          add("p_reducer_70_75", 1, "스텐 구경 레듀셔");
+          add("p_pipe_75", sim.straightCnt, "스텐 직관 연통");
+          add("p_spark_cap_75", 1, "스텐 최상단 불티캡");
+        }
+        if (sim.elbowCnt > 0) add(st.pipeSys === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCnt, `스텐 ${sim.elbowAng}° 엘보`);
+        if (st.protSys === "double_pipe" || st.protSys === "both_guard") add(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
+        if (st.protSys === "mesh_guard" || st.protSys === "both_guard") add("p_mesh_guard", 1, "스킨 보호");
+        add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "외부 고정링");
       }
-      if (sim.elbowCnt > 0) add(st.pipeSys === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCnt, `${sim.elbowAng}° 엘보`);
-      // 7b. "스킨 단열", "스킨 보호망" -> "스킨 보호"로 통일
-      if (st.protSys === "double_pipe" || st.protSys === "both_guard") add(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
-      if (st.protSys === "mesh_guard" || st.protSys === "both_guard") add("p_mesh_guard", 1, "스킨 보호");
-      add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "외부 고정링");
+
       if (sim.H_stand >= 50) add("p_stand_550", 1, "난로 스탠드");
       return list;
     }
 
     function render() {
+      syncMaterialSelectors();
       const sim = compute();
       const t = getTent();
-      const stoveObj = STOVES.find((x) => x.id === st.stoveId) || STOVES[0];
+      const stoveObj = getActiveStove();
 
       document.getElementById("canvasTentLabel").textContent = t.name;
       document.getElementById("sStartBadge").textContent = `출발 ${sim.H_start}cm`;
       document.getElementById("heroPipeCount").textContent = sim.blocked ? "설치 불가" : `총 ${sim.totalSeg}본${sim.elbowCnt ? ` + 엘보${sim.elbowCnt}` : ""}`;
-      document.getElementById("heroTopHeight").textContent = sim.blocked ? "보정 필요" : `${sim.topH} cm (천장 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr})`;
+      document.getElementById("heroTopHeight").textContent = sim.blocked ? "보정 필요" : `${sim.topH} cm (천장${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr})`;
       const diffEl = document.getElementById("heroDiffPill");
       diffEl.textContent = `난이도 ${sim.diff}`;
       diffEl.className = `inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl border text-xs font-extrabold ${sim.diffCls}`;
 
-      const sparkPill = document.getElementById("heroSparkPill");
-      if (sparkPill) {
+      const sparkEl = document.getElementById("heroSparkPill");
+      if (sparkEl) {
         if (sim.blocked) {
-          sparkPill.textContent = "불티안전 확인불가";
-          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-extrabold text-slate-500";
+          sparkEl.textContent = "설치 조건 확인";
+          sparkEl.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl border text-xs font-extrabold bg-rose-50 border-rose-200 text-rose-700";
         } else if (sim.sparkSafe) {
-          sparkPill.textContent = `불티안전 +${sim.roofClr}cm 충족`;
-          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700";
+          sparkEl.textContent = `불티안전 +${sim.roofClr}cm 충족`;
+          sparkEl.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl border text-xs font-extrabold bg-emerald-50 border-emerald-200 text-emerald-700";
         } else {
-          sparkPill.textContent = `불티주의 +${sim.roofClr}cm (권장 +${SPARK_MIN_CLEARANCE_CM}cm)`;
-          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-extrabold text-rose-700";
+          sparkEl.textContent = `불티주의 +${sim.roofClr}cm (권장 +${SPARK_MIN_CLEARANCE_CM}cm)`;
+          sparkEl.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl border text-xs font-extrabold bg-rose-50 border-rose-200 text-rose-700";
         }
       }
 
@@ -1086,7 +1200,18 @@
       const tSel = document.getElementById("sTentSelect");
       TENTS.forEach((t) => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; tSel.appendChild(o); });
       const sSel = document.getElementById("sStoveSelect");
-      STOVES.forEach((s) => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; sSel.appendChild(o); });
+      const grpStainless = document.createElement("optgroup");
+      grpStainless.label = "🔩 스테인리스 난로 (스테인리스 연통 전용)";
+      const grpTitanium = document.createElement("optgroup");
+      grpTitanium.label = "🪶 티타늄 난로 (티타늄 연통 전용)";
+      STOVES.forEach((s) => {
+        const o = document.createElement("option");
+        o.value = s.id;
+        o.textContent = s.name;
+        (s.mat === "titanium" ? grpTitanium : grpStainless).appendChild(o);
+      });
+      sSel.appendChild(grpStainless);
+      sSel.appendChild(grpTitanium);
 
       tSel.addEventListener("change", (e) => {
         st.tentId = e.target.value;
@@ -1096,25 +1221,48 @@
       });
       sSel.addEventListener("change", (e) => {
         st.stoveId = e.target.value;
-        const s = STOVES.find((x) => x.id === st.stoveId) || STOVES[0];
-        st.stoveH = s.h; st.pipeSys = s.pipe;
-        syncInputs(); render();
+        const s = getActiveStove();
+        st.stoveH = s.h;
+        st.pipeSys = s.pipe;
+        st.protSys = s.mat === "titanium" ? "ti_guard_70" : "double_pipe";
+        syncMaterialSelectors();
+        syncInputs();
+        render();
       });
 
       const bindNumRange = (numId, rangeId, key) => {
         const nEl = document.getElementById(numId), rEl = document.getElementById(rangeId);
+        if (!nEl || !rEl) return;
         const min = Number(nEl.min), max = Number(nEl.max);
         nEl.addEventListener("input", () => {
           const v = Number(nEl.value);
           if (!Number.isFinite(v) || v < min || v > max) return;
-          st[key] = v; rEl.value = v; scheduleRender();
+          st[key] = v; rEl.value = v;
+          if (key === "jackH") {
+            const fixed = clampJackForAngle(st.jackPosCm, st.jackH);
+            st.jackPosCm = fixed.jackPosCm;
+          }
+          scheduleRender();
         });
         nEl.addEventListener("blur", () => {
           const v = Number(nEl.value);
           const c = Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : min;
-          st[key] = c; nEl.value = c; rEl.value = c; render();
+          st[key] = c; nEl.value = c; rEl.value = c;
+          if (key === "jackH") {
+            const fixed = clampJackForAngle(st.jackPosCm, st.jackH);
+            st.jackPosCm = fixed.jackPosCm;
+          }
+          render();
         });
-        rEl.addEventListener("input", () => { st[key] = Number(rEl.value) || 0; nEl.value = st[key]; scheduleRender(); });
+        rEl.addEventListener("input", () => {
+          st[key] = Number(rEl.value) || 0;
+          nEl.value = st[key];
+          if (key === "jackH") {
+            const fixed = clampJackForAngle(st.jackPosCm, st.jackH);
+            st.jackPosCm = fixed.jackPosCm;
+          }
+          scheduleRender();
+        });
       };
       bindNumRange("sTentH", "sTentHRange", "tentH");
       bindNumRange("sJackH", "sJackHRange", "jackH");
@@ -1124,18 +1272,30 @@
         st.standH = Math.max(0, Math.min(80, Number(e.target.value) || 0));
         e.target.value = st.standH; render();
       });
-      document.querySelectorAll(".s-stand-btn").forEach((b) => b.addEventListener("click", () => { st.standH = Number(b.getAttribute("data-stand")) || 0; syncInputs(); render(); }));
-      document.querySelectorAll(".s-path-btn").forEach((b) => b.addEventListener("click", () => { st.path = b.getAttribute("data-path"); resetPos(); render(); }));
+      document.querySelectorAll(".s-stand-btn").forEach((b) => b.addEventListener("click", () => {
+        st.standH = Number(b.getAttribute("data-stand")) || 0;
+        syncInputs(); render();
+      }));
+      document.querySelectorAll(".s-path-btn").forEach((b) => b.addEventListener("click", () => {
+        st.path = b.getAttribute("data-path");
+        resetPos(); render();
+      }));
       document.getElementById("sPipeSys").addEventListener("change", (e) => { st.pipeSys = e.target.value; render(); });
       document.getElementById("sProtSys").addEventListener("change", (e) => { st.protSys = e.target.value; render(); });
 
-      // 4. 텐트 밖 외부 연통 임의 추가 (+/- / 초기화)
-      const btnExtraMinus = document.getElementById("btnExtraPipeMinus");
-      const btnExtraPlus = document.getElementById("btnExtraPipePlus");
-      const btnExtraReset = document.getElementById("btnExtraPipeReset");
-      if (btnExtraMinus) btnExtraMinus.addEventListener("click", () => { st.extraOutPipes = Math.max(-2, (st.extraOutPipes || 0) - 1); render(); });
-      if (btnExtraPlus) btnExtraPlus.addEventListener("click", () => { st.extraOutPipes = Math.min(6, (st.extraOutPipes || 0) + 1); render(); });
-      if (btnExtraReset) btnExtraReset.addEventListener("click", () => { st.extraOutPipes = 0; render(); });
+      // 텐트 밖 외부 연통 임의 추가 / 빼기 / 초기화
+      document.getElementById("btnExtraPipeMinus").addEventListener("click", () => {
+        st.extraOutPipes = Math.max(-2, (st.extraOutPipes || 0) - 1);
+        render();
+      });
+      document.getElementById("btnExtraPipePlus").addEventListener("click", () => {
+        st.extraOutPipes = Math.min(6, (st.extraOutPipes || 0) + 1);
+        render();
+      });
+      document.getElementById("btnExtraPipeReset").addEventListener("click", () => {
+        st.extraOutPipes = 0;
+        render();
+      });
 
       const bf = document.getElementById("btnViewFront"), bs = document.getElementById("btnViewSide");
       const updateViewBtns = () => {
@@ -1592,11 +1752,12 @@
           const path = p.get("path");
           if (["straight", "elbow45", "elbow90"].includes(path)) st.path = path;
           const pipe = p.get("pipe");
-          if (["tapered_70_73_76", "single_70", "single_75"].includes(pipe)) st.pipeSys = pipe;
+          if (["tapered_70_73_76", "single_70", "single_75", "ti_nested_70_76", "ti_single_70_76", "ti_nested_83_89"].includes(pipe)) st.pipeSys = pipe;
         } catch (err) {}
       })();
 
       try {
+        syncMaterialSelectors();
         resetPos();
         syncInputs();
         render();
