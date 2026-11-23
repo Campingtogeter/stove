@@ -45,29 +45,32 @@
       transform-origin: center bottom;
       animation: flameFlicker 1.4s infinite ease-in-out;
     }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: hidden; max-width: 100%; }
+    svg { max-width: 100%; height: auto; }
   </style>
 </head>
-<body class="min-h-screen bg-[#f6f8fb] text-slate-900 selection:bg-orange-500 selection:text-white">
+<body class="min-h-screen bg-[#f6f8fb] text-slate-900 selection:bg-orange-500 selection:text-white overflow-x-hidden">
 
   <!-- Minimal Clean Header -->
   <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
           🔥
         </div>
-        <div class="leading-tight">
-          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">캠핑투게더 연통 시뮬레이터</h1>
+        <div class="leading-tight min-w-0">
+          <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 truncate">캠핑투게더 연통 시뮬레이터</h1>
           <p class="hidden sm:block text-[11px] text-slate-500">그림 한 장으로 내 텐트에 필요한 연통을 10초 만에 계산하세요</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <button id="goProVersionBtn" type="button" title="상세·전문가 버전으로 이동"
            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-bold transition whitespace-nowrap">
           <span>🛠️ 상세 버전</span>
         </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
-           class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+           class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm whitespace-nowrap">
           <span>스마트스토어</span>
           <span>↗</span>
         </a>
@@ -90,18 +93,21 @@
 
       <!-- Top Summary & Toggle Strip -->
       <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <!-- 3 Crisp Result Pills -->
+        <!-- Result Pills -->
         <div class="flex flex-wrap items-center gap-2">
           <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-orange-50 border border-orange-200">
             <span class="text-[11px] font-semibold text-orange-700">추천 연통</span>
             <span id="heroPipeCount" class="text-sm font-extrabold text-orange-700">총 9본</span>
           </div>
           <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200">
-            <span class="text-[11px] font-semibold text-slate-500">최상단</span>
+            <span class="text-[11px] font-semibold text-slate-500">연통 총 높이</span>
             <span id="heroTopHeight" class="text-sm font-extrabold text-slate-900">287 cm</span>
           </div>
           <div id="heroDiffPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700">
             난이도 쉬움 ★☆☆
+          </div>
+          <div id="heroSparkPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700">
+            불티안전 +60cm 충족
           </div>
           <button id="toggleFormulaBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-600 transition">
             <span>? 계산근거</span>
@@ -128,26 +134,44 @@
             <span id="canvasTentLabel">헬스포츠 발할 (780×300×210cm)</span>
           </div>
           <div class="absolute top-3 right-3 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[11px] font-bold text-orange-700 shadow-sm">
-            🖐️ 난로(좌우) · 홀잭(가로·세로) 드래그
+            🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내 이동) 드래그
           </div>
           <svg id="heroSvg" viewBox="0 0 800 440" class="w-full h-auto block select-none" style="touch-action: pan-y;"></svg>
         </div>
 
-        <!-- Clean 1-Row Stove Placement Strip Directly Under Drawing -->
-        <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1">
-          <div class="flex items-center gap-2 text-xs">
-            <span class="font-bold text-slate-700">난로 위치</span>
-            <span id="posReadout" class="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-bold text-[11px]">텐트 중앙 +42cm (홀잭 수평 0cm)</span>
+        <!-- Clean Controls Strip Directly Under Drawing -->
+        <div class="mt-3 flex flex-col gap-2.5 px-1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2 text-xs flex-wrap">
+              <span class="font-bold text-slate-700">난로 위치</span>
+              <span id="posReadout" class="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-bold text-[11px]">텐트 중앙 +42cm (홀잭 수평 0cm)</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button type="button" data-pos-act="left" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">◀ 좌측</button>
+              <button type="button" data-pos-act="center" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">● 중앙</button>
+              <button type="button" data-pos-act="jack" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition">🎯 홀잭 아래</button>
+              <button type="button" data-pos-act="reset" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">↺ 초기화</button>
+            </div>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button type="button" data-pos-act="left" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">◀ 좌측</button>
-            <button type="button" data-pos-act="center" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">● 중앙</button>
-            <button type="button" data-pos-act="jack" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition">🎯 홀잭 아래</button>
-            <button type="button" data-pos-act="reset" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">↺ 초기화</button>
+
+          <!-- External Extra Chimney Simulation Control + Spark Safety Banner -->
+          <div class="rounded-2xl bg-slate-50 border border-slate-200/90 px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-extrabold text-slate-800">🪜 텐트 밖 외부 연통 임의 추가</span>
+              <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm">
+                <button id="btnExtraPipeMinus" type="button" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-sm transition" title="외부 연통 1본 빼기">−</button>
+                <span id="extraPipeReadout" class="min-w-[88px] text-center text-xs font-extrabold text-orange-700 px-1.5">0본 (+0cm)</span>
+                <button id="btnExtraPipePlus" type="button" class="w-7 h-7 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition" title="외부 연통 1본 추가">+</button>
+              </div>
+              <button id="btnExtraPipeReset" type="button" class="hidden text-[11px] font-bold text-slate-500 hover:text-slate-800 underline">기본값</button>
+            </div>
+            <div id="sparkGuideText" class="text-[11px] font-semibold text-slate-600 leading-snug">
+              🔥 불티방지 최소 권장: <strong class="text-emerald-700">텐트 천장 위 +60cm 이상</strong> (강풍 시 +80cm 권장)
+            </div>
           </div>
         </div>
 
-        <!-- Safety Alert / Auto-Fix Box (placed below SVG to prevent layout shift during drag) -->
+        <!-- Safety Alert / Auto-Fix Box -->
         <div id="alertBox" class="hidden mt-3 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 space-y-2"></div>
       </div>
     </section>
@@ -155,16 +179,16 @@
     <!-- ================================================= -->
     <!-- 2. INTUITIVE 3-CARD BENTO INPUT CONTROLS BELOW    -->
     <!-- ================================================= -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
       <!-- Card 1: 텐트 & 홀잭 높이 -->
-      <div class="rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">1</span>
-            <span>텐트 · 홀잭 높이</span>
+      <div class="min-w-0 rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 min-w-0">
+            <span class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">1</span>
+            <span class="truncate">텐트 · 홀잭 높이</span>
           </h2>
-          <span class="text-[11px] font-semibold text-slate-400">36종 + AI검색</span>
+          <span class="text-[11px] font-semibold text-slate-400 shrink-0">36종 + AI검색</span>
         </div>
 
         <div class="space-y-1.5 relative">
@@ -221,13 +245,13 @@
       </div>
 
       <!-- Card 2: 난로 & 스탠드 -->
-      <div class="rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">2</span>
-            <span>난로 · 스탠드</span>
+      <div class="min-w-0 rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 min-w-0">
+            <span class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">2</span>
+            <span class="truncate">난로 · 스탠드</span>
           </h2>
-          <span id="sStartBadge" class="text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full">출발 35cm</span>
+          <span id="sStartBadge" class="text-[11px] font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full shrink-0">출발 35cm</span>
         </div>
 
         <div>
@@ -264,13 +288,13 @@
       </div>
 
       <!-- Card 3: 연통 배출 경로 & 규격 -->
-      <div class="rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">3</span>
-            <span>배출 경로 · 연통</span>
+      <div class="min-w-0 rounded-3xl bg-white border border-slate-200/90 p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 min-w-0">
+            <span class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">3</span>
+            <span class="truncate">배출 경로 · 연통</span>
           </h2>
-          <span class="text-[11px] font-semibold text-slate-400">마디당 -5cm</span>
+          <span class="text-[11px] font-semibold text-slate-400 shrink-0">마디당 -5cm</span>
         </div>
 
         <div>
@@ -304,7 +328,7 @@
         </div>
 
         <div>
-          <label for="sProtSys" class="block text-xs font-semibold text-slate-500 mb-1">홀잭 보호 (50cm)</label>
+          <label for="sProtSys" class="block text-xs font-semibold text-slate-500 mb-1">스킨 보호</label>
           <select id="sProtSys" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none">
             <option value="double_pipe">이중연통 50cm (기본)</option>
             <option value="mesh_guard">메쉬 텐트 보호망 50cm</option>
@@ -325,7 +349,7 @@
           <p class="text-xs text-slate-500 mt-0.5">이미 보유한 품목은 체크를 해제하세요. 품절 상품은 합계에서 자동 제외됩니다.</p>
         </div>
         <button id="sCopyQuoteBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold shadow-sm transition">
-          <span>💬 카톡·카페 질문용 견적 복사</span>
+          <span>📋 연통 목록 복사</span>
         </button>
       </div>
 
@@ -348,7 +372,7 @@
       </div>
 
       <p class="text-[11px] text-slate-500 leading-relaxed">
-        ℹ️ <strong>현장 오차 안내:</strong> 실제 텐트 스킨 장력·지면 경사·결속 깊이에 따라 ±5~10cm(±1본) 차이가 날 수 있습니다. 첫 설치 시 여유 직관 1본 추가 구비와 일산화탄소 경보기 2대 설치를 권장합니다.
+        ℹ️ <strong>불티 방지 및 현장 오차 안내:</strong> 불티 낙하에 의한 텐트 스킨 손상(불빵)을 막기 위해 <strong>텐트 최고점(천장) 위 최소 +60cm(약 2ft) 이상</strong> 연통을 올리는 것을 권장합니다(강풍·침엽수 장작 시 +80cm 이상, 외부 돌출 +75cm 이상은 가이라인 고정 필수). 실제 텐트 장력·지면 경사·결속 깊이에 따라 ±5~10cm(±1본) 차이가 날 수 있습니다.
       </p>
     </section>
 
@@ -356,6 +380,7 @@
 
   <script>
     const STORE_URL = "https://smartstore.naver.com/camping-together";
+    const SPARK_MIN_CLEARANCE_CM = 60; // 불티 날림 방지 최소 권장 높이 (텐트 천장 위 +60cm / 약 2ft)
 
     function escapeHtml(str) {
       return String(str ?? "")
@@ -371,6 +396,9 @@
     }
     function formatKRW(n) {
       return Number(n || 0).toLocaleString("ko-KR") + "원";
+    }
+    function normalizeSearchStr(s) {
+      return String(s || "").toLowerCase().replace(/[\s\-_·.,()\[\]\/]+/g, "");
     }
 
     const PRODUCTS = {
@@ -440,6 +468,33 @@
       { id: "custom_tent", name: "[직접 입력] 내 텐트 치수 입력", shape: "dome", w: 340, l: 380, h: 200, sw: 105, jh: 150, path: "straight" }
     ];
 
+    const EXTRA_TENT_CATALOG = [
+      { id: "ext_coleman_cocoon3", brand: "콜맨", name: "마스터시리즈 4S 와이드 2룸 코쿤3", aliases: "coleman cocoon3 코쿤3 2룸", shape: "tunnel", w: 360, l: 670, h: 220, jh: 155, path: "elbow90" },
+      { id: "ext_coleman_curve", brand: "콜맨", name: "4S 와이드 2룸 커브", aliases: "coleman curve 커브 2룸", shape: "tunnel", w: 300, l: 580, h: 200, jh: 145, path: "elbow90" },
+      { id: "ext_snowpeak_landlock", brand: "스노우피크", name: "랜드락 (TP-671R)", aliases: "snowpeak landlock 랜드락 리빙쉘", shape: "tunnel", w: 405, l: 625, h: 205, jh: 150, path: "elbow90" },
+      { id: "ext_snowpeak_livingshell", brand: "스노우피크", name: "리빙쉘 롱 프로 (TP-660)", aliases: "snowpeak living shell long pro 리빙쉘 롱프로", shape: "tunnel", w: 360, l: 530, h: 220, jh: 155, path: "elbow90" },
+      { id: "ext_sabbatical_mg", brand: "사바티컬", name: "모닝글로리 TC", aliases: "sabbatical morning glory 모닝글로리 티피", shape: "tipi", w: 440, l: 470, h: 270, jh: 185, path: "straight" },
+      { id: "ext_sabbatical_arnica", brand: "사바티컬", name: "아르니카", aliases: "sabbatical arnica 아르니카 터널", shape: "tunnel", w: 320, l: 620, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_zanearts_lolo", brand: "제인아트", name: "로로 (LOLO)", aliases: "zanearts lolo 로로 원폴 쉘터", shape: "tipi", w: 440, l: 520, h: 285, jh: 195, path: "straight" },
+      { id: "ext_zanearts_zekum", brand: "제인아트", name: "제쿠 M (ZEKU-M)", aliases: "zanearts zeku 제쿠엠", shape: "tipi", w: 440, l: 380, h: 250, jh: 175, path: "straight" },
+      { id: "ext_dod_kamaboko3m", brand: "DOD", name: "가마보코 3M", aliases: "도플갱어 dod kamaboko 가마보코 터널", shape: "tunnel", w: 300, l: 640, h: 195, jh: 140, path: "elbow90" },
+      { id: "ext_kovea_nestw", brand: "코베아", name: "네스트 W", aliases: "kovea nest w 네스트w 리빙쉘", shape: "tunnel", w: 345, l: 585, h: 205, jh: 148, path: "elbow90" },
+      { id: "ext_kovea_ghost_phantom", brand: "코베아", name: "고스트 팬텀", aliases: "kovea ghost phantom 고스트팬텀 쉘터", shape: "dome", w: 360, l: 375, h: 195, jh: 145, path: "elbow45" },
+      { id: "ext_robens_klondike", brand: "로벤스", name: "클론다이크 (6인용)", aliases: "robens klondike 클론다이크 벨텐트 면텐트", shape: "cabin", w: 390, l: 370, h: 270, jh: 190, path: "straight" },
+      { id: "ext_robens_klondike_g", brand: "로벤스", name: "클론다이크 그랑데 (9인용)", aliases: "robens klondike grande 클론다이크 그랑데 벨텐트", shape: "cabin", w: 460, l: 500, h: 300, jh: 210, path: "straight" },
+      { id: "ext_kzm_attica", brand: "카즈미", name: "아티카 리빙쉘", aliases: "kzm kazmi attica 아티카", shape: "tunnel", w: 360, l: 620, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_kzm_vivadome", brand: "카즈미", name: "비바 돔 쉘터 플러스", aliases: "kzm kazmi viva dome 비바돔", shape: "dome", w: 360, l: 360, h: 195, jh: 145, path: "elbow45" },
+      { id: "ext_wiwo_jenes", brand: "위오", name: "제네스 2룸 / 야크돔 550", aliases: "wiwo yakdome 야크돔550 쉘터", shape: "dome", w: 550, l: 550, h: 230, jh: 170, path: "elbow45" },
+      { id: "ext_wiwo_yak460", brand: "위오", name: "야크돔 460", aliases: "wiwo yakdome 460 야크돔460 돔텐트", shape: "dome", w: 460, l: 440, h: 210, jh: 160, path: "elbow45" },
+      { id: "ext_nordisk_reisa6", brand: "노르디스크", name: "레이사 6", aliases: "nordisk reisa6 레이사6 터널", shape: "tunnel", w: 295, l: 645, h: 210, jh: 150, path: "elbow90" },
+      { id: "ext_jeep_silvester", brand: "지프", name: "실베스터 2", aliases: "jeep silvester 실베스터 거실형", shape: "tunnel", w: 360, l: 630, h: 215, jh: 155, path: "elbow90" },
+      { id: "ext_coody_136", brand: "쿠디", name: "에어텐트 13.6", aliases: "coody 13.6 에어텐트 면에어", shape: "cabin", w: 360, l: 380, h: 220, jh: 160, path: "elbow45" },
+      { id: "ext_coody_172", brand: "쿠디", name: "에어텐트 17.2", aliases: "coody 17.2 에어텐트 대형", shape: "cabin", w: 360, l: 480, h: 220, jh: 160, path: "elbow45" },
+      { id: "ext_tentmark_circus", brand: "텐트마크디자인", name: "서커스 TC DX", aliases: "tentmark circus tc 서커스tc 티피", shape: "tipi", w: 420, l: 442, h: 280, jh: 195, path: "straight" },
+      { id: "ext_hilleberg_stalon", brand: "힐레베르그", name: "스탈론 XL", aliases: "hilleberg stalon xl 스탈론", shape: "tunnel", w: 290, l: 630, h: 205, jh: 155, path: "straight" },
+      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" }
+    ];
+
     const st = {
       tentId: "valhall",
       tentH: 210,
@@ -455,6 +510,7 @@
       showNode: true,
       stovePosCm: 42,
       jackPosCm: 42,
+      extraOutPipes: 0,
       excluded: {},
       dragging: false,
       dragTarget: null,
@@ -468,6 +524,45 @@
     function getSpan() { const t = getTent(); return st.view === "side" ? t.l : t.w; }
     function clampPos(v) { const maxO = Math.max(40, Math.round(getSpan() / 2 - 28)); return Math.max(-maxO, Math.min(maxO, Math.round(v))); }
 
+    // 45° / 90° 굴절 각도가 물리적으로 성립하는 홀잭 위치 범위 계산
+    function clampJackForAngle(rawJackXCm, rawJackHCm) {
+      const H_tent = Math.max(130, Math.min(350, Number(st.tentH) || 210));
+      const H_start = (Number(st.stoveH) || 35) + (Number(st.standH) || 0);
+      const rawFirst = st.pipeSys === "single_75" ? 30 : 28;
+      const halfSpan = Math.max(60, Math.round(getSpan() / 2 - 12));
+      const maxJackH = Math.max(105, Math.round(H_tent) - 5);
+
+      let jH = Math.round(Math.max(100, Math.min(maxJackH, rawJackHCm)));
+      let jX = Math.round(Math.max(-halfSpan, Math.min(halfSpan, rawJackXCm)));
+
+      if (st.path === "elbow45") {
+        // 45° 고정: 수평 거리 == 대각선 상승 높이 <= jH - (H_start + rawFirst)
+        const minJackH45 = Math.min(maxJackH, Math.max(100, Math.round(H_start + rawFirst + 15)));
+        jH = Math.max(minJackH45, jH);
+        const maxD45 = Math.max(15, Math.round(jH - (H_start + rawFirst)));
+        const dx = jX - st.stovePosCm;
+        const sign = dx === 0 ? 1 : Math.sign(dx);
+        const clampedD = Math.max(15, Math.min(maxD45, Math.abs(dx)));
+        jX = Math.round(Math.max(-halfSpan, Math.min(halfSpan, st.stovePosCm + sign * clampedD)));
+      } else if (st.path === "elbow90") {
+        // 90° 고정: 수직 상승 후 수평 이동 (25cm ~ 130cm 안전 범위)
+        const minJackH90 = Math.min(maxJackH, Math.max(100, Math.round(H_start + rawFirst + 5)));
+        jH = Math.max(minJackH90, jH);
+        const dx = jX - st.stovePosCm;
+        const sign = dx === 0 ? 1 : Math.sign(dx);
+        const clampedD = Math.max(25, Math.min(130, Math.abs(dx)));
+        jX = Math.round(Math.max(-halfSpan, Math.min(halfSpan, st.stovePosCm + sign * clampedD)));
+      } else {
+        // 천장 직상형: 12cm 이상 이동 시 45° 자동 우회 성립 범위 내로 제한
+        const maxDAuto = Math.max(12, Math.round(jH - (H_start + rawFirst)));
+        const dx = jX - st.stovePosCm;
+        if (Math.abs(dx) > maxDAuto) {
+          jX = Math.round(Math.max(-halfSpan, Math.min(halfSpan, st.stovePosCm + Math.sign(dx) * maxDAuto)));
+        }
+      }
+      return { jackPosCm: jX, jackH: jH };
+    }
+
     function resetPos() {
       const half = getSpan() / 2;
       if (st.path === "straight") {
@@ -476,6 +571,8 @@
       } else if (st.path === "elbow45") {
         st.jackPosCm = Math.round(half * 0.72);
         st.stovePosCm = clampPos(st.jackPosCm - 50);
+        const fixed = clampJackForAngle(st.jackPosCm, st.jackH);
+        st.jackPosCm = fixed.jackPosCm;
       } else {
         st.jackPosCm = Math.round(half * 0.96);
         st.stovePosCm = clampPos(st.jackPosCm - 65);
@@ -489,7 +586,7 @@
       const H_stand = Math.max(0, Math.min(80, Number(st.standH) || 0));
       const H_start = H_stove + H_stand;
       const overlap = 5;
-      const clearance = 55;
+      const clearance = SPARK_MIN_CLEARANCE_CM;
       const rawPipe = st.pipeSys === "single_75" ? 32 : 33;
       const effPipe = rawPipe - overlap;
       const rawFirst = st.pipeSys === "single_75" ? 30 : 28;
@@ -513,7 +610,8 @@
         outVert = Math.max(0, reqEff - inVert);
       } else if (effMode === "elbow45") {
         elbowCnt = 2; elbowAng = 45;
-        const e1 = Math.max(H_start + rawFirst, H_jack - Math.max(20, D_horiz));
+        const diagRise = Math.max(15, Math.min(D_horiz, Math.max(15, H_jack - (H_start + rawFirst))));
+        const e1 = Math.max(H_start + rawFirst, H_jack - diagRise);
         inVert = Math.max(rawFirst, e1 - H_start);
         const rise = Math.max(15, H_jack - (H_start + inVert));
         midLen = Math.round(Math.sqrt(D_horiz * D_horiz + rise * rise));
@@ -528,28 +626,41 @@
       }
 
       const elbowEff = elbowCnt * (17 - overlap);
-      const straightCnt = Math.max(2, Math.ceil(Math.max(0, reqEff - rawFirst - elbowEff) / effPipe));
+      const baseStraightCnt = Math.max(2, Math.ceil(Math.max(0, reqEff - rawFirst - elbowEff) / effPipe));
+      const extraOutPipes = Math.max(-2, Math.min(6, Number(st.extraOutPipes) || 0));
+      const straightCnt = Math.max(2, baseStraightCnt + extraOutPipes);
+      const actualExtraPipes = straightCnt - baseStraightCnt;
+      const extraOutCm = actualExtraPipes * effPipe;
+
       const totalSeg = 1 + straightCnt;
       const joints = (totalSeg - 1) + elbowCnt;
       const rawTotal = rawFirst + straightCnt * rawPipe + elbowCnt * 17;
       const lost = joints * overlap;
       const effTotal = rawTotal - lost;
-      const extraRound = Math.max(0, effTotal - reqEff);
-      const topH = effMode === "straight" ? H_start + effTotal : Math.round(H_jack + outVert + extraRound);
+      const baseRawTotal = rawFirst + baseStraightCnt * rawPipe + elbowCnt * 17;
+      const baseEffTotal = baseRawTotal - (((1 + baseStraightCnt) - 1 + elbowCnt) * overlap);
+      const baseExtraRound = Math.max(0, baseEffTotal - reqEff);
+      const topH = effMode === "straight"
+        ? H_start + effTotal
+        : Math.round(H_jack + outVert + baseExtraRound + extraOutCm);
       const roofClr = topH - H_tent;
+      const sparkSafe = roofClr >= SPARK_MIN_CLEARANCE_CM;
 
       const warns = [];
       let blocked = false;
       if (H_jack - H_start < 50) {
         blocked = true;
-        warns.push(`[설치 불가] 배기구(${H_start}cm)와 홀잭(${H_jack}cm) 사이가 ${H_jack - H_start}cm뿐이라 50cm 이중연통을 넣을 수 없습니다.`);
+        warns.push(`[설치 불가] 배기구(${H_start}cm)와 홀잭(${H_jack}cm) 사이가 ${H_jack - H_start}cm뿐이라 50cm 스킨 보호 연통을 넣을 수 없습니다.`);
       }
       if (H_jack >= H_tent) {
         blocked = true;
         warns.push(`[입력 오류] 홀잭 높이(${H_jack}cm)가 텐트 최고 높이(${H_tent}cm)보다 낮아야 합니다.`);
       }
+      if (!blocked && !sparkSafe) {
+        warns.push(`[불티 손상 주의] 텐트 천장 위 연통 높이가 +${roofClr}cm로 불티방지 최소 권장 기준(+${SPARK_MIN_CLEARANCE_CM}cm)보다 낮습니다. 외부 연통을 +1본 이상 추가하세요.`);
+      }
       if (minWall < 45) warns.push(`난로가 텐트 벽면과 너무 가깝습니다(${minWall}cm). 최소 45cm 이상 떨어뜨려 주세요.`);
-      if (autoBypass) warns.push(`난로를 홀잭에서 수평 ${D_horiz}cm 이동해 45° 엘보 2개 우회 경로가 자동 적용되었습니다.`);
+      if (autoBypass) warns.push(`난로와 홀잭이 수평 ${D_horiz}cm 떨어져 45° 엘보 2개 우회 경로가 자동 적용되었습니다.`);
 
       let diff = "쉬움 ★☆☆", diffCls = "bg-emerald-50 border-emerald-200 text-emerald-700";
       if (effMode === "elbow90" || topH > 430 || blocked || minWall < 45) {
@@ -558,14 +669,20 @@
         diff = "중급 ★★☆"; diffCls = "bg-amber-50 border-amber-200 text-amber-800";
       }
 
-      return { H_tent, H_jack, H_stove, H_stand, H_start, span, pos, jackXCm, D_horiz, minWall, effMode, elbowCnt, elbowAng, inVert, midLen, outVert, rawPipe, effPipe, rawFirst, straightCnt, totalSeg, joints, rawTotal, lost, effTotal, topH, roofClr, warns, blocked, diff, diffCls };
+      return {
+        H_tent, H_jack, H_stove, H_stand, H_start, span, pos, jackXCm, D_horiz, minWall,
+        effMode, elbowCnt, elbowAng, inVert, midLen, outVert, rawPipe, effPipe, rawFirst,
+        baseStraightCnt, straightCnt, actualExtraPipes, extraOutCm, totalSeg, joints,
+        rawTotal, lost, effTotal, topH, roofClr, sparkSafe, warns, blocked, diff, diffCls
+      };
     }
 
     function drawSvg(sim) {
       const svg = document.getElementById("heroSvg");
+      if (!svg) return;
       const W = 800, H = 440, gY = 394;
-      const baseMaxH = Math.max(sim.H_tent + 150, sim.topH + 25, 395);
-      const maxH = (st.dragging && st.lockedMaxH) ? Math.max(st.lockedMaxH, sim.topH + 20) : baseMaxH;
+      const baseMaxH = Math.max(sim.H_tent + 160, sim.topH + 35, 405);
+      const maxH = (st.dragging && st.lockedMaxH) ? Math.max(st.lockedMaxH, sim.topH + 25) : baseMaxH;
       const scaleY = (gY - 40) / maxH;
       const yOf = (cm) => Math.round(gY - cm * scaleY);
       const t = getTent();
@@ -638,14 +755,16 @@
 
       let pipesHtml = `<polyline points="${pts.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
       let ticksHtml = "", labelsHtml = "";
-      let totalW = sim.rawFirst + sim.straightCnt * sim.effPipe;
+      const totalW = Math.max(1, sim.rawFirst + sim.straightCnt * sim.effPipe);
+      const safeTotalPx = Math.max(1, totalPx);
       let accW = 0;
 
       for (let i = 0; i < sim.totalSeg; i++) {
         const w = i === 0 ? sim.rawFirst : sim.effPipe;
-        const d0 = (accW / totalW) * totalPx;
+        const d0 = (accW / totalW) * safeTotalPx;
         accW += w;
-        const d1 = (accW / totalW) * totalPx;
+        const d1 = (accW / totalW) * safeTotalPx;
+        const isExtraAdded = sim.actualExtraPipes > 0 && i >= sim.totalSeg - sim.actualExtraPipes;
         let dia = "Ø70", col = "#f59e0b";
         if (st.pipeSys === "tapered_70_73_76") {
           if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
@@ -659,6 +778,7 @@
         } else {
           dia = i === 0 ? "Ø70-75" : "Ø75"; col = i === 0 ? "#f59e0b" : "#f97316";
         }
+        if (isExtraAdded) col = "#0284c7";
         pipesHtml += `<polyline points="${subPoly(d0, d1)}" fill="none" stroke="${col}" stroke-width="7.5" stroke-linejoin="round"/>`;
 
         if (i > 0) {
@@ -672,7 +792,7 @@
           const side = horiz ? -1 : (i % 2 === 0 ? -1 : 1);
           const lxPos = mp.x + (horiz ? 0 : side * 30);
           const lyPos = mp.y + (horiz ? (i % 2 === 0 ? -15 : 17) : 0);
-          const txt = `${i + 1}·${dia}`;
+          const txt = `${i + 1}·${dia}${isExtraAdded ? "+" : ""}`;
           const pw = Math.max(36, txt.length * 6.2 + 8);
           labelsHtml += `
             <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${lxPos.toFixed(1)}" y2="${lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
@@ -682,24 +802,41 @@
         }
       }
 
-      const sleevePx = Math.max(22, Math.round(50 * scaleY));
+      // 1. 홀잭 표현 아이콘: 굵은 선형(Bold Linear) 슬리브 + 플랜지 스타일
+      const sleevePx = Math.max(26, Math.round(50 * scaleY));
       const jackHtml = `
         <g id="sDragJack" transform="translate(${jackPt.x},${jackPt.y})" style="cursor: move; touch-action: none;">
-          <circle cx="0" cy="0" r="24" fill="transparent"/>
+          <circle cx="0" cy="0" r="26" fill="transparent"/>
           <g transform="rotate(${jackPt.ang})">
-            <rect x="-10" y="${-sleevePx / 2}" width="20" height="${sleevePx}" rx="5" fill="#0ea5e9" fill-opacity="0.34" stroke="#0284c7" stroke-width="2.2"/>
-            <circle cx="0" cy="0" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+            <line x1="-12" y1="${-sleevePx / 2}" x2="-12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+            <line x1="12" y1="${-sleevePx / 2}" x2="12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+            <line x1="-16" y1="${-sleevePx / 2}" x2="16" y2="${-sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="-16" y1="${sleevePx / 2}" x2="16" y2="${sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="-18" y1="0" x2="-9" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="9" y1="0" x2="18" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
           </g>
-          <rect x="14" y="-13" width="136" height="20" rx="10" fill="#ffffff" fill-opacity="0.94" stroke="#0284c7" stroke-width="1.2"/>
-          <text x="82" y="1" fill="#0369a1" font-size="10" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm (드래그)</text>
+          <rect x="19" y="-11" width="112" height="20" rx="10" fill="#ffffff" fill-opacity="0.95" stroke="#0284c7" stroke-width="1.6"/>
+          <text x="75" y="2.5" fill="#0369a1" font-size="9.5" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm</text>
         </g>
       `;
 
+      // 5. 불티 날림 방지 최소 권장 높이 가이드선 (텐트 천장 +60cm)
+      const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
+      const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
+      const sparkLineHtml = `
+        <line x1="${Math.max(24, lx - 10)}" y1="${sparkMinY}" x2="${Math.min(776, Math.max(rx + 25, topPt.x + 48))}" y2="${sparkMinY}" stroke="${sparkLineCol}" stroke-width="1.5" stroke-dasharray="5,4" stroke-opacity="0.85"/>
+        <rect x="${Math.max(24, lx - 8)}" y="${sparkMinY - 17}" width="154" height="16" rx="4" fill="#ffffff" fill-opacity="0.92" stroke="${sparkLineCol}" stroke-width="1"/>
+        <text x="${Math.max(24, lx - 8) + 77}" y="${sparkMinY - 6}" fill="${sparkLineCol}" font-size="8.8" font-weight="800" text-anchor="middle">🔥 불티방지 최소권장 +${SPARK_MIN_CLEARANCE_CM}cm</text>
+      `;
+
+      // 3. 치수선: 텐트 높이 + 연통 총 높이 + 텐트 천장에서 연통 끝부분까지 치수
       let dimHtml = "";
       if (st.showDim) {
         const lDim = Math.max(46, lx - 34);
-        const rDim = Math.min(750, Math.max(rx + 42, topPt.x + 62));
-        const clrCol = sim.roofClr >= 40 ? "#059669" : "#e11d48";
+        const rDim = Math.min(748, Math.max(rx + 42, topPt.x + 62));
+        const clrCol = sim.sparkSafe ? "#059669" : "#e11d48";
+        const roofDimX = Math.max(92, topPt.x - 20);
+        const roofMidY = (py + topY) / 2;
         dimHtml = `
           <line x1="${lDim}" y1="${gY}" x2="${lDim}" y2="${py}" stroke="#475569" stroke-width="1.6"/>
           <line x1="${lDim - 5}" y1="${py}" x2="${cx}" y2="${py}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
@@ -708,12 +845,16 @@
 
           <line x1="${rDim}" y1="${gY}" x2="${rDim}" y2="${topY}" stroke="#ea580c" stroke-width="1.8"/>
           <line x1="${topPt.x}" y1="${topY}" x2="${rDim + 5}" y2="${topY}" stroke="#ea580c" stroke-width="1.1" stroke-dasharray="3,3"/>
-          <rect x="${rDim - 44}" y="${(gY + topY) / 2 - 10}" width="88" height="20" rx="5" fill="#fff" stroke="#ea580c"/>
+          <rect x="${rDim - 46}" y="${(gY + topY) / 2 - 10}" width="92" height="20" rx="5" fill="#fff" stroke="#ea580c"/>
           <text x="${rDim}" y="${(gY + topY) / 2 + 3.5}" fill="#c2410c" font-size="10" font-weight="bold" text-anchor="middle">총높이 ${sim.topH}cm</text>
 
-          <line x1="${topPt.x - 16}" y1="${py}" x2="${topPt.x - 16}" y2="${topY}" stroke="${clrCol}" stroke-width="2"/>
-          <rect x="${topPt.x - 104}" y="${(py + topY) / 2 - 9.5}" width="82" height="19" rx="4" fill="#fff" stroke="${clrCol}"/>
-          <text x="${topPt.x - 63}" y="${(py + topY) / 2 + 3.5}" fill="${clrCol}" font-size="9.5" font-weight="bold" text-anchor="middle">여유 +${sim.roofClr}cm</text>
+          <!-- 텐트 천장(최고점) ~ 연통 끝부분 치수선 -->
+          <line x1="${cx}" y1="${py}" x2="${roofDimX + 6}" y2="${py}" stroke="${clrCol}" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="${roofDimX - 4}" y1="${py}" x2="${roofDimX + 4}" y2="${py}" stroke="${clrCol}" stroke-width="2"/>
+          <line x1="${roofDimX - 4}" y1="${topY}" x2="${roofDimX + 4}" y2="${topY}" stroke="${clrCol}" stroke-width="2"/>
+          <line x1="${roofDimX}" y1="${py}" x2="${roofDimX}" y2="${topY}" stroke="${clrCol}" stroke-width="2.2"/>
+          <rect x="${roofDimX - 116}" y="${roofMidY - 10}" width="108" height="20" rx="5" fill="#fff" stroke="${clrCol}" stroke-width="1.4"/>
+          <text x="${roofDimX - 62}" y="${roofMidY + 3.5}" fill="${clrCol}" font-size="9.5" font-weight="800" text-anchor="middle">천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm</text>
 
           <line x1="${lx}" y1="${gY + 24}" x2="${rx}" y2="${gY + 24}" stroke="#64748b" stroke-width="1.3"/>
           <rect x="${cx - 58}" y="${gY + 14}" width="116" height="19" rx="4" fill="#fff" stroke="#cbd5e1"/>
@@ -731,10 +872,11 @@
             <stop offset="100%" stop-color="#fde68a" stop-opacity="0.42"/>
           </linearGradient>
         </defs>
-        ${[100, 200, 300].filter((c) => c <= maxH).map((c) => `<line x1="18" y1="${yOf(c)}" x2="${W - 18}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="20" y="${yOf(c) - 3}" fill="#94a3b8" font-size="9">${c}cm</text>`).join("")}
+        ${[100, 200, 300, 400].filter((c) => c <= maxH).map((c) => `<line x1="18" y1="${yOf(c)}" x2="${W - 18}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="20" y="${yOf(c) - 3}" fill="#94a3b8" font-size="9">${c}cm</text>`).join("")}
         <rect x="0" y="${gY}" width="${W}" height="${H - gY}" fill="#e2e8f0"/>
         <line x1="14" y1="${gY}" x2="${W - 14}" y2="${gY}" stroke="#475569" stroke-width="2.2"/>
         <path d="${tentD}" fill="url(#sTentGrad)" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
+        ${sparkLineHtml}
         <g id="sDragStove" style="cursor:ew-resize; touch-action:none;">
           ${sim.H_stand > 0 ? `<rect x="${sx - 26}" y="${standY}" width="52" height="${standHpx}" rx="3" fill="#bae6fd" fill-opacity="0.7" stroke="#0284c7" stroke-width="1.8"/>` : ""}
           <rect x="${sx - 23}" y="${stTopY}" width="46" height="${stoveHpx}" rx="5" fill="#334155" stroke="#ea580c" stroke-width="2"/>
@@ -773,8 +915,9 @@
         add("p_spark_cap_75", 1, "최상단 불티캡");
       }
       if (sim.elbowCnt > 0) add(st.pipeSys === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCnt, `${sim.elbowAng}° 엘보`);
-      if (st.protSys === "double_pipe" || st.protSys === "both_guard") add(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 단열");
-      if (st.protSys === "mesh_guard" || st.protSys === "both_guard") add("p_mesh_guard", 1, "스킨 보호망");
+      // 7b. "스킨 단열", "스킨 보호망" -> "스킨 보호"로 통일
+      if (st.protSys === "double_pipe" || st.protSys === "both_guard") add(st.pipeSys === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
+      if (st.protSys === "mesh_guard" || st.protSys === "both_guard") add("p_mesh_guard", 1, "스킨 보호");
       add("p_guide_ring", sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1, "외부 고정링");
       if (sim.H_stand >= 50) add("p_stand_550", 1, "난로 스탠드");
       return list;
@@ -788,15 +931,39 @@
       document.getElementById("canvasTentLabel").textContent = t.name;
       document.getElementById("sStartBadge").textContent = `출발 ${sim.H_start}cm`;
       document.getElementById("heroPipeCount").textContent = sim.blocked ? "설치 불가" : `총 ${sim.totalSeg}본${sim.elbowCnt ? ` + 엘보${sim.elbowCnt}` : ""}`;
-      document.getElementById("heroTopHeight").textContent = sim.blocked ? "보정 필요" : `${sim.topH} cm (+${sim.roofClr})`;
+      document.getElementById("heroTopHeight").textContent = sim.blocked ? "보정 필요" : `${sim.topH} cm (천장 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr})`;
       const diffEl = document.getElementById("heroDiffPill");
       diffEl.textContent = `난이도 ${sim.diff}`;
       diffEl.className = `inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl border text-xs font-extrabold ${sim.diffCls}`;
+
+      const sparkPill = document.getElementById("heroSparkPill");
+      if (sparkPill) {
+        if (sim.blocked) {
+          sparkPill.textContent = "불티안전 확인불가";
+          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-extrabold text-slate-500";
+        } else if (sim.sparkSafe) {
+          sparkPill.textContent = `불티안전 +${sim.roofClr}cm 충족`;
+          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700";
+        } else {
+          sparkPill.textContent = `불티주의 +${sim.roofClr}cm (권장 +${SPARK_MIN_CLEARANCE_CM}cm)`;
+          sparkPill.className = "inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-extrabold text-rose-700";
+        }
+      }
+
+      const extraReadout = document.getElementById("extraPipeReadout");
+      const extraResetBtn = document.getElementById("btnExtraPipeReset");
+      if (extraReadout) {
+        const signP = sim.actualExtraPipes > 0 ? "+" : "";
+        const signC = sim.extraOutCm > 0 ? "+" : "";
+        extraReadout.textContent = `${signP}${sim.actualExtraPipes}본 (${signC}${sim.extraOutCm}cm)`;
+      }
+      if (extraResetBtn) extraResetBtn.classList.toggle("hidden", sim.actualExtraPipes === 0);
+
       document.getElementById("posReadout").textContent = `텐트 중앙 ${sim.pos >= 0 ? "+" : ""}${sim.pos}cm (홀잭 수평 ${sim.D_horiz}cm)`;
 
       document.getElementById("formulaBox").innerHTML =
-        `기본 1본(${sim.rawFirst}cm) + 추가 직관 ${sim.straightCnt}본(×${sim.rawPipe}cm)${sim.elbowCnt ? ` + 엘보 ${sim.elbowCnt}개(×17cm)` : ""} = 단품 ${sim.rawTotal}cm<br/>` +
-        `연결 마디 ${sim.joints}곳 × -5cm = 결속 단축 -${sim.lost}cm → <strong>최종 유효 길이 ${sim.effTotal}cm</strong>`;
+        `기본 1본(${sim.rawFirst}cm) + 추가 직관 ${sim.straightCnt}본(×${sim.rawPipe}cm${sim.actualExtraPipes !== 0 ? `, 외부 임의조정 ${sim.actualExtraPipes > 0 ? "+" : ""}${sim.actualExtraPipes}본 포함` : ""})${sim.elbowCnt ? ` + 엘보 ${sim.elbowCnt}개(×17cm)` : ""} = 단품 ${sim.rawTotal}cm<br/>` +
+        `연결 마디 ${sim.joints}곳 × -5cm = 결속 단축 -${sim.lost}cm → <strong>최종 유효 길이 ${sim.effTotal}cm</strong> (천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm)`;
 
       const alertEl = document.getElementById("alertBox");
       if (sim.warns.length) {
@@ -806,7 +973,11 @@
                ${sim.H_stand > 0 ? `<button type="button" data-qfix="no_stand" class="s-qfix px-2.5 py-1 rounded-lg bg-rose-700 text-white text-[11px] font-bold">🔧 스탠드 제거 (0cm)</button>` : ""}
                <button type="button" data-qfix="fix_jack" class="s-qfix px-2.5 py-1 rounded-lg bg-white text-rose-800 border border-rose-300 text-[11px] font-bold">🔧 홀잭 높이 자동 보정</button>
              </div>`
-          : "";
+          : (!sim.sparkSafe
+            ? `<div class="flex flex-wrap gap-1.5 pt-1">
+                 <button type="button" data-qfix="add_spark_pipe" class="s-qfix px-2.5 py-1 rounded-lg bg-emerald-700 text-white text-[11px] font-bold">🔧 외부 연통 +1본 추가 (+${sim.effPipe}cm)</button>
+               </div>`
+            : "");
         alertEl.innerHTML = sim.warns.map((w) => `<div>⚠️ ${escapeHtml(w)}</div>`).join("") + fixes;
       } else {
         alertEl.classList.add("hidden");
@@ -868,11 +1039,12 @@
         copyBtn.disabled = false;
       }
 
+      // 7a, 7b. 연통 목록 복사 텍스트 ("연통 총 높이", "스킨 보호")
       st.lastQuoteText = [
-        `[캠핑투게더 연통 시뮬레이터 견적]`,
+        `[캠핑투게더 연통 시뮬레이터 연통 목록]`,
         `- 텐트: ${t.name} (천장 ${sim.H_tent}cm / 홀잭 ${sim.H_jack}cm)`,
         `- 난로: ${stoveObj.name} (난로 ${sim.H_stove}cm + 스탠드 ${sim.H_stand}cm = 출발 ${sim.H_start}cm)`,
-        `- 연통 도달 높이: ${sim.topH}cm (총 ${sim.totalSeg}본 · 난이도 ${sim.diff})`,
+        `- 연통 총 높이: ${sim.topH}cm (천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm · 총 ${sim.totalSeg}본 · 난이도 ${sim.diff})`,
         ...items.filter((it) => !it.soldOut && !st.excluded[it.id]).map((it) => `  · ${it.cat}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unit)}) → ${it.url}`),
         `- 추가 구매 합계: ${formatKRW(sum)}`
       ].join("\n");
@@ -886,7 +1058,9 @@
 
     function showToast(msg) {
       const el = document.getElementById("toastEl");
-      document.getElementById("toastText").textContent = msg;
+      const txt = document.getElementById("toastText");
+      if (!el || !txt) return;
+      txt.textContent = msg;
       el.classList.remove("hidden");
       setTimeout(() => el.classList.add("hidden"), 2500);
     }
@@ -905,39 +1079,10 @@
       document.getElementById("sProtSys").value = st.protSys;
     }
 
-    const EXTRA_TENT_CATALOG = [
-      { id: "ext_coleman_cocoon3", brand: "콜맨", name: "마스터시리즈 4S 와이드 2룸 코쿤3", aliases: "coleman cocoon3 코쿤3 2룸", shape: "tunnel", w: 360, l: 670, h: 220, jh: 155, path: "elbow90" },
-      { id: "ext_coleman_curve", brand: "콜맨", name: "4S 와이드 2룸 커브", aliases: "coleman curve 커브 2룸", shape: "tunnel", w: 300, l: 580, h: 200, jh: 145, path: "elbow90" },
-      { id: "ext_snowpeak_landlock", brand: "스노우피크", name: "랜드락 (TP-671R)", aliases: "snowpeak landlock 랜드락 리빙쉘", shape: "tunnel", w: 405, l: 625, h: 205, jh: 150, path: "elbow90" },
-      { id: "ext_snowpeak_livingshell", brand: "스노우피크", name: "리빙쉘 롱 프로 (TP-660)", aliases: "snowpeak living shell long pro 리빙쉘 롱프로", shape: "tunnel", w: 360, l: 530, h: 220, jh: 155, path: "elbow90" },
-      { id: "ext_sabbatical_mg", brand: "사바티컬", name: "모닝글로리 TC", aliases: "sabbatical morning glory 모닝글로리 티피", shape: "tipi", w: 440, l: 470, h: 270, jh: 185, path: "straight" },
-      { id: "ext_sabbatical_arnica", brand: "사바티컬", name: "아르니카", aliases: "sabbatical arnica 아르니카 터널", shape: "tunnel", w: 320, l: 620, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_zanearts_lolo", brand: "제인아트", name: "로로 (LOLO)", aliases: "zanearts lolo 로로 원폴 쉘터", shape: "tipi", w: 440, l: 520, h: 285, jh: 195, path: "straight" },
-      { id: "ext_zanearts_zekum", brand: "제인아트", name: "제쿠 M (ZEKU-M)", aliases: "zanearts zeku 제쿠엠", shape: "tipi", w: 440, l: 380, h: 250, jh: 175, path: "straight" },
-      { id: "ext_dod_kamaboko3m", brand: "DOD", name: "가마보코 3M", aliases: "도플갱어 dod kamaboko 가마보코 터널", shape: "tunnel", w: 300, l: 640, h: 195, jh: 140, path: "elbow90" },
-      { id: "ext_kovea_nestw", brand: "코베아", name: "네스트 W", aliases: "kovea nest w 네스트w 리빙쉘", shape: "tunnel", w: 345, l: 585, h: 205, jh: 148, path: "elbow90" },
-      { id: "ext_kovea_ghost_phantom", brand: "코베아", name: "고스트 팬텀", aliases: "kovea ghost phantom 고스트팬텀 쉘터", shape: "dome", w: 360, l: 375, h: 195, jh: 145, path: "elbow45" },
-      { id: "ext_robens_klondike", brand: "로벤스", name: "클론다이크 (6인용)", aliases: "robens klondike 클론다이크 벨텐트 면텐트", shape: "tipi", w: 390, l: 370, h: 270, jh: 190, path: "straight" },
-      { id: "ext_robens_klondike_g", brand: "로벤스", name: "클론다이크 그랑데 (9인용)", aliases: "robens klondike grande 클론다이크 그랑데 벨텐트", shape: "tipi", w: 460, l: 500, h: 300, jh: 210, path: "straight" },
-      { id: "ext_kzm_attica", brand: "카즈미", name: "아티카 리빙쉘", aliases: "kzm kazmi attica 아티카", shape: "tunnel", w: 360, l: 620, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_kzm_vivadome", brand: "카즈미", name: "비바 돔 쉘터 플러스", aliases: "kzm kazmi viva dome 비바돔", shape: "dome", w: 360, l: 360, h: 195, jh: 145, path: "elbow45" },
-      { id: "ext_wiwo_jenes", brand: "위오", name: "제네스 2룸 / 야크돔 550", aliases: "wiwo yakdome 야크돔550 쉘터", shape: "dome", w: 550, l: 550, h: 230, jh: 170, path: "elbow45" },
-      { id: "ext_wiwo_yak460", brand: "위오", name: "야크돔 460", aliases: "wiwo yakdome 460 야크돔460 돔텐트", shape: "dome", w: 460, l: 440, h: 210, jh: 160, path: "elbow45" },
-      { id: "ext_nordisk_reisa6", brand: "노르디스크", name: "레이사 6", aliases: "nordisk reisa6 레이사6 터널", shape: "tunnel", w: 295, l: 645, h: 210, jh: 150, path: "elbow90" },
-      { id: "ext_jeep_silvester", brand: "지프", name: "실베스터 2", aliases: "jeep silvester 실베스터 거실형", shape: "tunnel", w: 360, l: 630, h: 215, jh: 155, path: "elbow90" },
-      { id: "ext_coody_136", brand: "쿠디", name: "에어텐트 13.6", aliases: "coody 13.6 에어텐트 면에어", shape: "cabin", w: 360, l: 380, h: 220, jh: 160, path: "elbow45" },
-      { id: "ext_coody_172", brand: "쿠디", name: "에어텐트 17.2", aliases: "coody 17.2 에어텐트 대형", shape: "cabin", w: 360, l: 480, h: 220, jh: 160, path: "elbow45" },
-      { id: "ext_tentmark_circus", brand: "텐트마크디자인", name: "서커스 TC DX", aliases: "tentmark circus tc 서커스tc 티피", shape: "tipi", w: 420, l: 442, h: 280, jh: 195, path: "straight" },
-      { id: "ext_hilleberg_stalon", brand: "힐레베르그", name: "스탈론 XL", aliases: "hilleberg stalon xl 스탈론", shape: "tunnel", w: 290, l: 630, h: 205, jh: 155, path: "straight" },
-      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" }
-    ];
+    function initApp() {
+      if (window.__ctSimpleInitialized) return;
+      window.__ctSimpleInitialized = true;
 
-    function normalizeSearchStr(s) {
-      return String(s || "").toLowerCase().replace(/[\s\-_·.,()\[\]\/]+/g, "");
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      // Populate dropdowns
       const tSel = document.getElementById("sTentSelect");
       TENTS.forEach((t) => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; tSel.appendChild(o); });
       const sSel = document.getElementById("sStoveSelect");
@@ -946,7 +1091,7 @@
       tSel.addEventListener("change", (e) => {
         st.tentId = e.target.value;
         const t = getTent();
-        st.tentH = t.h; st.jackH = t.jh; st.path = t.path;
+        st.tentH = t.h; st.jackH = t.jh; st.path = t.path; st.extraOutPipes = 0;
         resetPos(); syncInputs(); render();
       });
       sSel.addEventListener("change", (e) => {
@@ -984,7 +1129,14 @@
       document.getElementById("sPipeSys").addEventListener("change", (e) => { st.pipeSys = e.target.value; render(); });
       document.getElementById("sProtSys").addEventListener("change", (e) => { st.protSys = e.target.value; render(); });
 
-      // Front / Side View + Colored ON/OFF Dim & Node Toggles
+      // 4. 텐트 밖 외부 연통 임의 추가 (+/- / 초기화)
+      const btnExtraMinus = document.getElementById("btnExtraPipeMinus");
+      const btnExtraPlus = document.getElementById("btnExtraPipePlus");
+      const btnExtraReset = document.getElementById("btnExtraPipeReset");
+      if (btnExtraMinus) btnExtraMinus.addEventListener("click", () => { st.extraOutPipes = Math.max(-2, (st.extraOutPipes || 0) - 1); render(); });
+      if (btnExtraPlus) btnExtraPlus.addEventListener("click", () => { st.extraOutPipes = Math.min(6, (st.extraOutPipes || 0) + 1); render(); });
+      if (btnExtraReset) btnExtraReset.addEventListener("click", () => { st.extraOutPipes = 0; render(); });
+
       const bf = document.getElementById("btnViewFront"), bs = document.getElementById("btnViewSide");
       const updateViewBtns = () => {
         bf.className = st.view === "front" ? "px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white transition" : "px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
@@ -1013,7 +1165,6 @@
         document.getElementById("formulaBox").classList.toggle("hidden");
       });
 
-      // Quick Stove Move & Direct SVG Drag (Stove X + Jack X/Y)
       document.querySelectorAll(".pos-quick-btn").forEach((b) => b.addEventListener("click", () => {
         const a = b.getAttribute("data-pos-act");
         if (a === "left") st.stovePosCm = clampPos(-Math.round(getSpan() * 0.28));
@@ -1023,16 +1174,19 @@
         render();
       }));
 
+      // 2. 난로(좌우) & 홀잭(45°/90° 각도 고정 범위 내 가로·세로) 드래그
       const svg = document.getElementById("heroSvg");
       svg.addEventListener("pointerdown", (e) => {
-        const isJack = Boolean(e.target.closest("#sDragJack"));
-        const isStove = Boolean(e.target.closest("#sDragStove"));
+        const targetEl = e.target && typeof e.target.closest === "function" ? e.target : null;
+        if (!targetEl) return;
+        const isJack = Boolean(targetEl.closest("#sDragJack"));
+        const isStove = Boolean(targetEl.closest("#sDragStove"));
         if (!isJack && !isStove) return;
         st.dragging = true;
         st.dragTarget = isJack ? "jack" : "stove";
         st.dragGeom = st.geom ? { ...st.geom } : { cx: 365, scaleX: 1, gY: 394, scaleY: 1, span: 300 };
         const curSim = compute();
-        st.lockedMaxH = Math.max(curSim.H_tent + 150, curSim.topH + 25, 395);
+        st.lockedMaxH = Math.max(curSim.H_tent + 160, curSim.topH + 35, 405);
         try { svg.setPointerCapture(e.pointerId); } catch (err) {}
         e.preventDefault();
       });
@@ -1043,43 +1197,43 @@
         const xSvg = ((e.clientX - r.left) / r.width) * 800;
         const ySvg = ((e.clientY - r.top) / r.height) * 440;
         if (st.dragTarget === "jack") {
-          const halfSpan = Math.max(80, (st.dragGeom.span || getSpan()) / 2 - 12);
           const rawX = (xSvg - st.dragGeom.cx) / st.dragGeom.scaleX;
-          st.jackPosCm = Math.round(Math.max(-halfSpan, Math.min(halfSpan, rawX)));
           const rawH = (st.dragGeom.gY - ySvg) / st.dragGeom.scaleY;
-          const maxJackH = Math.max(105, Math.round(st.tentH) - 5);
-          st.jackH = Math.round(Math.max(100, Math.min(maxJackH, rawH)));
+          const clamped = clampJackForAngle(rawX, rawH);
+          st.jackPosCm = clamped.jackPosCm;
+          st.jackH = clamped.jackH;
           const jIn = document.getElementById("sJackH");
           const jRg = document.getElementById("sJackHRange");
           if (jIn) jIn.value = st.jackH;
           if (jRg) jRg.value = st.jackH;
         } else {
           st.stovePosCm = clampPos((xSvg - st.dragGeom.cx) / st.dragGeom.scaleX);
+          if (st.path === "elbow45" || st.path === "elbow90") {
+            const clamped = clampJackForAngle(st.jackPosCm, st.jackH);
+            st.jackPosCm = clamped.jackPosCm;
+          }
         }
         scheduleRender();
       });
       const stopDrag = (e) => {
         if (!st.dragging) return;
-        st.dragging = false;
-        st.dragTarget = null;
-        st.dragGeom = null;
-        st.lockedMaxH = null;
+        st.dragging = false; st.dragTarget = null; st.dragGeom = null; st.lockedMaxH = null;
         try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
         render();
       };
       svg.addEventListener("pointerup", stopDrag);
       svg.addEventListener("pointercancel", stopDrag);
 
-      // Alert Quick-Fix Delegation
       document.getElementById("alertBox").addEventListener("click", (e) => {
         const b = e.target.closest(".s-qfix");
         if (!b) return;
-        if (b.getAttribute("data-qfix") === "no_stand") st.standH = 0;
+        const qact = b.getAttribute("data-qfix");
+        if (qact === "no_stand") st.standH = 0;
+        else if (qact === "add_spark_pipe") st.extraOutPipes = Math.min(6, (st.extraOutPipes || 0) + 1);
         else st.jackH = Math.min(st.tentH - 10, st.stoveH + st.standH + 60);
         syncInputs(); render();
       });
 
-      // BOM Checkbox Delegation
       document.getElementById("sBomCards").addEventListener("change", (e) => {
         const c = e.target.closest(".s-bom-chk");
         if (!c) return;
@@ -1088,39 +1242,28 @@
         render();
       });
 
-      // Copy Quote
       document.getElementById("sCopyQuoteBtn").addEventListener("click", () => {
         const ta = document.createElement("textarea");
         ta.value = st.lastQuoteText;
         ta.style.position = "fixed"; ta.style.opacity = "0";
         document.body.appendChild(ta); ta.select();
-        try { document.execCommand("copy"); showToast("카카오톡·카페 질문용 견적이 복사되었습니다!"); } catch (err) { showToast("복사에 실패했습니다."); }
+        try { document.execCommand("copy"); showToast("연통 목록이 클립보드에 복사되었습니다!"); } catch (err) { showToast("복사에 실패했습니다."); }
         document.body.removeChild(ta);
       });
 
-      // Search & AI Tent Auto-Fill
+      // 내장 + 확장 + AI 텐트 검색
       function getAllSearchableTentsSimple() {
         const main = TENTS.filter((t) => t.id !== "custom_tent").map((t) => ({
-          source: "main",
-          id: t.id,
+          source: "main", id: t.id,
           displayName: t.name.replace(/^\[[^\]]+\]\s*/, ""),
           aliases: `${t.name} ${t.id} ${t.shape}`,
-          shape: t.shape,
-          w: t.w,
-          h: t.h,
-          jh: t.jh,
-          path: t.path
+          shape: t.shape, w: t.w, h: t.h, jh: t.jh, path: t.path
         }));
         const extra = EXTRA_TENT_CATALOG.map((t) => ({
-          source: "extra",
-          id: t.id,
+          source: "extra", id: t.id,
           displayName: `${t.brand} ${t.name}`.trim(),
           aliases: `${t.brand} ${t.name} ${t.aliases || ""}`,
-          shape: t.shape,
-          w: t.w,
-          h: t.h,
-          jh: t.jh,
-          path: t.path
+          shape: t.shape, w: t.w, h: t.h, jh: t.jh, path: t.path
         }));
         return [...main, ...extra];
       }
@@ -1166,9 +1309,8 @@
           const cust = TENTS.find((x) => x.id === "custom_tent");
           if (cust) { cust.w = item.w; cust.h = item.h; cust.jh = item.jh; cust.shape = item.shape || "dome"; }
         }
-        resetPos();
-        syncInputs();
-        render();
+        st.extraOutPipes = 0;
+        resetPos(); syncInputs(); render();
         fb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
         fb.textContent = `✅ ${item.displayName} 자동 입력 완료 (최고높이 ${item.h}cm · 폭 ${item.w}cm · 홀잭 ${item.jh}cm)`;
         fb.classList.remove("hidden");
@@ -1233,6 +1375,7 @@
         st.tentId = "custom_tent";
         st.tentH = t.peakHeight;
         st.jackH = t.jackHeight;
+        st.extraOutPipes = 0;
         if (["straight", "elbow45", "elbow90"].includes(t.defaultPath)) st.path = t.defaultPath;
         const cust = TENTS.find((x) => x.id === "custom_tent");
         if (cust) {
@@ -1242,9 +1385,7 @@
           cust.jh = t.jackHeight;
           cust.shape = t.shape || "dome";
         }
-        resetPos();
-        syncInputs();
-        render();
+        resetPos(); syncInputs(); render();
         sResBox.classList.add("hidden");
         sSuggest.classList.add("hidden");
         const srcHtml = (Array.isArray(sources) && sources.length > 0)
@@ -1387,40 +1528,41 @@
         if (!sInput.contains(e.target) && !sSuggest.contains(e.target)) sSuggest.classList.add("hidden");
       });
 
-      // Cross-Navigation to Pro / Full Version (preserves current inputs)
+      // 상세 버전 전환 (미리보기 about:srcdoc 예외 방어)
       document.getElementById("goProVersionBtn").addEventListener("click", () => {
         const curTent = TENTS.find((x) => x.id === st.tentId);
         const params = new URLSearchParams();
         params.set("tent", st.tentId);
-        if (curTent && curTent.id !== "custom_tent") params.set("tname", curTent.name.replace(/^\[[^\]]+\]\s*/, "").replace(/\s*\(.*$/, ""));
+        if (curTent && curTent.id !== "custom_tent") {
+          params.set("tname", curTent.name.replace(/^\[[^\]]+\]\s*/, "").replace(/\s*\(.*$/, ""));
+        }
         params.set("th", String(st.tentH));
         params.set("jh", String(st.jackH));
         params.set("sh", String(st.stoveH));
         params.set("st", String(st.standH));
         params.set("path", st.path);
         params.set("pipe", st.pipeSys);
+        const query = params.toString();
 
         const protocol = window.location ? window.location.protocol : "";
         const isNavigable = protocol === "http:" || protocol === "https:" || protocol === "file:";
         if (!isNavigable) {
-          const fallbackUrl = `https://stove-iota.vercel.app/pro.html?${params.toString()}`;
-          window.open(fallbackUrl, "_blank", "noopener,noreferrer");
+          try { window.open(`https://stove-iota.vercel.app/pro.html?${query}`, "_blank", "noopener,noreferrer"); } catch (err) {}
           showToast("미리보기 환경에서는 상세 버전을 새 창으로 엽니다.");
           return;
         }
+        const pathname = window.location.pathname || "";
+        const targetFile = pathname.includes("camping_together_simple_simulator")
+          ? "./camping_together_chimney_simulator.html"
+          : "./pro.html";
         try {
-          const pathname = window.location.pathname || "";
-          const targetFile = pathname.includes("camping_together_simple_simulator")
-            ? "./camping_together_chimney_simulator.html"
-            : "./pro.html";
-          const resolvedUrl = new URL(`${targetFile}?${params.toString()}`, window.location.href).href;
-          window.location.href = resolvedUrl;
+          window.location.href = new URL(`${targetFile}?${query}`, window.location.href).href;
         } catch (err) {
           showToast("페이지 이동 경로를 생성할 수 없습니다.");
         }
       });
 
-      // Restore incoming query params when switching from Full -> Simple
+      // URL 파라미터 복원
       (function applyIncomingParamsSimple() {
         try {
           const p = new URLSearchParams(window.location.search);
@@ -1439,19 +1581,33 @@
               st.path = found.path;
             }
           }
-          const th = Number(p.get("th")); if (Number.isFinite(th) && th >= 130 && th <= 350) st.tentH = th;
-          const jh = Number(p.get("jh")); if (Number.isFinite(jh) && jh >= 100 && jh <= 300) st.jackH = jh;
-          const sh = Number(p.get("sh")); if (Number.isFinite(sh) && sh >= 20 && sh <= 90) st.stoveH = sh;
-          const stH = Number(p.get("st")); if (Number.isFinite(stH) && stH >= 0 && stH <= 80) st.standH = stH;
-          const path = p.get("path"); if (["straight", "elbow45", "elbow90"].includes(path)) st.path = path;
-          const pipe = p.get("pipe"); if (["tapered_70_73_76", "single_70", "single_75"].includes(pipe)) st.pipeSys = pipe;
+          const th = p.get("th") !== null ? Number(p.get("th")) : NaN;
+          if (Number.isFinite(th) && th >= 130 && th <= 350) st.tentH = th;
+          const jh = p.get("jh") !== null ? Number(p.get("jh")) : NaN;
+          if (Number.isFinite(jh) && jh >= 80 && jh <= 320) st.jackH = jh;
+          const sh = p.get("sh") !== null ? Number(p.get("sh")) : NaN;
+          if (Number.isFinite(sh) && sh >= 20 && sh <= 90) st.stoveH = sh;
+          const stH = p.get("st") !== null ? Number(p.get("st")) : NaN;
+          if (Number.isFinite(stH) && stH >= 0 && stH <= 80) st.standH = stH;
+          const path = p.get("path");
+          if (["straight", "elbow45", "elbow90"].includes(path)) st.path = path;
+          const pipe = p.get("pipe");
+          if (["tapered_70_73_76", "single_70", "single_75"].includes(pipe)) st.pipeSys = pipe;
         } catch (err) {}
       })();
 
-      resetPos();
-      syncInputs();
-      render();
-    });
+      try {
+        resetPos();
+        syncInputs();
+        render();
+      } catch (err) {}
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
   </script>
 </body>
 </html>
