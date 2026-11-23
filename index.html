@@ -2697,6 +2697,20 @@
       return Number(num || 0).toLocaleString("ko-KR") + "원";
     }
 
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function sanitizeUrl(url) {
+      const trimmed = String(url || "").trim();
+      return /^https?:\/\//i.test(trimmed) ? escapeHtml(trimmed) : STORE_URL;
+    }
+
     function populateStoveDropdown() {
       const select = document.getElementById("stoveSelect");
       select.innerHTML = "";
@@ -2845,7 +2859,7 @@
       // 기본 33cm(또는 75파이 32cm) + 추가 연결 시 마디당 5cm 단축 (연통 N본 연결 시 N-1개 마디 단축)
       const rawPipeLen = state.pipeSystem === "single_75" ? 32 : 33;
       const effPipeLen = Math.max(15, rawPipeLen - overlap); // 추가 연결 1본당 유효 연장 (+28cm 또는 +27cm)
-      const rawDamperLen = 28;
+      const rawDamperLen = state.pipeSystem === "single_75" ? 30 : 28;
       // 첫 번째 기본 연통(하단 1본)은 마디 단축 없음 (N본 연결 시 N-1개 마디만 단축)
       const effDamperLen = rawDamperLen;
 
@@ -3474,129 +3488,82 @@
       const items = [];
       const selectedStove = STOVE_MODELS.find((s) => s.id === state.selectedStoveId) || STOVE_MODELS[0];
 
+      function pickProduct(id, fallbackName, fallbackPrice, fallbackUrl, suffix) {
+        const p = getStoreProduct(id);
+        const baseName = p ? `${p.name}${p.status.includes("품절") ? " (품절)" : ""}` : fallbackName;
+        return {
+          prodId: id,
+          name: suffix ? `${baseName} · ${suffix}` : baseName,
+          unitPrice: p ? p.price : fallbackPrice,
+          url: p ? p.url : fallbackUrl
+        };
+      }
+
       if (state.pipeSystem === "tapered_70_73_76") {
-        items.push({
-          category: "기본 연통 세트",
-          name: "캠핑투게더 70-73-76파이 3.3m 연통 세트 (총 12본 · 현재 품절 시 단품 조합 가능)",
-          qty: 1,
-          unitPrice: 86000,
-          url: "https://smartstore.naver.com/camping-together/products/11196831287",
-          required: true
-        });
+        const setP = pickProduct("p_set_33m", "캠핑투게더 70-73-76파이 3.3m 연통 세트", 86000, STORE_URL, "총 12본");
+        items.push({ category: "기본 연통 세트", ...setP, qty: 1, required: true });
 
         if (sim.totalSegments > 12) {
           const extraCount = sim.totalSegments - 12;
-          items.push({
-            category: "추가 연장 직관",
-            name: `76파이 연장 스텐 직관 연통 (기본 33cm + 연결 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
-            qty: extraCount,
-            unitPrice: 6500,
-            url: "https://smartstore.naver.com/camping-together/products/11209936765",
-            required: true
-          });
+          const extP = pickProduct("p_pipe_76", "76파이 연장 직관", 6500, STORE_URL, `연결당 +${sim.effPipeLen}cm`);
+          items.push({ category: "추가 연장 직관", ...extP, qty: extraCount, required: true });
         }
       } else if (state.pipeSystem === "single_70") {
-        items.push({
-          category: "하단 기본 댐퍼",
-          name: "70파이 댐퍼 연통 (1번째 기본관 · 길이 28cm · 자체 마디 단축 없음)",
-          qty: 1,
-          unitPrice: 17000,
-          url: "https://smartstore.naver.com/camping-together/products/11471381958",
-          required: true
-        });
-        items.push({
-          category: "추가 연결 직관",
-          name: `70파이 스테인리스 직관 연통 (기본 33cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
-          qty: sim.straightPipeCount,
-          unitPrice: 5500,
-          url: "https://smartstore.naver.com/camping-together/products/11209918526",
-          required: true
-        });
+        const dampP = pickProduct("p_damper_70", "70파이 댐퍼 연통", 17000, STORE_URL, "1번 기본관 28cm");
+        items.push({ category: "하단 기본 댐퍼", ...dampP, qty: 1, required: true });
+
+        const p70 = pickProduct("p_pipe_70", "70파이 직관 연통", 5500, STORE_URL, `연결당 +${sim.effPipeLen}cm`);
+        items.push({ category: "추가 연결 직관", ...p70, qty: sim.straightPipeCount, required: true });
       } else {
-        items.push({
-          category: "구경 변환 레듀셔",
-          name: "레듀셔 Ø70수-75암 L30cm 화목난로 연통 (1번째 기본관 · 304SS)",
-          qty: 1,
-          unitPrice: 9000,
-          url: "https://smartstore.naver.com/camping-together/products/13851610962",
-          required: true
-        });
-        items.push({
-          category: "추가 연결 직관",
-          name: `75파이 스테인리스 직관 연통 (기본 32cm + 추가 연결 시 마디당 ${sim.overlap}cm 단축 → +${sim.effPipeLen}cm 연장)`,
-          qty: sim.straightPipeCount,
-          unitPrice: 6000,
-          url: "https://smartstore.naver.com/camping-together/products/12692680424",
-          required: true
-        });
-        items.push({
-          category: "최상단 불티캡",
-          name: "이중 불티캡 75파이 최상단 (불티·빗물유입 방지)",
-          qty: 1,
-          unitPrice: 19500,
-          url: "https://smartstore.naver.com/camping-together/products/12691610683",
-          required: true
-        });
+        const redP = pickProduct("p_reducer_70_75", "레듀셔 Ø70수-75암 L30cm", 9000, STORE_URL, "1번 기본관 30cm");
+        items.push({ category: "구경 변환 레듀셔", ...redP, qty: 1, required: true });
+
+        const p75 = pickProduct("p_pipe_75", "75파이 직관 연통", 6000, STORE_URL, `연결당 +${sim.effPipeLen}cm`);
+        items.push({ category: "추가 연결 직관", ...p75, qty: sim.straightPipeCount, required: true });
+
+        const cap75 = pickProduct("p_spark_cap_75", "이중 불티캡 75파이 최상단", 19500, STORE_URL, "최상단 마감");
+        items.push({ category: "최상단 불티캡", ...cap75, qty: 1, required: true });
       }
 
       if (sim.elbowCount > 0) {
         const is75 = state.pipeSystem === "single_75";
-        items.push({
-          category: "경로 굴절 엘보",
-          name: `${is75 ? "75파이" : "70파이"} 스테인리스 연통 엘보 ${sim.elbowAngle}도 (2개 1조 경로 굴절용)`,
-          qty: sim.elbowCount,
-          unitPrice: is75 ? 6500 : 7500,
-          url: is75
-            ? "https://smartstore.naver.com/camping-together/products/12692644054"
-            : "https://smartstore.naver.com/camping-together/products/11320456470",
-          required: true
-        });
+        const elbP = pickProduct(
+          is75 ? "p_elbow_75" : "p_elbow_70",
+          `${is75 ? "75파이" : "70파이"} 연통 엘보 ${sim.elbowAngle}도`,
+          is75 ? 6500 : 7500,
+          STORE_URL,
+          `${sim.elbowAngle}도 굴절`
+        );
+        items.push({ category: "경로 굴절 엘보", ...elbP, qty: sim.elbowCount, required: true });
       }
 
       if (state.protectionType === "double_pipe" || state.protectionType === "both_guard") {
         const is75 = state.pipeSystem === "single_75";
-        items.push({
-          category: "텐트 스킨 단열",
-          name: is75
-            ? "75파이 스테인리스 이중연통 (길이 50cm · 홀잭 보호)"
-            : "70파이 스테인리스 이중연통 (내경 70mm/외경 100mm · 길이 50cm)",
-          qty: 1,
-          unitPrice: is75 ? 27000 : 29000,
-          url: is75
-            ? "https://smartstore.naver.com/camping-together/products/11427862458"
-            : "https://smartstore.naver.com/camping-together/products/11318998547",
-          required: true
-        });
+        const dpP = pickProduct(
+          is75 ? "p_double_75" : "p_double_70",
+          `${is75 ? "75파이" : "70파이"} 스테인리스 이중연통`,
+          is75 ? 27000 : 29000,
+          STORE_URL,
+          "50cm 홀잭 보호"
+        );
+        items.push({ category: "텐트 스킨 단열", ...dpP, qty: 1, required: true });
       }
       if (state.protectionType === "mesh_guard" || state.protectionType === "both_guard") {
-        items.push({
-          category: "텐트 스킨 단열",
-          name: "화목난로 연통용 메쉬 텐트 보호망 스텐 안전망 (외경 130mm · 길이 50cm · 60~80파이 호환)",
-          qty: 1,
-          unitPrice: 33000,
-          url: "https://smartstore.naver.com/camping-together/products/12670070982",
-          required: true
-        });
+        const meshP = pickProduct("p_mesh_guard", "연통용 메쉬 텐트 보호망", 33000, STORE_URL, "50cm 외경 130mm");
+        items.push({ category: "텐트 스킨 단열", ...meshP, qty: 1, required: true });
       }
 
+      const ringP = pickProduct("p_guide_ring", "연통 고정링 홀더 가이드링", 8500, STORE_URL, "가이라인 고정");
       items.push({
         category: "외부 고정 부품",
-        name: "화목난로 연통 고정링 홀더 가이드링 티타늄 76파이 (스테인리스 호환)",
+        ...ringP,
         qty: sim.actualTopHeight > 390 || state.pathType === "elbow90" ? 2 : 1,
-        unitPrice: 8500,
-        url: "https://smartstore.naver.com/camping-together/products/12673273220",
         required: true
       });
 
       if (sim.H_stand >= 50) {
-        items.push({
-          category: "난로 스탠드",
-          name: "유니버셜 스탠드 550 IGT 원유닛 (높이 55cm · 허용하중 30kg)",
-          qty: 1,
-          unitPrice: 115000,
-          url: "https://smartstore.naver.com/camping-together/products/12412259304",
-          required: true
-        });
+        const stP = pickProduct("p_stand_550", "유니버셜 스탠드 550 IGT 원유닛", 115000, STORE_URL, "높이 55cm");
+        items.push({ category: "난로 스탠드", ...stP, qty: 1, required: true });
       }
 
       return { items, selectedStove };
@@ -3613,11 +3580,11 @@
         tentBadge.textContent = `${tent.origin} 인기 · ${tent.shapeLabel}`;
         tentSummary.innerHTML = `
           <div>
-            <span class="font-bold text-white">${tent.brand} ${tent.name}</span>
-            <span class="text-slate-400 ml-1">(${tent.dimensions})</span>
-            <p class="text-[11px] text-slate-400 mt-0.5">${tent.note}</p>
+            <span class="font-bold text-white">${escapeHtml(tent.brand)} ${escapeHtml(tent.name)}</span>
+            <span class="text-slate-400 ml-1">(${escapeHtml(tent.dimensions)})</span>
+            <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(tent.note)}</p>
           </div>
-          <a href="${tent.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-orange-400 hover:underline whitespace-nowrap">
+          <a href="${sanitizeUrl(tent.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold text-orange-400 hover:underline whitespace-nowrap">
             ${tent.sourceTitle} ↗
           </a>
         `;
@@ -3775,6 +3742,8 @@
           </div>
         `;
       }
+
+
       const dbSearchEl = document.getElementById("tentDbSearchInput");
       if (dbSearchEl) {
         dbSearchEl.addEventListener("input", (e) => {
@@ -3865,7 +3834,7 @@
       const cardsHtml = [];
 
       items.forEach((item, idx) => {
-        const key = `${item.category}_${idx}`;
+        const key = item.prodId || `${item.category}_${idx}`;
         const isIncluded = !state.bomExcludedKeys[key];
         const isVisited = Boolean(state.bomVisitedKeys[key]);
         if (isVisited) visitedCount++;
@@ -3887,11 +3856,11 @@
               <input type="checkbox" data-bom-check="${key}" ${isIncluded ? "checked" : ""} class="bom-item-check w-4 h-4 accent-orange-600 cursor-pointer" title="이미 보유한 품목은 체크 해제하세요" />
             </td>
             <td class="py-2.5 px-2 font-semibold text-slate-300 whitespace-nowrap">${item.category}</td>
-            <td class="py-2.5 px-2 text-white font-medium">${item.name}${visitedBadge}</td>
+            <td class="py-2.5 px-2 text-white font-medium">${escapeHtml(item.name)}${visitedBadge}</td>
             <td class="py-2.5 px-2 text-center font-bold text-orange-300 whitespace-nowrap">${item.qty}개</td>
             <td class="py-2.5 px-2 text-right font-bold text-slate-200 whitespace-nowrap">${formatKRW(lineTotal)}</td>
             <td class="py-2.5 px-2 text-center whitespace-nowrap">
-              <a href="${item.url}" data-bom-link="${key}" target="_blank" rel="noopener noreferrer" class="bom-store-link inline-flex items-center px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold">
+              <a href="${sanitizeUrl(item.url)}" data-bom-link="${escapeHtml(key)}" target="_blank" rel="noopener noreferrer" class="bom-store-link inline-flex items-center px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold">
                 ${isVisited ? "재방문↗" : "상품보기↗"}
               </a>
             </td>
@@ -3907,12 +3876,12 @@
                   <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">${item.category}</span>
                   ${visitedBadge}
                 </div>
-                <div class="text-xs font-bold text-slate-900 mt-1 leading-snug ${isIncluded ? "" : "line-through"}">${item.name}</div>
+                <div class="text-xs font-bold text-slate-900 mt-1 leading-snug ${isIncluded ? "" : "line-through"}">${escapeHtml(item.name)}</div>
               </div>
             </div>
             <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
               <span class="text-xs font-bold text-orange-700">수량 ${item.qty}개 · ${formatKRW(lineTotal)}</span>
-              <a href="${item.url}" data-bom-link="${key}" target="_blank" rel="noopener noreferrer" class="bom-store-link px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold">
+              <a href="${sanitizeUrl(item.url)}" data-bom-link="${escapeHtml(key)}" target="_blank" rel="noopener noreferrer" class="bom-store-link px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold">
                 ${isVisited ? "✓ 다시보기 ↗" : "스마트스토어 ↗"}
               </a>
             </div>
@@ -3945,7 +3914,7 @@
         `- 경로 방식: ${state.pathType === "straight" ? "상부 홀잭 수직 직상형" : state.pathType === "elbow45" ? "45° 대각선 경사 경로" : "90° 측면 창문 굴절 경로"} (난이도: ${sim.diffLabel})`,
         `- 연통 도달 높이: ${sim.actualTopHeight}cm (텐트 상단 대비 +${sim.actualRoofClearance}cm 여유)`,
         `- 추천 구성품:`,
-        ...items.filter((it, idx) => !state.bomExcludedKeys[`${it.category}_${idx}`]).map((it) => `  · ${it.category}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unitPrice)}) → ${it.url}`),
+        ...items.filter((it, idx) => !state.bomExcludedKeys[it.prodId || `${it.category}_${idx}`]).map((it) => `  · ${it.category}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unitPrice)}) → ${it.url}`),
         `- 연통·부속품 합계: ${formatKRW(totalAccessoriesPrice)}${selectedStove.price > 0 ? ` (난로 포함 시 ${formatKRW(withStoveTotal)})` : ""}`,
         `- 스마트스토어: ${STORE_URL}`
       ].join("\n");
@@ -4016,17 +3985,25 @@
     function parseCsvLines(text) {
       const lines = text.trim().split(/\r?\n/).filter((l) => l.trim());
       if (lines.length < 2) return [];
-      const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
+      const splitCsvRow = (rowStr) =>
+        rowStr
+          .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+          .map((c) => c.trim().replace(/^"|"$/g, "").replace(/""/g, '"'));
+      const headers = splitCsvRow(lines[0]).map((h) => h.toLowerCase());
       return lines.slice(1).map((line) => {
-        const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        const cols = splitCsvRow(line);
         const row = {};
         headers.forEach((h, idx) => { row[h] = cols[idx] || ""; });
         return row;
       });
     }
 
+    let stockSyncAbortCtrl = null;
+    let tentAnalyzeAbortCtrl = null;
+
     async function syncStoreStockFromFeed(showNotify) {
       const badge = document.getElementById("stockSyncStatusBadge");
+      const syncBtn = document.getElementById("syncStockNowBtn");
       const nowStr = new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
       if (!showNotify && !state.adminUnlocked) {
         try {
@@ -4041,9 +4018,12 @@
         }
         return;
       }
+      if (stockSyncAbortCtrl) stockSyncAbortCtrl.abort();
+      stockSyncAbortCtrl = new AbortController();
+      if (syncBtn) syncBtn.disabled = true;
       if (badge) badge.textContent = "⏳ 동기화 중...";
       try {
-        const res = await fetch(state.stockFeedUrl, { cache: "no-store" });
+        const res = await fetch(state.stockFeedUrl, { cache: "no-store", signal: stockSyncAbortCtrl.signal });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const text = await res.text();
         let rows = [];
@@ -4073,8 +4053,11 @@
         if (badge) badge.textContent = `✓ 자동 동기화 완료 (${nowStr} · ${updatedCount}건)`;
         if (showNotify) showToast(`스토어 판매상태 자동 동기화 완료 (${updatedCount}개 품목 반영)`);
       } catch (err) {
+        if (err && err.name === "AbortError") return;
         if (badge) badge.textContent = `⚠️ 동기화 실패 (로컬 데이터 유지)`;
         if (showNotify) showToast("피드 주소에 연결할 수 없습니다. 구글시트 '웹에 게시(CSV)' 공개 링크인지 확인해 주세요.");
+      } finally {
+        if (syncBtn) syncBtn.disabled = false;
       }
     }
 
@@ -4127,7 +4110,7 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <input type="url" data-prod-url="${p.id}" value="${p.url}" placeholder="개별 상품 URL 입력" class="prod-url-input flex-1 rounded-lg bg-white border border-slate-300 px-2 py-1 text-[10px] font-mono text-slate-700" />
+                  <input type="url" data-prod-url="${p.id}" value="${escapeHtml(p.url)}" placeholder="개별 상품 URL 입력" class="prod-url-input flex-1 rounded-lg bg-white border border-slate-300 px-2 py-1 text-[10px] font-mono text-slate-700" />
                 </div>
               </div>
             `
@@ -4148,14 +4131,14 @@
                   </span>
                   <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${statusColor}">${p.status}</span>
                 </div>
-                <h3 class="text-sm font-bold text-white leading-snug">${p.name}</h3>
-                <p class="text-xs text-slate-300">${p.spec}</p>
-                <p class="text-[11px] text-slate-400">${p.note}</p>
+                <h3 class="text-sm font-bold text-white leading-snug">${escapeHtml(p.name)}</h3>
+                <p class="text-xs text-slate-300">${escapeHtml(p.spec)}</p>
+                <p class="text-[11px] text-slate-400">${escapeHtml(p.note)}</p>
                 ${adminEditor}
               </div>
               <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
                 <span class="text-base font-extrabold text-orange-400">${formatKRW(p.price)}</span>
-                <a href="${p.url}" target="_blank" rel="noopener noreferrer"
+                <a href="${sanitizeUrl(p.url)}" target="_blank" rel="noopener noreferrer"
                    class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">
                   ${p.url.includes("/products/") ? "상품 바로가기 ↗" : "카테고리 바로가기 ↗"}
                 </a>
@@ -4306,8 +4289,8 @@
                 }">${t.origin}</span>
               </td>
               <td class="py-3 px-3">
-                <div class="font-bold text-white flex flex-wrap items-center gap-1.5"><span>${t.brand} ${t.name}</span>${t.ytPopular ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold">🎬 유튜버 인기</span>` : ""}</div>
-                <div class="text-[11px] text-slate-400 mt-0.5">${t.note}</div>
+                <div class="font-bold text-white flex flex-wrap items-center gap-1.5"><span>${escapeHtml(t.brand)} ${escapeHtml(t.name)}</span>${t.ytPopular ? `<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold">🎬 유튜버 인기</span>` : ""}</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(t.note)}</div>
               </td>
               <td class="py-2.5 px-2 text-center">
                 <button type="button" data-view-bp="${t.id}" class="view-bp-db-btn inline-block rounded-lg bg-white border border-slate-300 hover:border-orange-500 p-1 transition" title="클릭하여 정면·측면 실측 단면도 크게 보기">
@@ -4329,7 +4312,7 @@
                   </button>
                   ${t.isCustom && state.adminUnlocked ? `<button type="button" data-del-tent="${t.id}" class="del-tent-db-btn px-2 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 text-xs font-bold transition" title="수동 추가 텐트 삭제">✕</button>` : ""}
                 </div>
-                <a href="${t.sourceUrl}" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-slate-400 underline hover:text-orange-400">
+                <a href="${sanitizeUrl(t.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-slate-400 underline hover:text-orange-400">
                   제원출처↗
                 </a>
               </td>
@@ -4717,7 +4700,7 @@
       const val = (pwInput ? pwInput.value : "").trim();
       if (!val) return;
       const hashed = await sha256Hex(val);
-      const isMatch = hashed === ADMIN_PW_HASH || hashed === "6c2d6e5f";
+      const isMatch = hashed === ADMIN_PW_HASH;
       if (isMatch) {
         state.adminUnlocked = true;
         state.adminDrawerOpen = true;
@@ -5135,6 +5118,7 @@
     }
 
     function applyUrlQueryParams() {
+      let hasPosParam = false;
       try {
         const params = new URLSearchParams(window.location.search);
         if (params.get("stove")) {
@@ -5163,8 +5147,17 @@
         if (params.get("shape")) state.tentShape = params.get("shape");
         if (params.get("th")) state.tentHeight = Number(params.get("th")) || state.tentHeight;
         if (params.get("jh")) state.jackHeight = Number(params.get("jh")) || state.jackHeight;
-        if (params.get("hd")) state.horizDist = Number(params.get("hd")) || 0;
-        if (params.get("pos")) state.stovePosCm = Number(params.get("pos")) || 0;
+        if (params.get("hd") !== null) {
+          state.horizDist = Math.max(0, Number(params.get("hd")) || 0);
+          hasPosParam = true;
+        }
+        if (params.get("pos") !== null) {
+          // Initialize jackPosCm first based on tent/path, then preserve exact shared stovePosCm!
+          resetStoveAndJackPositions(true);
+          state.stovePosCm = clampStovePos(Number(params.get("pos")) || 0);
+          state.horizDist = Math.abs(Math.round(state.jackPosCm - state.stovePosCm));
+          hasPosParam = true;
+        }
         if (params.get("sh")) state.stoveHeight = Number(params.get("sh")) || state.stoveHeight;
         if (params.get("st")) state.standHeight = Number(params.get("st")) || 0;
         if (params.get("path")) state.pathType = params.get("path");
@@ -5184,6 +5177,7 @@
       } catch (err) {
         // Ignore URL parsing errors in restricted environments
       }
+      return hasPosParam;
     }
 
     function setCustomerSimpleMode(enabled, persist) {
@@ -5376,7 +5370,20 @@
     }
 
     function downloadStandaloneHtml() {
-      const docClone = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      // QA #2: Clone DOM and strip ALL mounted admin panels & reset admin buttons to locked state before serializing
+      const rootClone = document.documentElement.cloneNode(true);
+      ["stockAutoSyncMount", "adminAddProductMount", "adminTentAddMount", "tabPanel-embed"].forEach((id) => {
+        const el = rootClone.querySelector(`#${id}`);
+        if (el) el.innerHTML = "";
+      });
+      ["tabBtn-embed", "toggleCustomerModeBtn", "syncStockNowBtn", "stockSyncStatusBadge", "productsAdminSubtitle"].forEach((id) => {
+        const el = rootClone.querySelector(`#${id}`);
+        if (el) el.classList.add("hidden");
+      });
+      const headerBtn = rootClone.querySelector("#adminToggleHeaderBtn");
+      if (headerBtn) headerBtn.textContent = "🔒";
+
+      const docClone = "<!DOCTYPE html>\n" + rootClone.outerHTML;
       const blob = new Blob([docClone], { type: "text/html;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -5386,7 +5393,7 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("고객 배포용 index.html 파일이 다운로드되었습니다!");
+      showToast("관리자 UI가 완전히 제거된 고객 배포용 index.html이 다운로드되었습니다!");
     }
 
     let stockAutoPollTimer = null;
@@ -5554,6 +5561,10 @@
         showToast("http:// 또는 https:// 로 시작하는 올바른 인터넷 주소를 입력해 주세요.");
         return;
       }
+      const analyzeBtn = document.getElementById("analyzeTentUrlBtn");
+      if (tentAnalyzeAbortCtrl) tentAnalyzeAbortCtrl.abort();
+      tentAnalyzeAbortCtrl = new AbortController();
+      if (analyzeBtn) analyzeBtn.disabled = true;
       if (statusEl) {
         statusEl.classList.remove("hidden");
         statusEl.textContent = "🤖 웹페이지를 읽고 텐트 제원(가로·세로·높이·형태)을 자동 분석하는 중입니다...";
@@ -5561,7 +5572,7 @@
       try {
         // Fetch readable page content via public CORS-enabled Jina reader
         const readerUrl = "https://r.jina.ai/" + urlVal;
-        const res = await fetch(readerUrl);
+        const res = await fetch(readerUrl, { signal: tentAnalyzeAbortCtrl.signal });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const pageText = await res.text();
         const spec = extractTentSpecsFromText(pageText, urlVal);
@@ -5571,10 +5582,13 @@
         }
         showToast("URL에서 텐트 제원을 자동으로 파악해 입력란에 채웠습니다!");
       } catch (err) {
+        if (err && err.name === "AbortError") return;
         if (statusEl) {
           statusEl.textContent = "⚠️ 해당 사이트가 외부 자동 읽기를 차단했습니다. 위 [제원 텍스트 붙여넣기] 칸에 상품 크기 텍스트를 붙여넣고 [✨ 텍스트 자동 분석]을 눌러주세요.";
         }
         showToast("사이트 보안 차단으로 자동 읽기에 실패했습니다. 텍스트 붙여넣기 분석을 이용해 주세요.");
+      } finally {
+        if (analyzeBtn) analyzeBtn.disabled = false;
       }
     }
 
@@ -5612,40 +5626,7 @@
           if (box) box.classList.add("hidden");
         });
       }
-      const deployInput = document.getElementById("deployUrlInput");
-      const presetSel = document.getElementById("embedPresetSelect");
-      if (deployInput) deployInput.addEventListener("input", updateEmbedCodeGenerator);
-      if (presetSel) presetSel.addEventListener("change", updateEmbedCodeGenerator);
 
-      const copyTargetBtn = document.getElementById("copyTargetUrlBtn");
-      if (copyTargetBtn) {
-        copyTargetBtn.addEventListener("click", () => {
-          const txt = document.getElementById("generatedFullUrlDisplay").textContent.trim();
-          fallbackCopy(txt);
-          showToast("고객 접속 전용 링크가 복사되었습니다!");
-        });
-      }
-      const copyIframeBtn = document.getElementById("copyIframeCodeBtn");
-      if (copyIframeBtn) {
-        copyIframeBtn.addEventListener("click", () => {
-          const txt = document.getElementById("iframeCodePreview").textContent;
-          fallbackCopy(txt);
-          showToast("판매페이지 삽입용 Iframe 코드가 복사되었습니다!");
-        });
-      }
-      const copyHtmlBannerBtn = document.getElementById("copyHtmlBannerBtn");
-      if (copyHtmlBannerBtn) {
-        copyHtmlBannerBtn.addEventListener("click", () => {
-          const txt = document.getElementById("htmlBannerCodePreview").textContent;
-          fallbackCopy(txt);
-          showToast("판매페이지용 HTML 배너 코드가 복사되었습니다!");
-        });
-      }
-      const dlBannerBtn = document.getElementById("downloadBannerPngBtn");
-      if (dlBannerBtn) dlBannerBtn.addEventListener("click", downloadBannerPng);
-
-      const dlHtmlBtn = document.getElementById("downloadStandaloneHtmlBtn");
-      if (dlHtmlBtn) dlHtmlBtn.addEventListener("click", downloadStandaloneHtml);
 
       const adminHeaderBtn = document.getElementById("adminToggleHeaderBtn");
       if (adminHeaderBtn) {
@@ -5799,32 +5780,7 @@
       const syncNowBtn = document.getElementById("syncStockNowBtn");
       if (syncNowBtn) syncNowBtn.addEventListener("click", () => syncStoreStockFromFeed(true));
 
-      const dlCsvBtn = document.getElementById("downloadStockCsvTemplateBtn");
-      if (dlCsvBtn) dlCsvBtn.addEventListener("click", downloadStockCsvTemplate);
 
-      const saveFeedBtn = document.getElementById("saveAndSyncFeedBtn");
-      if (saveFeedBtn) {
-        saveFeedBtn.addEventListener("click", () => {
-          const feedInp = document.getElementById("stockFeedUrlInput");
-          state.stockFeedUrl = (feedInp ? feedInp.value : "").trim();
-          try { localStorage.setItem("ct_stock_feed_url", state.stockFeedUrl); } catch (e) {}
-          syncStoreStockFromFeed(true);
-        });
-      }
-
-      const resetStockBtn = document.getElementById("resetStockOverridesBtn");
-      if (resetStockBtn) {
-        resetStockBtn.addEventListener("click", () => {
-          try {
-            localStorage.removeItem("ct_stock_overrides");
-            localStorage.removeItem("ct_stock_feed_url");
-          } catch (e) {}
-          state.stockFeedUrl = "";
-          const feedInp = document.getElementById("stockFeedUrlInput");
-          if (feedInp) feedInp.value = "";
-          showToast("재고 설정이 초기화되었습니다. 페이지를 새로고침하면 기본값으로 복원됩니다.");
-        });
-      }
 
       const prodGrid = document.getElementById("productCardsGrid");
       if (prodGrid) {
@@ -5872,154 +5828,9 @@
         });
       }
 
-      const saveNewProdBtn = document.getElementById("saveNewProdBtn");
-      if (saveNewProdBtn) {
-        saveNewProdBtn.addEventListener("click", () => {
-          const name = (document.getElementById("addProdName").value || "").trim();
-          if (!name) { showToast("추가할 상품명을 입력해 주세요."); return; }
-          const category = document.getElementById("addProdCat").value || "pipe";
-          const price = Math.max(0, Number(document.getElementById("addProdPrice").value) || 0);
-          const spec = (document.getElementById("addProdSpec").value || "캠핑투게더 정품 규격").trim();
-          const url = (document.getElementById("addProdUrl").value || ("https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1")).trim();
-          STORE_PRODUCTS.push({
-            id: "p_custom_" + Date.now(),
-            isCustom: true,
-            category,
-            name,
-            spec,
-            price,
-            status: "판매중",
-            url,
-            note: "관리자 수동 등록 상품"
-          });
-          saveStockOverrides();
-          renderProductsTab();
-          document.getElementById("addProdName").value = "";
-          document.getElementById("addProdSpec").value = "";
-          document.getElementById("addProdUrl").value = "";
-          showToast(`"${name}" 상품이 스토어 DB에 추가되었습니다!`);
-        });
-      }
 
-      // Copy Cloudflare Worker / Naver Commerce API Auto-Sync Template
-      const copyWorkerBtn = document.getElementById("copyWorkerProxyBtn");
-      if (copyWorkerBtn) {
-        copyWorkerBtn.addEventListener("click", () => {
-          const workerSnippet = [
-            "// Cloudflare Worker (무료) — 네이버 스마트스토어 실시간 판매상태(판매중/품절) JSON 프록시 예시",
-            "export default {",
-            "  async fetch(request, env) {",
-            "    // 네이버 커머스 API(https://apicenter.commerce.naver.com)에서 상품상태 조회 후 JSON 반환",
-            "    const products = [",
-            "      { id: 'p_mstove_v3', status: '판매중', price: 728000 },",
-            "      { id: 'p_lumora_ti', status: '판매중 (예약)', price: 1480000 },",
-            "      { id: 'p_dweller_max3', status: '일시품절', price: 780000 }",
-            "    ];",
-            "    return new Response(JSON.stringify(products), {",
-            "      headers: { 'Content-Type': 'application/json;charset=utf-8', 'Access-Control-Allow-Origin': '*' }",
-            "    });",
-            "  }",
-            "};"
-          ].join("\n");
-          copyTextReliable(workerSnippet, "네이버 커머스 API 실시간 연동 Worker 코드가 복사되었습니다!");
-        });
-      }
 
-      // Admin Manual Tent Add & AI URL Analyzer Listeners
-      const toggleAddBtn = document.getElementById("toggleTentAddFormBtn");
-      if (toggleAddBtn) {
-        toggleAddBtn.addEventListener("click", () => {
-          const body = document.getElementById("tentAddFormBody");
-          if (body) body.classList.toggle("hidden");
-        });
-      }
-      const analyzeUrlBtn = document.getElementById("analyzeTentUrlBtn");
-      if (analyzeUrlBtn) analyzeUrlBtn.addEventListener("click", analyzeTentFromUrl);
 
-      const analyzeTextBtn = document.getElementById("analyzeTentTextBtn");
-      if (analyzeTextBtn) {
-        analyzeTextBtn.addEventListener("click", () => {
-          const txt = (document.getElementById("newTentPasteSpecInput").value || "").trim();
-          if (!txt) {
-            showToast("분석할 텐트 제원 텍스트를 먼저 입력해 주세요.");
-            return;
-          }
-          const urlVal = (document.getElementById("newTentUrlInput").value || "").trim();
-          const spec = extractTentSpecsFromText(txt, urlVal);
-          fillAddTentForm(spec);
-          const statusEl = document.getElementById("tentUrlAnalyzeStatus");
-          if (statusEl) {
-            statusEl.classList.remove("hidden");
-            statusEl.textContent = `✓ 텍스트 자동 분석 완료! (${spec.lengthCm}×${spec.widthCm}×${spec.peakHeightCm}cm) 아래 내용을 확인 후 저장하세요.`;
-          }
-          showToast("붙여넣은 텍스트에서 텐트 제원을 자동 추출했습니다!");
-        });
-      }
-
-      const saveNewTentBtn = document.getElementById("saveNewTentBtn");
-      if (saveNewTentBtn) {
-        saveNewTentBtn.addEventListener("click", () => {
-          const name = (document.getElementById("addTentName").value || "").trim();
-          if (!name) {
-            showToast("텐트 모델명을 입력해 주세요.");
-            return;
-          }
-          const origin = document.getElementById("addTentOrigin").value || "국내";
-          const brand = (document.getElementById("addTentBrand").value || "사용자 등록").trim();
-          const shape = document.getElementById("addTentShape").value || "dome";
-          const widthCm = Math.max(150, Number(document.getElementById("addTentWidth").value) || 350);
-          const lengthCm = Math.max(150, Number(document.getElementById("addTentLength").value) || 400);
-          const peakHeight = Math.max(120, Number(document.getElementById("addTentPeak").value) || 200);
-          const sideWallCm = Math.max(0, Number(document.getElementById("addTentSideWall").value) || 0);
-          const jackHeight = Math.max(80, Number(document.getElementById("addTentJack").value) || 150);
-          const pathType = document.getElementById("addTentPath").value || "elbow45";
-          const note = (document.getElementById("addTentNote").value || "관리자 수동 등록 모델").trim();
-          const srcUrl = (document.getElementById("newTentUrlInput").value || STORE_URL).trim();
-
-          const shapeLabels = { dome: "돔 쉘터", tunnel: "터널·리빙쉘", tipi: "티피·원폴", cabin: "캐빈·면텐트" };
-          const profileMap = { dome: "dome_geo", tunnel: "tunnel_living", tipi: "tipi_cone", cabin: "cabin_ridge" };
-
-          const newTent = {
-            id: "custom_" + Date.now(),
-            isCustom: true,
-            origin,
-            brand,
-            name,
-            shape,
-            shapeLabel: shapeLabels[shape] || "쉘터",
-            dimensions: `${lengthCm} × ${widthCm} × ${peakHeight} cm`,
-            peakHeight,
-            defaultJackHeight: jackHeight,
-            defaultHorizDist: pathType === "straight" ? 0 : pathType === "elbow45" ? 45 : 65,
-            defaultPath: pathType,
-            hasBuiltInJack: pathType === "straight",
-            sourceTitle: "관리자 등록 제원",
-            sourceUrl: srcUrl,
-            note,
-            section: {
-              profile: profileMap[shape] || "dome_geo",
-              widthCm,
-              lengthCm,
-              peakHeightCm: peakHeight,
-              sideWallCm,
-              doorHeightCm: Math.round(peakHeight * 0.8),
-              innerW: 0,
-              innerH: 0,
-              structureNote: `${shapeLabels[shape] || "쉘터"} · 관리자 등록 실측 단면`
-            }
-          };
-
-          TENT_MODELS.unshift(newTent);
-          saveCustomTents();
-          updateTentCountBadges();
-          populateTentDropdown();
-          renderTentsTab();
-          document.getElementById("addTentName").value = "";
-          document.getElementById("newTentUrlInput").value = "";
-          document.getElementById("newTentPasteSpecInput").value = "";
-          showToast(`"${brand} ${name}" 모델과 실측 단면도가 텐트 DB에 추가되었습니다!`);
-        });
-      }
 
       // Support deleting custom tents from Tent DB table
       const tentDbBody = document.getElementById("tentDbTableBody");
@@ -6040,14 +5851,7 @@
         });
       }
 
-      // Refresh admin UI on unlock/lock so Tent DB delete buttons also toggle
-      const origTryUnlock = tryAdminUnlock;
-      const origSaveFeedBtn = document.getElementById("saveAndSyncFeedBtn");
-      if (origSaveFeedBtn) {
-        origSaveFeedBtn.addEventListener("click", () => {
-          startRealtimeStockPolling();
-        });
-      }
+
 
       loadCustomTents();
       updateTentCountBadges();
@@ -6059,8 +5863,10 @@
       renderProductsTab();
       renderTentsTab();
 
-      applyUrlQueryParams();
-      resetStoveAndJackPositions(true);
+      const hasSharedPosition = applyUrlQueryParams();
+      if (!hasSharedPosition) {
+        resetStoveAndJackPositions(true);
+      }
       renderAdminDrawerState();
       syncInputsFromState();
       updateUI();
