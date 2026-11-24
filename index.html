@@ -817,11 +817,24 @@
 
       const elbowEff = elbowCnt * (17 - overlap);
       const reqStraightCnt = Math.max(2, Math.ceil(Math.max(0, reqEff - rawFirst - elbowEff) / effPipe));
+      // 73/76파이 엘보가 없으므로 45°/90° 엘보 사용 시 2번째(텐트 바깥쪽) 엘보까지는 모두 Ø70 연통으로 연결
+      const isTapered70Base = st.pipeSys === "tapered_70_73_76" || st.pipeSys === "ti_nested_70_76";
+      let pipe70Count = 5;
+      let extra70ForElbow = 0;
+      if (elbowCnt > 0 && isTapered70Base) {
+        const lenToElbow2 = inVert + midLen;
+        const straightToElbow2 = Math.max(1, Math.ceil(Math.max(0, lenToElbow2 - rawFirst - elbowEff) / effPipe));
+        const req70Total = 1 + straightToElbow2;
+        pipe70Count = Math.max(5, req70Total);
+        extra70ForElbow = Math.max(0, req70Total - 5);
+      }
+
       // 포몰리 루모라 Ti / 드웰러 맥스 Ti 3 (3.0m 11본) 및 엠스토브 v3/v2 (3.3m 12본) 기본세트 설치 상태 기본 반영
       const defaultIncludedStraight = (isTi3mSet || isMstove33mSet) ? Math.max(2, (stoveObj.includedPipes || 0) - 1) : 2;
-      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight);
+      const minStraightForTapered = (elbowCnt > 0 && isTapered70Base) ? Math.max(2, pipe70Count + 1) : 2;
+      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight, minStraightForTapered);
       const extraOutPipes = Math.max(-4, Math.min(6, Number(st.extraOutPipes) || 0));
-      const straightCnt = Math.max(2, baseStraightCnt + extraOutPipes);
+      const straightCnt = Math.max(minStraightForTapered, baseStraightCnt + extraOutPipes);
       const actualExtraPipes = straightCnt - baseStraightCnt;
       const extraOutCm = actualExtraPipes * effPipe;
 
@@ -865,7 +878,7 @@
       return {
         H_tent, H_jack, H_stove, H_stand, H_start, span, pos, jackXCm, D_horiz, minWall,
         effMode, elbowCnt, elbowAng, inVert, midLen, outVert, rawPipe, effPipe, rawFirst, overlap,
-        isTi3mSet, isMstove33mSet, baseStraightCnt, straightCnt, actualExtraPipes, extraOutCm, totalSeg, joints,
+        isTi3mSet, isMstove33mSet, pipe70Count, extra70ForElbow, baseStraightCnt, straightCnt, actualExtraPipes, extraOutCm, totalSeg, joints,
         rawTotal, lost, effTotal, topH, roofClr, sparkSafe, warns, blocked, diff, diffCls
       };
     }
@@ -957,37 +970,43 @@
         const d0 = (accW / totalW) * safeTotalPx;
         accW += w;
         const d1 = (accW / totalW) * safeTotalPx;
-        const isExtraAdded = sim.actualExtraPipes > 0 && i >= sim.totalSeg - sim.actualExtraPipes;
+        const isTopCap = i === sim.totalSeg - 1;
+        // 임의 추가된 외부 연통(+)은 최상단 불티캡 바로 아래 구간에 배치 (최상단 연통은 항상 맨 위 유지)
+        const isExtraAdded = !isTopCap && sim.actualExtraPipes > 0 && i >= sim.totalSeg - 1 - sim.actualExtraPipes;
         const isTiMat = getActiveStove().mat === "titanium";
+        const p70End = sim.pipe70Count || 5;
         let dia = "Ø70", col = "#f59e0b";
         if (isTiMat) {
           if (st.pipeSys === "ti_nested_83_89") {
-            dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
-            col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
+            if (isTopCap) { dia = "Ti Ø89불티캡"; col = "#7c3aed"; }
+            else {
+              dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
+              col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
+            }
           } else if (st.pipeSys === "ti_nested_70_76") {
-            // 포몰리 티타늄 3m(11본) 기본세트: Ø70 직관 5 + Ø70-76 레듀셔 1 + Ø76 직관 4 + Ø76 불티캡 1
-            if (i <= 4) { dia = "Ti Ø70"; col = "#6366f1"; }
-            else if (i === 5) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
-            else if (i <= 9) { dia = "Ti Ø76"; col = "#8b5cf6"; }
-            else if (i === 10) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
-            else { dia = "Ti Ø76"; col = "#0284c7"; }
+            // 2번째 엘보까지 Ti Ø70 연결 -> 이후 Ti Ø70-76 레듀셔 -> Ti Ø76 직관 -> 최상단 Ti Ø76불티캡(항상 맨 위)
+            if (isTopCap) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
+            else if (i < p70End) { dia = i >= 5 ? "Ti Ø70(추가)" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
+            else if (i === p70End) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
+            else { dia = "Ti Ø76"; col = "#8b5cf6"; }
           } else {
-            dia = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70";
-            col = "#6366f1";
+            if (isTopCap) { dia = "Ti Ø70불티캡"; col = "#7c3aed"; }
+            else { dia = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70"; col = "#6366f1"; }
           }
         } else if (st.pipeSys === "tapered_70_73_76") {
-          // 엠스토브 3.3m(12본) 기본세트: Ø70 댐퍼 1 + Ø70 직관 4 + Ø70-73 레듀셔 1 + Ø73 직관 4 + Ø73-76 레듀셔 1 + Ø76 불티캡 1
-          if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
-          else if (i <= 4) { dia = "Ø70"; col = "#f59e0b"; }
-          else if (i === 5) { dia = "Ø70-73"; col = "#ea580c"; }
-          else if (i <= 9) { dia = "Ø73"; col = "#f97316"; }
-          else if (i === 10) { dia = "Ø73-76"; col = "#e11d48"; }
-          else if (i === 11) { dia = "Ø76불티캡"; col = "#f43f5e"; }
-          else { dia = "Ø76"; col = "#0284c7"; }
+          // 2번째 엘보까지 Ø70 연결 -> 이후 Ø70-73 레듀셔 -> Ø73 직관 -> Ø73-76 레듀셔 -> Ø76 직관 -> 최상단 Ø76불티캡(항상 맨 위)
+          if (isTopCap) { dia = "Ø76불티캡"; col = "#f43f5e"; }
+          else if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
+          else if (i < p70End) { dia = i >= 5 ? "Ø70(추가)" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
+          else if (i === p70End) { dia = "Ø70-73"; col = "#ea580c"; }
+          else if (i <= p70End + 4) { dia = "Ø73"; col = "#f97316"; }
+          else if (i === p70End + 5) { dia = "Ø73-76"; col = "#e11d48"; }
+          else { dia = "Ø76"; col = "#f43f5e"; }
         } else if (st.pipeSys === "single_70") {
-          dia = i === 0 ? "Ø70댐퍼" : "Ø70";
+          dia = isTopCap ? "Ø70불티캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
         } else {
-          dia = i === 0 ? "Ø70-75" : "Ø75"; col = i === 0 ? "#f59e0b" : "#f97316";
+          dia = isTopCap ? "Ø75불티캡" : (i === 0 ? "Ø70-75" : "Ø75");
+          col = i === 0 ? "#f59e0b" : "#f97316";
         }
         if (isExtraAdded) col = "#0284c7";
         pipesHtml += `<polyline points="${subPoly(d0, d1)}" fill="none" stroke="${col}" stroke-width="7.5" stroke-linejoin="round"/>`;
@@ -1123,7 +1142,7 @@
       // 1) 난로 상세페이지 기준 기본 포함 구성품 산출
       const incPipes = Number(stoveObj.includedPipes) || 0;
       const incRings = Number(stoveObj.includedRings) || 0;
-      const needRings = sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1;
+      const needRings = 1;
       const extraRings = Math.max(0, needRings - incRings);
 
       if (incPipes > 0) {
@@ -1147,6 +1166,7 @@
       }
 
       // 2) 별도 추가 구매가 필요한 연통 · 부속품만 산출
+      const extra70Cnt = sim.extra70ForElbow || 0;
       if (isTi) {
         // 티타늄 난로 -> 100% 티타늄 연통·부속 전용 구성
         if (stoveObj.isRollPipe) {
@@ -1164,11 +1184,18 @@
             addBuy("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
           } else {
             addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
-            if (sim.totalSeg > 10) addBuy("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+            if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결용");
+            const extraTopTi = Math.max(0, sim.totalSeg - 11 - extra70Cnt);
+            if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 상단 연장 직관", "외부 상단 연장용");
           }
-        } else if (sim.totalSeg > incPipes) {
-          const extraTi = sim.totalSeg - incPipes;
-          addBuy("p_ti_pipe_70_76", extraTi, "티타늄 추가 직관", `기본 ${incPipes}본 초과분 (+${extraTi * sim.effPipe}cm)`);
+        } else {
+          if (extra70Cnt > 0) {
+            addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          }
+          const extraTopTi = Math.max(0, sim.totalSeg - incPipes - extra70Cnt);
+          if (extraTopTi > 0) {
+            addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 76파이 연장 직관", `상단 연장 (+${extraTopTi * sim.effPipe}cm)`);
+          }
         }
 
         if (sim.elbowCnt > 0) addBuy("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
@@ -1184,7 +1211,9 @@
           // 묠니르+따꿍 키트 등 연통 미포함 모델 -> 기본 세트/단품 전체 구매 필요
           if (st.pipeSys === "tapered_70_73_76") {
             addBuy("p_set_33m", 1, "스텐 기본 세트", "연통 미포함 모델 필수");
-            if (sim.totalSeg > 12) addBuy("p_pipe_76", sim.totalSeg - 12, "스텐 추가 직관");
+            if (extra70Cnt > 0) addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+            const extraTopSt = Math.max(0, sim.totalSeg - 12 - extra70Cnt);
+            if (extraTopSt > 0) addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관");
           } else if (st.pipeSys === "single_70") {
             addBuy("p_damper_70", 1, "스텐 하단 댐퍼");
             addBuy("p_pipe_70", sim.straightCnt, "스텐 직관 연통");
@@ -1193,16 +1222,21 @@
             addBuy("p_pipe_75", sim.straightCnt, "스텐 직관 연통");
             addBuy("p_spark_cap_75", 1, "스텐 최상단 불티캡");
           }
-        } else if (sim.totalSeg > incPipes) {
-          // 엠스토브 v3/v2(12본 포함), 드웰러 맥스 3(9본 포함) -> 초과분만 추가 구매!
-          const extraSt = sim.totalSeg - incPipes;
-          if (st.pipeSys === "tapered_70_73_76") {
-            addBuy("p_pipe_76", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분 · 3중 겹침 수납 호환`);
-          } else if (st.pipeSys === "single_75") {
-            addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔", "Ø70→Ø75 변환");
-            addBuy("p_pipe_75", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
-          } else {
-            addBuy("p_pipe_70", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+        } else {
+          // 엠스토브 v3/v2(12본 포함), 드웰러 맥스 3(9본 포함) -> 2번째 엘보까지 70파이 부족분 + 상단 초과분 추가 구매
+          if (extra70Cnt > 0 && st.pipeSys === "tapered_70_73_76") {
+            addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          }
+          const extraTopSt = Math.max(0, sim.totalSeg - incPipes - extra70Cnt);
+          if (extraTopSt > 0) {
+            if (st.pipeSys === "tapered_70_73_76") {
+              addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관", `상단 연장 · 3중 겹침 수납 호환`);
+            } else if (st.pipeSys === "single_75") {
+              addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔", "Ø70→Ø75 변환");
+              addBuy("p_pipe_75", extraTopSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+            } else {
+              addBuy("p_pipe_70", extraTopSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+            }
           }
         }
 
