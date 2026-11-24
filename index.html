@@ -1163,7 +1163,7 @@
         addBuy(isDweller ? "p_dweller_stand" : "p_stand_550", 1, "난로 옵션 스탠드");
       }
 
-      return { includedList, buyList, incPipes, extraPipeNeeded: Math.max(0, sim.totalSeg - incPipes) };
+      return { includedList, buyList, incPipes, extraPipeNeeded };
     }
 
     function render() {
