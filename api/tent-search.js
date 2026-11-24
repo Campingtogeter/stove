@@ -229,6 +229,12 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
+      ok: false,
+      code: "NO_API_KEY",
+      error: "Vercel 환경변수에 GEMINI_API_KEY가 아직 설정되지 않았습니다."
+    });
+  }
+
   const primaryModel = process.env.GEMINI_MODEL || CACHED_WORKING_MODEL || "gemini-3.8-flash";
   let modelsToTry = Array.from(new Set([
     primaryModel,
