@@ -48,13 +48,26 @@
     *, *::before, *::after { box-sizing: border-box; }
     html, body { overflow-x: hidden; max-width: 100%; }
     svg { max-width: 100%; height: auto; }
+    @media (max-width: 767px) {
+      #heroDiagramSection {
+        position: sticky;
+        top: 3.5rem;
+        z-index: 25;
+        box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.14);
+      }
+      #heroSvg {
+        max-height: 29vh;
+        width: auto;
+        margin: 0 auto;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-[#f6f8fb] text-slate-900 selection:bg-orange-500 selection:text-white overflow-x-hidden">
 
   <!-- Minimal Clean Header -->
-  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
           🔥
@@ -65,13 +78,17 @@
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button id="goProVersionBtn" type="button" title="상세·전문가 버전으로 이동"
-           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-bold transition whitespace-nowrap">
-          <span>🛠️ 상세 버전</span>
-        </button>
+        <!-- 명확한 모드 전환 세그먼트 토글 [간편 | 상세] -->
+        <div class="inline-flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200" role="group" aria-label="시뮬레이터 모드 선택">
+          <span class="px-2.5 py-1 rounded-full bg-orange-600 text-white text-[11px] font-extrabold shadow-sm whitespace-nowrap">간편</span>
+          <button id="goProVersionBtn" type="button" title="상세 제원·DB·전문가 시뮬레이터로 전환"
+             class="px-2.5 py-1 rounded-full text-slate-600 hover:text-slate-900 text-[11px] font-bold transition whitespace-nowrap">
+            상세
+          </button>
+        </div>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
-           class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm whitespace-nowrap">
-          <span>스마트스토어</span>
+           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm whitespace-nowrap">
+          <span>스토어</span>
           <span>↗</span>
         </a>
       </div>
@@ -84,95 +101,110 @@
   </div>
 
   <!-- Main Single-Column Picture-First Layout -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5">
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-7 space-y-4 sm:space-y-5">
 
     <!-- ================================================= -->
     <!-- 1. HERO: PICTURE-FIRST INTERACTIVE BLUEPRINT CARD -->
     <!-- ================================================= -->
-    <section class="rounded-3xl bg-white border border-slate-200/90 shadow-sm overflow-hidden">
+    <section id="heroDiagramSection" class="rounded-2xl sm:rounded-3xl bg-white border border-slate-200/90 shadow-sm overflow-visible">
 
-      <!-- Top Summary & Toggle Strip -->
-      <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <!-- Result Pills -->
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-orange-50 border border-orange-200">
-            <span class="text-[11px] font-semibold text-orange-700">추천 연통</span>
-            <span id="heroPipeCount" class="text-sm font-extrabold text-orange-700">총 9본</span>
+      <!-- Compact Core Summary + Gear Settings Toggle Strip -->
+      <div class="px-3.5 sm:px-6 py-2.5 sm:py-3.5 border-b border-slate-100 flex items-center justify-between gap-2 relative">
+        <!-- Core 2 Pills (Mobile & Desktop clean) + Secondary Info on Desktop -->
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
+          <div class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl bg-orange-50 border border-orange-200">
+            <span class="text-[11px] font-semibold text-orange-700">연통</span>
+            <span id="heroPipeCount" class="text-xs sm:text-sm font-extrabold text-orange-700">총 12본</span>
           </div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200">
-            <span class="text-[11px] font-semibold text-slate-500">연통 총 높이</span>
-            <span id="heroTopHeight" class="text-sm font-extrabold text-slate-900">287 cm</span>
+          <div id="heroSparkPill" class="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-[11px] sm:text-xs font-extrabold text-emerald-700">
+            불티안전 +155cm
           </div>
-          <div id="heroDiffPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700">
+          <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-slate-100 border border-slate-200">
+            <span class="text-[11px] font-semibold text-slate-500">총 높이</span>
+            <span id="heroTopHeight" class="text-sm font-extrabold text-slate-900">365 cm</span>
+          </div>
+          <div id="heroDiffPill" class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700">
             난이도 쉬움 ★☆☆
           </div>
-          <div id="heroSparkPill" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-700">
-            불티안전 +60cm 충족
-          </div>
-          <button id="toggleFormulaBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-600 transition">
-            <span>? 계산근거</span>
+        </div>
+
+        <!-- Compact Gear Settings Button (Houses View/Dim/Node/Formula/Reset) -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnDiagramSettings" type="button" aria-expanded="false"
+            class="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-bold transition">
+            <span>⚙️</span>
+            <span>도면 옵션</span>
           </button>
         </div>
 
-        <!-- Colored ON/OFF Visual Controls -->
-        <div class="flex flex-wrap items-center gap-1.5">
-          <button id="btnViewFront" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white transition">정면</button>
-          <button id="btnViewSide" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">측면</button>
-          <span class="w-px h-4 bg-slate-200 mx-0.5"></span>
-          <button id="btnDimToggle" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm transition">📏 치수선 ON</button>
-          <button id="btnNodeToggle" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-orange-600 text-white shadow-sm transition">🔩 마디·번호 ON</button>
+        <!-- Collapsible Diagram Options Drawer -->
+        <div id="diagramSettingsDrawer" class="hidden absolute right-3 sm:right-6 top-full mt-1.5 z-40 w-72 sm:w-80 rounded-2xl bg-white border border-slate-200 shadow-2xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span class="text-xs font-extrabold text-slate-900">⚙️ 도면 표시 · 난로 위치 옵션</span>
+            <button id="btnCloseDiagramSettings" type="button" class="text-xs font-bold text-slate-400 hover:text-slate-700">✕</button>
+          </div>
+          <div class="space-y-1.5">
+            <div class="text-[11px] font-bold text-slate-500">보기 및 표시 옵션</div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button id="btnViewFront" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white transition">📐 정면</button>
+              <button id="btnViewSide" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📐 측면</button>
+              <button id="btnDimToggle" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm transition">📏 치수선 ON</button>
+              <button id="btnNodeToggle" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-orange-600 text-white shadow-sm transition">🔩 마디·번호 ON</button>
+            </div>
+          </div>
+          <div class="space-y-1.5 pt-1 border-t border-slate-100">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-500">난로 위치 빠른 이동</span>
+              <span id="posReadout" class="text-[10px] font-bold text-orange-700">중앙 +42cm</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1">
+              <button type="button" data-pos-act="left" class="pos-quick-btn py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition">◀ 좌측</button>
+              <button type="button" data-pos-act="center" class="pos-quick-btn py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition">● 중앙</button>
+              <button type="button" data-pos-act="jack" class="pos-quick-btn py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-bold transition">🎯 홀잭</button>
+              <button type="button" data-pos-act="reset" class="pos-quick-btn py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition">↺ 초기화</button>
+            </div>
+          </div>
+          <div class="pt-1 border-t border-slate-100">
+            <button id="toggleFormulaBtn" type="button" class="w-full py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold transition">
+              📐 연통 유효 길이 계산 근거 보기 / 숨기기
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Optional Expandable Formula Box -->
-      <div id="formulaBox" class="hidden mx-4 sm:mx-6 mt-3 rounded-2xl bg-amber-50/90 border border-amber-200 p-3 text-xs text-slate-700 font-mono leading-relaxed"></div>
+      <div id="formulaBox" class="hidden mx-3 sm:mx-6 mt-2.5 rounded-2xl bg-amber-50/90 border border-amber-200 p-3 text-xs text-slate-700 font-mono leading-relaxed"></div>
 
       <!-- MAIN INTERACTIVE DRAWING CANVAS -->
-      <div class="p-3 sm:p-5">
+      <div class="p-2.5 sm:p-5">
         <div class="relative rounded-2xl bg-gradient-to-b from-sky-50/60 via-slate-50/80 to-slate-100/80 border border-slate-200/80 overflow-hidden">
-          <div class="absolute top-3 left-3 z-10 pointer-events-none inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-slate-200 text-[11px] font-bold text-slate-700 shadow-sm">
-            <span id="canvasTentLabel">헬스포츠 발할 (780×300×210cm)</span>
+          <div class="absolute top-2 left-2.5 z-10 pointer-events-none inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-white/90 border border-slate-200 text-[10px] sm:text-[11px] font-bold text-slate-700 shadow-sm max-w-[78%] truncate">
+            <span id="canvasTentLabel" class="truncate">헬스포츠 발할 (780×300×210cm)</span>
           </div>
-          <div class="absolute top-3 right-3 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[11px] font-bold text-orange-700 shadow-sm">
+          <div class="absolute top-2 right-2.5 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[11px] font-bold text-orange-700 shadow-sm">
             🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내 이동) 드래그
           </div>
           <svg id="heroSvg" viewBox="0 0 800 440" class="w-full h-auto block select-none" style="touch-action: pan-y;"></svg>
         </div>
 
-        <!-- Clean Controls Strip Directly Under Drawing -->
-        <div class="mt-3 flex flex-col gap-2.5 px-1">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2 text-xs flex-wrap">
-              <span class="font-bold text-slate-700">난로 위치</span>
-              <span id="posReadout" class="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-bold text-[11px]">텐트 중앙 +42cm (홀잭 수평 0cm)</span>
+        <!-- Compact External Extra Chimney Strip -->
+        <div class="mt-2 sm:mt-3 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 px-3 py-1.5 sm:py-2.5 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[11px] sm:text-xs font-extrabold text-slate-800">🪜 외부 연통 추가</span>
+            <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm">
+              <button id="btnExtraPipeMinus" type="button" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm transition" title="외부 연통 1본 빼기">−</button>
+              <span id="extraPipeReadout" class="min-w-[78px] sm:min-w-[88px] text-center text-[11px] sm:text-xs font-extrabold text-orange-700 px-1">0본 (+0cm)</span>
+              <button id="btnExtraPipePlus" type="button" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm transition" title="외부 연통 1본 추가">+</button>
             </div>
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <button type="button" data-pos-act="left" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">◀ 좌측</button>
-              <button type="button" data-pos-act="center" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">● 중앙</button>
-              <button type="button" data-pos-act="jack" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition">🎯 홀잭 아래</button>
-              <button type="button" data-pos-act="reset" class="pos-quick-btn px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">↺ 초기화</button>
-            </div>
+            <button id="btnExtraPipeReset" type="button" class="hidden text-[11px] font-bold text-slate-500 hover:text-slate-800 underline">기본값</button>
           </div>
-
-          <!-- External Extra Chimney Simulation Control + Spark Safety Banner -->
-          <div class="rounded-2xl bg-slate-50 border border-slate-200/90 px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-extrabold text-slate-800">🪜 텐트 밖 외부 연통 임의 추가</span>
-              <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm">
-                <button id="btnExtraPipeMinus" type="button" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-sm transition" title="외부 연통 1본 빼기">−</button>
-                <span id="extraPipeReadout" class="min-w-[88px] text-center text-xs font-extrabold text-orange-700 px-1.5">0본 (+0cm)</span>
-                <button id="btnExtraPipePlus" type="button" class="w-7 h-7 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition" title="외부 연통 1본 추가">+</button>
-              </div>
-              <button id="btnExtraPipeReset" type="button" class="hidden text-[11px] font-bold text-slate-500 hover:text-slate-800 underline">기본값</button>
-            </div>
-            <div id="sparkGuideText" class="text-[11px] font-semibold text-slate-600 leading-snug">
-              🔥 불티방지 최소 권장: <strong class="text-emerald-700">텐트 천장 위 +60cm 이상</strong> (강풍 시 +80cm 권장)
-            </div>
+          <div id="sparkGuideText" class="hidden sm:block text-[11px] font-semibold text-slate-600 leading-snug">
+            🔥 불티방지 최소 권장: <strong class="text-emerald-700">텐트 천장 위 +60cm 이상</strong>
           </div>
         </div>
 
         <!-- Safety Alert / Auto-Fix Box -->
-        <div id="alertBox" class="hidden mt-3 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 space-y-2"></div>
+        <div id="alertBox" class="hidden mt-2.5 rounded-2xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 space-y-2"></div>
       </div>
     </section>
 
@@ -218,7 +250,15 @@
 
         <div>
           <label for="sTentSelect" class="block text-xs font-semibold text-slate-500 mb-1">보유 텐트 선택</label>
-          <select id="sTentSelect" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"></select>
+          <select id="sTentSelect" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none">
+            <option value="valhall">[해외] 헬스포츠 발할 (780×300×210)</option>
+          </select>
+        </div>
+
+        <!-- AI 추정치 실측 확인 경고 배지 -->
+        <div id="sAiEstBadge" class="hidden rounded-xl bg-amber-50 border border-amber-300 px-3 py-2 text-[11px] font-bold text-amber-900 flex items-center justify-between gap-2">
+          <span>🤖 AI 추정치 적용됨 · 실제 텐트 높이/홀잭 실측 확인 권장</span>
+          <button id="sAiEstDismissBtn" type="button" class="text-amber-700 hover:text-amber-950 font-extrabold shrink-0">확인</button>
         </div>
 
         <div class="space-y-1">
@@ -259,7 +299,9 @@
 
         <div>
           <label for="sStoveSelect" class="block text-xs font-semibold text-slate-500 mb-1">난로 모델 선택 (소재별 전용 연통 자동 매칭)</label>
-          <select id="sStoveSelect" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"></select>
+          <select id="sStoveSelect" class="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none">
+            <option value="mstove_v3">[스텐] 캠핑투게더 엠스토브 v3 (35cm)</option>
+          </select>
         </div>
 
         <div class="space-y-1">
@@ -352,9 +394,14 @@
           <h2 class="text-base font-extrabold text-slate-900">🛒 이 세팅에 필요한 연통 · 부속품</h2>
           <p class="text-xs text-slate-500 mt-0.5">난로 상세페이지 기준 <strong>기본 포함 구성품</strong>과 <strong>추가 구매 품목</strong>을 자동 구분합니다. 이미 보유한 품목은 체크를 해제하세요.</p>
         </div>
-        <button id="sCopyQuoteBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold shadow-sm transition">
-          <span>📋 연통 목록 복사</span>
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="sCopyShareUrlBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-extrabold transition">
+            <span>🔗 세팅 링크 복사</span>
+          </button>
+          <button id="sCopyQuoteBtn" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold shadow-sm transition">
+            <span>📋 연통 목록 복사</span>
+          </button>
+        </div>
       </div>
 
       <!-- 난로 상세페이지 호환성 · 선택 옵션 안내 배너 -->
@@ -374,10 +421,11 @@
 
       <!-- 3-2. 별도 추가 구매 연통 · 부속품 -->
       <div class="space-y-2.5 pt-2 border-t border-slate-100">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-xs sm:text-sm font-extrabold text-orange-800 flex items-center gap-1.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-xs sm:text-sm font-extrabold text-orange-800 flex items-center gap-1.5 flex-wrap">
             <span>🛒 추가 구매 필요 연통 · 부속품</span>
             <span id="sExtraBuyBadge" class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-extrabold">별도 구매</span>
+            <span id="sVisitedProgress" class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold">구매 확인 0 / 0개</span>
           </h3>
           <button id="sResetExtraBtn" type="button" class="hidden text-[11px] font-bold text-slate-500 hover:text-orange-700 underline">↺ 추천 기본값으로 초기화</button>
         </div>
@@ -397,11 +445,11 @@
       <!-- Total Bar -->
       <div class="rounded-2xl bg-slate-900 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <div class="text-xs text-slate-300 font-semibold">선택 품목 추가 구매 예상 금액 (<span id="sTotalQty">-</span>)</div>
-          <div id="sTotalSub" class="text-[11px] text-slate-400 mt-0.5"></div>
+          <div class="text-xs text-slate-300 font-semibold">선택 품목 추가 구매 예상 금액 (<span id="sTotalQty">추가 구매 2개 선택</span>)</div>
+          <div id="sTotalSub" class="text-[11px] text-slate-400 mt-0.5">기본 세팅 계산 완료</div>
         </div>
         <div class="flex items-center justify-between sm:justify-end gap-4">
-          <div id="sTotalPrice" class="text-xl font-extrabold text-orange-400">-</div>
+          <div id="sTotalPrice" class="text-xl font-extrabold text-orange-400">37,500원</div>
           <a href="https://smartstore.naver.com/camping-together/category/e7b4d4b78fd94f1a85a831c71fa7a14f?cp=1" target="_blank" rel="noopener noreferrer"
              class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold whitespace-nowrap transition">
             연통 전체보기 ↗
@@ -699,6 +747,9 @@
       includedSoldOut: {},
       qtyOverrides: {},
       extraBuyItems: {},
+      visitedLinks: {},
+      isAiEstimated: false,
+      isSearchingAi: false,
       dragging: false,
       dragTarget: null,
       dragGeom: null,
@@ -706,6 +757,41 @@
       geom: null,
       lastQuoteText: ""
     };
+
+    function loadVisitedLinks() {
+      try {
+        const raw = sessionStorage.getItem("ct_simple_visited_links");
+        if (raw) st.visitedLinks = JSON.parse(raw) || {};
+      } catch (e) {}
+    }
+    function saveVisitedLinks() {
+      try {
+        sessionStorage.setItem("ct_simple_visited_links", JSON.stringify(st.visitedLinks));
+      } catch (e) {}
+    }
+    function buildSimpleShareUrl() {
+      const curTent = getTent();
+      const base = (window.location && /^https?:\/\//i.test(window.location.href))
+        ? window.location.href.split("?")[0]
+        : "https://stove-iota.vercel.app/";
+      const params = new URLSearchParams();
+      params.set("tent", st.tentId);
+      if (curTent && curTent.id !== "custom_tent") {
+        params.set("tname", curTent.name.replace(/^\[[^\]]+\]\s*/, "").replace(/\s*\(.*$/, ""));
+      }
+      params.set("th", String(st.tentH));
+      params.set("jh", String(st.jackH));
+      params.set("stove", st.stoveId);
+      params.set("sh", String(st.stoveH));
+      params.set("st", String(st.standH));
+      params.set("path", st.path);
+      params.set("pipe", st.pipeSys);
+      params.set("prot", st.protSys);
+      if (st.extraOutPipes) params.set("ex", String(st.extraOutPipes));
+      params.set("pos", String(st.stovePosCm));
+      params.set("jpos", String(st.jackPosCm));
+      return `${base}?${params.toString()}`;
+    }
 
     function getTent() { return TENTS.find((t) => t.id === st.tentId) || TENTS[0]; }
     function getSpan() { const t = getTent(); return st.view === "side" ? t.l : t.w; }
@@ -817,11 +903,24 @@
 
       const elbowEff = elbowCnt * (17 - overlap);
       const reqStraightCnt = Math.max(2, Math.ceil(Math.max(0, reqEff - rawFirst - elbowEff) / effPipe));
+      // 73/76파이 엘보가 없으므로 45°/90° 엘보 사용 시 2번째(텐트 바깥쪽) 엘보까지는 모두 Ø70 연통으로 연결
+      const isTapered70Base = st.pipeSys === "tapered_70_73_76" || st.pipeSys === "ti_nested_70_76";
+      let pipe70Count = 5;
+      let extra70ForElbow = 0;
+      if (elbowCnt > 0 && isTapered70Base) {
+        const lenToElbow2 = inVert + midLen;
+        const straightToElbow2 = Math.max(1, Math.ceil(Math.max(0, lenToElbow2 - rawFirst - elbowEff) / effPipe));
+        const req70Total = 1 + straightToElbow2;
+        pipe70Count = Math.max(5, req70Total);
+        extra70ForElbow = Math.max(0, req70Total - 5);
+      }
+
       // 포몰리 루모라 Ti / 드웰러 맥스 Ti 3 (3.0m 11본) 및 엠스토브 v3/v2 (3.3m 12본) 기본세트 설치 상태 기본 반영
       const defaultIncludedStraight = (isTi3mSet || isMstove33mSet) ? Math.max(2, (stoveObj.includedPipes || 0) - 1) : 2;
-      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight);
+      const minStraightForTapered = (elbowCnt > 0 && isTapered70Base) ? Math.max(2, pipe70Count + 1) : 2;
+      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight, minStraightForTapered);
       const extraOutPipes = Math.max(-4, Math.min(6, Number(st.extraOutPipes) || 0));
-      const straightCnt = Math.max(2, baseStraightCnt + extraOutPipes);
+      const straightCnt = Math.max(minStraightForTapered, baseStraightCnt + extraOutPipes);
       const actualExtraPipes = straightCnt - baseStraightCnt;
       const extraOutCm = actualExtraPipes * effPipe;
 
@@ -865,7 +964,7 @@
       return {
         H_tent, H_jack, H_stove, H_stand, H_start, span, pos, jackXCm, D_horiz, minWall,
         effMode, elbowCnt, elbowAng, inVert, midLen, outVert, rawPipe, effPipe, rawFirst, overlap,
-        isTi3mSet, isMstove33mSet, baseStraightCnt, straightCnt, actualExtraPipes, extraOutCm, totalSeg, joints,
+        isTi3mSet, isMstove33mSet, pipe70Count, extra70ForElbow, baseStraightCnt, straightCnt, actualExtraPipes, extraOutCm, totalSeg, joints,
         rawTotal, lost, effTotal, topH, roofClr, sparkSafe, warns, blocked, diff, diffCls
       };
     }
@@ -957,37 +1056,43 @@
         const d0 = (accW / totalW) * safeTotalPx;
         accW += w;
         const d1 = (accW / totalW) * safeTotalPx;
-        const isExtraAdded = sim.actualExtraPipes > 0 && i >= sim.totalSeg - sim.actualExtraPipes;
+        const isTopCap = i === sim.totalSeg - 1;
+        // 임의 추가된 외부 연통(+)은 최상단 불티캡 바로 아래 구간에 배치 (최상단 연통은 항상 맨 위 유지)
+        const isExtraAdded = !isTopCap && sim.actualExtraPipes > 0 && i >= sim.totalSeg - 1 - sim.actualExtraPipes;
         const isTiMat = getActiveStove().mat === "titanium";
+        const p70End = sim.pipe70Count || 5;
         let dia = "Ø70", col = "#f59e0b";
         if (isTiMat) {
           if (st.pipeSys === "ti_nested_83_89") {
-            dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
-            col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
+            if (isTopCap) { dia = "Ti Ø89불티캡"; col = "#7c3aed"; }
+            else {
+              dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
+              col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
+            }
           } else if (st.pipeSys === "ti_nested_70_76") {
-            // 포몰리 티타늄 3m(11본) 기본세트: Ø70 직관 5 + Ø70-76 레듀셔 1 + Ø76 직관 4 + Ø76 불티캡 1
-            if (i <= 4) { dia = "Ti Ø70"; col = "#6366f1"; }
-            else if (i === 5) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
-            else if (i <= 9) { dia = "Ti Ø76"; col = "#8b5cf6"; }
-            else if (i === 10) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
-            else { dia = "Ti Ø76"; col = "#0284c7"; }
+            // 2번째 엘보까지 Ti Ø70 연결 -> 이후 Ti Ø70-76 레듀셔 -> Ti Ø76 직관 -> 최상단 Ti Ø76불티캡(항상 맨 위)
+            if (isTopCap) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
+            else if (i < p70End) { dia = i >= 5 ? "Ti Ø70(추가)" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
+            else if (i === p70End) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
+            else { dia = "Ti Ø76"; col = "#8b5cf6"; }
           } else {
-            dia = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70";
-            col = "#6366f1";
+            if (isTopCap) { dia = "Ti Ø70불티캡"; col = "#7c3aed"; }
+            else { dia = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70"; col = "#6366f1"; }
           }
         } else if (st.pipeSys === "tapered_70_73_76") {
-          // 엠스토브 3.3m(12본) 기본세트: Ø70 댐퍼 1 + Ø70 직관 4 + Ø70-73 레듀셔 1 + Ø73 직관 4 + Ø73-76 레듀셔 1 + Ø76 불티캡 1
-          if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
-          else if (i <= 4) { dia = "Ø70"; col = "#f59e0b"; }
-          else if (i === 5) { dia = "Ø70-73"; col = "#ea580c"; }
-          else if (i <= 9) { dia = "Ø73"; col = "#f97316"; }
-          else if (i === 10) { dia = "Ø73-76"; col = "#e11d48"; }
-          else if (i === 11) { dia = "Ø76불티캡"; col = "#f43f5e"; }
-          else { dia = "Ø76"; col = "#0284c7"; }
+          // 2번째 엘보까지 Ø70 연결 -> 이후 Ø70-73 레듀셔 -> Ø73 직관 -> Ø73-76 레듀셔 -> Ø76 직관 -> 최상단 Ø76불티캡(항상 맨 위)
+          if (isTopCap) { dia = "Ø76불티캡"; col = "#f43f5e"; }
+          else if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
+          else if (i < p70End) { dia = i >= 5 ? "Ø70(추가)" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
+          else if (i === p70End) { dia = "Ø70-73"; col = "#ea580c"; }
+          else if (i <= p70End + 4) { dia = "Ø73"; col = "#f97316"; }
+          else if (i === p70End + 5) { dia = "Ø73-76"; col = "#e11d48"; }
+          else { dia = "Ø76"; col = "#f43f5e"; }
         } else if (st.pipeSys === "single_70") {
-          dia = i === 0 ? "Ø70댐퍼" : "Ø70";
+          dia = isTopCap ? "Ø70불티캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
         } else {
-          dia = i === 0 ? "Ø70-75" : "Ø75"; col = i === 0 ? "#f59e0b" : "#f97316";
+          dia = isTopCap ? "Ø75불티캡" : (i === 0 ? "Ø70-75" : "Ø75");
+          col = i === 0 ? "#f59e0b" : "#f97316";
         }
         if (isExtraAdded) col = "#0284c7";
         pipesHtml += `<polyline points="${subPoly(d0, d1)}" fill="none" stroke="${col}" stroke-width="7.5" stroke-linejoin="round"/>`;
@@ -1123,7 +1228,7 @@
       // 1) 난로 상세페이지 기준 기본 포함 구성품 산출
       const incPipes = Number(stoveObj.includedPipes) || 0;
       const incRings = Number(stoveObj.includedRings) || 0;
-      const needRings = sim.topH > 390 || sim.effMode === "elbow90" ? 2 : 1;
+      const needRings = 1;
       const extraRings = Math.max(0, needRings - incRings);
 
       if (incPipes > 0) {
@@ -1147,6 +1252,7 @@
       }
 
       // 2) 별도 추가 구매가 필요한 연통 · 부속품만 산출
+      const extra70Cnt = sim.extra70ForElbow || 0;
       if (isTi) {
         // 티타늄 난로 -> 100% 티타늄 연통·부속 전용 구성
         if (stoveObj.isRollPipe) {
@@ -1164,11 +1270,18 @@
             addBuy("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
           } else {
             addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
-            if (sim.totalSeg > 10) addBuy("p_ti_pipe_70_76", sim.totalSeg - 10, "티타늄 추가 직관");
+            if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결용");
+            const extraTopTi = Math.max(0, sim.totalSeg - 11 - extra70Cnt);
+            if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 상단 연장 직관", "외부 상단 연장용");
           }
-        } else if (sim.totalSeg > incPipes) {
-          const extraTi = sim.totalSeg - incPipes;
-          addBuy("p_ti_pipe_70_76", extraTi, "티타늄 추가 직관", `기본 ${incPipes}본 초과분 (+${extraTi * sim.effPipe}cm)`);
+        } else {
+          if (extra70Cnt > 0) {
+            addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          }
+          const extraTopTi = Math.max(0, sim.totalSeg - incPipes - extra70Cnt);
+          if (extraTopTi > 0) {
+            addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 76파이 연장 직관", `상단 연장 (+${extraTopTi * sim.effPipe}cm)`);
+          }
         }
 
         if (sim.elbowCnt > 0) addBuy("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
@@ -1184,7 +1297,9 @@
           // 묠니르+따꿍 키트 등 연통 미포함 모델 -> 기본 세트/단품 전체 구매 필요
           if (st.pipeSys === "tapered_70_73_76") {
             addBuy("p_set_33m", 1, "스텐 기본 세트", "연통 미포함 모델 필수");
-            if (sim.totalSeg > 12) addBuy("p_pipe_76", sim.totalSeg - 12, "스텐 추가 직관");
+            if (extra70Cnt > 0) addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+            const extraTopSt = Math.max(0, sim.totalSeg - 12 - extra70Cnt);
+            if (extraTopSt > 0) addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관");
           } else if (st.pipeSys === "single_70") {
             addBuy("p_damper_70", 1, "스텐 하단 댐퍼");
             addBuy("p_pipe_70", sim.straightCnt, "스텐 직관 연통");
@@ -1193,16 +1308,21 @@
             addBuy("p_pipe_75", sim.straightCnt, "스텐 직관 연통");
             addBuy("p_spark_cap_75", 1, "스텐 최상단 불티캡");
           }
-        } else if (sim.totalSeg > incPipes) {
-          // 엠스토브 v3/v2(12본 포함), 드웰러 맥스 3(9본 포함) -> 초과분만 추가 구매!
-          const extraSt = sim.totalSeg - incPipes;
-          if (st.pipeSys === "tapered_70_73_76") {
-            addBuy("p_pipe_76", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분 · 3중 겹침 수납 호환`);
-          } else if (st.pipeSys === "single_75") {
-            addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔", "Ø70→Ø75 변환");
-            addBuy("p_pipe_75", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
-          } else {
-            addBuy("p_pipe_70", extraSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+        } else {
+          // 엠스토브 v3/v2(12본 포함), 드웰러 맥스 3(9본 포함) -> 2번째 엘보까지 70파이 부족분 + 상단 초과분 추가 구매
+          if (extra70Cnt > 0 && st.pipeSys === "tapered_70_73_76") {
+            addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          }
+          const extraTopSt = Math.max(0, sim.totalSeg - incPipes - extra70Cnt);
+          if (extraTopSt > 0) {
+            if (st.pipeSys === "tapered_70_73_76") {
+              addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관", `상단 연장 · 3중 겹침 수납 호환`);
+            } else if (st.pipeSys === "single_75") {
+              addBuy("p_reducer_70_75", 1, "스텐 구경 레듀셔", "Ø70→Ø75 변환");
+              addBuy("p_pipe_75", extraTopSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+            } else {
+              addBuy("p_pipe_70", extraTopSt, "스텐 추가 연장 직관", `기본 ${incPipes}본 초과분`);
+            }
           }
         }
 
@@ -1323,6 +1443,7 @@
           ? `<div class="flex flex-wrap gap-1.5 pt-1">
                ${sim.H_stand > 0 ? `<button type="button" data-qfix="no_stand" class="s-qfix px-2.5 py-1 rounded-lg bg-rose-700 text-white text-[11px] font-bold">🔧 스탠드 제거 (0cm)</button>` : ""}
                <button type="button" data-qfix="fix_jack" class="s-qfix px-2.5 py-1 rounded-lg bg-white text-rose-800 border border-rose-300 text-[11px] font-bold">🔧 홀잭 높이 자동 보정</button>
+               ${st.path !== "elbow90" ? `<button type="button" data-qfix="switch_90" class="s-qfix px-2.5 py-1 rounded-lg bg-white text-rose-800 border border-rose-300 text-[11px] font-bold">🔧 측면 90° 배출 전환</button>` : ""}
              </div>`
           : (!sim.sparkSafe
             ? `<div class="flex flex-wrap gap-1.5 pt-1">
@@ -1333,6 +1454,9 @@
       } else {
         alertEl.classList.add("hidden");
       }
+
+      const aiEstEl = document.getElementById("sAiEstBadge");
+      if (aiEstEl) aiEstEl.classList.toggle("hidden", !st.isAiEstimated);
 
       document.querySelectorAll(".s-stand-btn").forEach((b) => {
         const active = Number(b.getAttribute("data-stand")) === Number(st.standH);
@@ -1407,21 +1531,23 @@
 
       const resetExtraBtn = document.getElementById("sResetExtraBtn");
       if (resetExtraBtn) {
-        const hasCustom =
-          Object.keys(st.extraBuyItems).length > 0 ||
-          Object.keys(st.qtyOverrides).length > 0 ||
-          Object.keys(st.excluded).length > 0 ||
-          Object.keys(st.includedSoldOut).length > 0;
-        resetExtraBtn.classList.toggle("hidden", !hasCustom);
+        const hasOverrides =
+          Object.keys(st.extraBuyItems || {}).length > 0 ||
+          Object.keys(st.qtyOverrides || {}).length > 0 ||
+          Object.keys(st.excluded || {}).length > 0 ||
+          Object.keys(st.includedSoldOut || {}).length > 0;
+        resetExtraBtn.classList.toggle("hidden", !hasOverrides);
       }
 
-      let sum = 0, qtySum = 0;
+      let sum = 0, qtySum = 0, visitedCnt = 0;
       const cards = buyList.map((it) => {
         const inc = it.soldOut ? Boolean(st.includedSoldOut[it.id]) : !st.excluded[it.id];
+        const isVisited = Boolean(st.visitedLinks[it.id]);
+        if (isVisited) visitedCnt++;
         const sub = it.qty * it.unit;
         if (inc) { sum += sub; qtySum += it.qty; }
         return `
-          <div class="rounded-2xl border ${it.isManual ? "border-orange-300 bg-orange-50/30" : (it.soldOut ? "border-rose-200 bg-rose-50/30" : "border-slate-200 bg-slate-50/50")} p-3.5 flex flex-col justify-between gap-2.5 ${inc ? "" : "opacity-60"}">
+          <div class="rounded-2xl border ${isVisited ? "border-emerald-300 bg-emerald-50/35" : (it.isManual ? "border-orange-300 bg-orange-50/30" : (it.soldOut ? "border-rose-200 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"))} p-3.5 flex flex-col justify-between gap-2.5 ${inc ? "" : "opacity-60"}">
             <div class="flex items-start gap-2.5">
               <input type="checkbox" data-bom-id="${escapeHtml(it.id)}" data-soldout="${it.soldOut ? "1" : "0"}" ${inc ? "checked" : ""} class="s-bom-chk mt-1 w-4 h-4 accent-orange-600 cursor-pointer shrink-0"/>
               <div class="min-w-0 flex-1">
@@ -1429,6 +1555,7 @@
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="px-2 py-0.5 rounded-md ${it.isManual ? "bg-orange-100 text-orange-800 border border-orange-200" : "bg-white border border-slate-200 text-slate-600"} text-[10px] font-bold">${escapeHtml(it.cat)}</span>
                     ${it.soldOut ? `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-extrabold">품절</span>` : ""}
+                    ${isVisited ? `<button type="button" data-bom-unvisit="${escapeHtml(it.id)}" class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-extrabold" title="클릭 시 확인 표시 해제">✓ 확인함</button>` : ""}
                   </div>
                   ${it.isManual ? `<button type="button" data-bom-del="${escapeHtml(it.id)}" class="text-[11px] font-bold text-slate-400 hover:text-rose-600 px-1" title="추가 품목 삭제">✕</button>` : ""}
                 </div>
@@ -1444,11 +1571,16 @@
                 </div>
                 <span class="text-xs font-extrabold text-orange-700">${formatKRW(sub)}</span>
               </div>
-              <a href="${sanitizeUrl(it.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300 text-[11px] font-bold whitespace-nowrap transition">상품 바로가기 ↗</a>
+              <a href="${sanitizeUrl(it.url)}" data-bom-visit="${escapeHtml(it.id)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl ${isVisited ? "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600" : "bg-white hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300"} text-[11px] font-bold whitespace-nowrap transition">${isVisited ? "✓ 확인함 ↗" : "상품 바로가기 ↗"}</a>
             </div>
           </div>
         `;
       });
+
+      const visProgEl = document.getElementById("sVisitedProgress");
+      if (visProgEl) {
+        visProgEl.textContent = buyList.length > 0 ? `총 ${buyList.length}개 중 ${visitedCnt}개 확인 완료` : "추가 구매 없음";
+      }
 
       document.getElementById("sBomCards").innerHTML = cards.length > 0
         ? cards.join("")
@@ -1514,8 +1646,10 @@
       window.__ctSimpleInitialized = true;
 
       const tSel = document.getElementById("sTentSelect");
+      tSel.innerHTML = "";
       TENTS.forEach((t) => { const o = document.createElement("option"); o.value = t.id; o.textContent = t.name; tSel.appendChild(o); });
       const sSel = document.getElementById("sStoveSelect");
+      sSel.innerHTML = "";
       const grpStainless = document.createElement("optgroup");
       grpStainless.label = "🔩 스테인리스 난로 (스테인리스 연통 전용)";
       const grpTitanium = document.createElement("optgroup");
@@ -1533,9 +1667,11 @@
         st.tentId = e.target.value;
         const t = getTent();
         st.tentH = t.h; st.jackH = t.jh; st.path = t.path; st.extraOutPipes = 0;
+        st.isAiEstimated = false;
         resetPos(); syncInputs(); render();
       });
       sSel.addEventListener("change", (e) => {
+        const prevMat = getActiveStove().mat;
         st.stoveId = e.target.value;
         const s = getActiveStove();
         st.stoveH = s.h;
@@ -1546,7 +1682,46 @@
         syncMaterialSelectors();
         syncInputs();
         render();
+        if (prevMat !== s.mat) {
+          showToast(
+            s.mat === "titanium"
+              ? "🪶 티타늄 난로 선택으로 티타늄 전용 연통으로 자동 변경되었습니다."
+              : "🔩 스테인리스 난로 선택으로 스테인리스 전용 연통으로 자동 변경되었습니다."
+          );
+        }
       });
+
+      const aiEstDismissBtn = document.getElementById("sAiEstDismissBtn");
+      if (aiEstDismissBtn) {
+        aiEstDismissBtn.addEventListener("click", () => {
+          st.isAiEstimated = false;
+          render();
+        });
+      }
+
+      // 도면 옵션 톱니바퀴 드로어 토글
+      const settingsBtn = document.getElementById("btnDiagramSettings");
+      const settingsDrawer = document.getElementById("diagramSettingsDrawer");
+      const closeSettingsBtn = document.getElementById("btnCloseDiagramSettings");
+      if (settingsBtn && settingsDrawer) {
+        settingsBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isHidden = settingsDrawer.classList.toggle("hidden");
+          settingsBtn.setAttribute("aria-expanded", String(!isHidden));
+        });
+        if (closeSettingsBtn) {
+          closeSettingsBtn.addEventListener("click", () => {
+            settingsDrawer.classList.add("hidden");
+            settingsBtn.setAttribute("aria-expanded", "false");
+          });
+        }
+        document.addEventListener("click", (e) => {
+          if (!settingsDrawer.classList.contains("hidden") && !settingsDrawer.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsDrawer.classList.add("hidden");
+            settingsBtn.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
 
       const bindNumRange = (numId, rangeId, key) => {
         const nEl = document.getElementById(numId), rEl = document.getElementById(rangeId);
@@ -1712,6 +1887,7 @@
         const qact = b.getAttribute("data-qfix");
         if (qact === "no_stand") st.standH = 0;
         else if (qact === "add_spark_pipe") st.extraOutPipes = Math.min(6, (st.extraOutPipes || 0) + 1);
+        else if (qact === "switch_90") { st.path = "elbow90"; resetPos(); }
         else st.jackH = Math.min(st.tentH - 10, st.stoveH + st.standH + 60);
         syncInputs(); render();
       });
@@ -1730,6 +1906,22 @@
       });
 
       document.getElementById("sBomCards").addEventListener("click", (e) => {
+        const visitLink = e.target.closest("[data-bom-visit]");
+        if (visitLink) {
+          const id = visitLink.getAttribute("data-bom-visit");
+          st.visitedLinks[id] = true;
+          saveVisitedLinks();
+          setTimeout(() => render(), 80);
+          return;
+        }
+        const unvisitBtn = e.target.closest("[data-bom-unvisit]");
+        if (unvisitBtn) {
+          const id = unvisitBtn.getAttribute("data-bom-unvisit");
+          delete st.visitedLinks[id];
+          saveVisitedLinks();
+          render();
+          return;
+        }
         const incBtn = e.target.closest("[data-bom-inc]");
         const decBtn = e.target.closest("[data-bom-dec]");
         const delBtn = e.target.closest("[data-bom-del]");
@@ -1802,6 +1994,19 @@
         try { document.execCommand("copy"); showToast("연통 목록이 클립보드에 복사되었습니다!"); } catch (err) { showToast("복사에 실패했습니다."); }
         document.body.removeChild(ta);
       });
+
+      const shareUrlBtn = document.getElementById("sCopyShareUrlBtn");
+      if (shareUrlBtn) {
+        shareUrlBtn.addEventListener("click", () => {
+          const url = buildSimpleShareUrl();
+          const ta = document.createElement("textarea");
+          ta.value = url;
+          ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand("copy"); showToast("🔗 현재 세팅 공유 링크가 복사되었습니다! 카톡·카페에 붙여넣어 보세요."); } catch (err) { showToast("링크 복사에 실패했습니다."); }
+          document.body.removeChild(ta);
+        });
+      }
 
       // 내장 + 확장 + AI 텐트 검색
       function getAllSearchableTentsSimple() {
@@ -1967,7 +2172,7 @@
           }
         }
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 22000);
+        const timer = setTimeout(() => ctrl.abort(), 8000);
         try {
           const res = await fetch(`/api/tent-search?q=${encodeURIComponent(query)}`, { signal: ctrl.signal });
           clearTimeout(timer);
@@ -1976,13 +2181,16 @@
             writeAiTentCache(query, data);
             return data;
           }
+          if (res.status === 429) {
+            return { ok: false, code: "RATE_LIMITED", error: (data && data.error) || "요청이 너무 많습니다. 잠시 후 다시 시도하거나 아래 슬라이더로 직접 입력해 주세요." };
+          }
           if (res.status === 404 && !data) {
             return { ok: false, code: "API_NOT_DEPLOYED", error: "Vercel 프로젝트의 api/tent-search.js 파일이 배포되지 않았습니다." };
           }
           return data || { ok: false, code: "HTTP_ERR", error: `검색 요청 실패 (HTTP ${res.status})` };
         } catch (err) {
           clearTimeout(timer);
-          return { ok: false, code: "NETWORK_ERR", error: err?.name === "AbortError" ? "AI 검색 응답 시간이 초과되었습니다. 다시 시도해 주세요." : "AI 검색 서버에 연결하지 못했습니다." };
+          return { ok: false, code: "NETWORK_ERR", error: err?.name === "AbortError" ? "AI 검색 응답이 지연(8초 초과)되었습니다. 아래 슬라이더로 텐트·홀잭 높이를 직접 입력해 주세요." : "AI 검색 서버에 연결하지 못했습니다. 아래 슬라이더로 직접 입력해 주세요." };
         }
       }
 
@@ -1993,6 +2201,7 @@
         st.tentH = t.peakHeight;
         st.jackH = t.jackHeight;
         st.extraOutPipes = 0;
+        st.isAiEstimated = true;
         if (["straight", "elbow45", "elbow90"].includes(t.defaultPath)) st.path = t.defaultPath;
         const cust = TENTS.find((x) => x.id === "custom_tent");
         if (cust) {
@@ -2050,6 +2259,7 @@
       }
 
       const runSimpleSearch = async (forceWebAi = false) => {
+        if (st.isSearchingAi) return;
         const q = sInput.value.trim();
         if (!q) { showToast("검색할 텐트 모델명을 입력해 주세요."); return; }
         sSuggest.classList.add("hidden");
@@ -2059,6 +2269,7 @@
           if (matches.length === 1) {
             sInput.value = matches[0].displayName;
             sResBox.classList.add("hidden");
+            st.isAiEstimated = false;
             applySearchedTentSimple(matches[0]);
             return;
           } else if (matches.length > 1) {
@@ -2068,14 +2279,16 @@
           }
         }
 
+        st.isSearchingAi = true;
         sResBox.classList.add("hidden");
         sBtn.disabled = true;
         sBtn.textContent = "AI 검색중...";
         sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-sky-50 border border-sky-200 text-sky-800";
-        sFb.innerHTML = `🤖 AI가 인터넷에서 <strong>"${escapeHtml(q)}"</strong> 텐트 모델과 사이즈를 자동 확인 중입니다...`;
+        sFb.innerHTML = `🤖 AI가 인터넷에서 <strong>"${escapeHtml(q)}"</strong> 텐트 모델과 사이즈를 자동 확인 중입니다... (최대 8초)`;
         sFb.classList.remove("hidden");
 
         const aiRes = await fetchAiTentSpecFromWeb(q);
+        st.isSearchingAi = false;
         sBtn.disabled = false;
         sBtn.textContent = "AI 검색";
 
@@ -2155,10 +2368,13 @@
         }
         params.set("th", String(st.tentH));
         params.set("jh", String(st.jackH));
+        params.set("stove", st.stoveId);
         params.set("sh", String(st.stoveH));
         params.set("st", String(st.standH));
         params.set("path", st.path);
         params.set("pipe", st.pipeSys);
+        params.set("prot", st.protSys);
+        if (st.extraOutPipes) params.set("ex", String(st.extraOutPipes));
         const query = params.toString();
 
         const protocol = window.location ? window.location.protocol : "";
@@ -2180,6 +2396,7 @@
       });
 
       // URL 파라미터 복원
+      let hasSharedPos = false;
       (function applyIncomingParamsSimple() {
         try {
           const p = new URLSearchParams(window.location.search);
@@ -2198,6 +2415,15 @@
               st.path = found.path;
             }
           }
+          const stoveParam = p.get("stove");
+          if (stoveParam) {
+            const foundStove = STOVES.find((s) => s.id === stoveParam || stoveParam.startsWith(s.id));
+            if (foundStove) {
+              st.stoveId = foundStove.id;
+              st.stoveH = foundStove.h;
+              st.pipeSys = foundStove.pipe;
+            }
+          }
           const th = p.get("th") !== null ? Number(p.get("th")) : NaN;
           if (Number.isFinite(th) && th >= 130 && th <= 350) st.tentH = th;
           const jh = p.get("jh") !== null ? Number(p.get("jh")) : NaN;
@@ -2210,12 +2436,21 @@
           if (["straight", "elbow45", "elbow90"].includes(path)) st.path = path;
           const pipe = p.get("pipe");
           if (["tapered_70_73_76", "single_70", "single_75", "ti_nested_70_76", "ti_single_70_76", "ti_nested_83_89"].includes(pipe)) st.pipeSys = pipe;
+          const prot = p.get("prot");
+          if (["double_pipe", "mesh_guard", "both_guard", "ti_guard_70"].includes(prot)) st.protSys = prot;
+          const ex = p.get("ex") !== null ? Number(p.get("ex")) : NaN;
+          if (Number.isFinite(ex) && ex >= -4 && ex <= 6) st.extraOutPipes = ex;
+          const pos = p.get("pos") !== null ? Number(p.get("pos")) : NaN;
+          const jpos = p.get("jpos") !== null ? Number(p.get("jpos")) : NaN;
+          if (Number.isFinite(pos)) { st.stovePosCm = clampPos(pos); hasSharedPos = true; }
+          if (Number.isFinite(jpos)) { st.jackPosCm = Math.round(jpos); hasSharedPos = true; }
         } catch (err) {}
       })();
 
       try {
+        loadVisitedLinks();
         syncMaterialSelectors();
-        resetPos();
+        if (!hasSharedPos) resetPos();
         syncInputs();
         render();
       } catch (err) {

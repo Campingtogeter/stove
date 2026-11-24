@@ -1,11 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
+import { fetch, ProxyAgent } from 'undici';
 
 const {
   NAVER_CLIENT_ID,
   NAVER_CLIENT_SECRET,
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
+  PROXY_URL,
 } = process.env;
 
 if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -13,9 +15,9 @@ if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET || !SUPABASE_URL || !SUPABASE_SERVI
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const dispatcher = PROXY_URL ? new ProxyAgent(PROXY_URL) : undefined;
 const STORE_SLUG = 'camping-together';
 
-// 1. 네이버 커머스 API 액세스 토큰 발급
 async function getNaverAccessToken() {
   const timestamp = Date.now();
   const password = `${NAVER_CLIENT_ID}_${timestamp}`;
@@ -34,6 +36,7 @@ async function getNaverAccessToken() {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString(),
+    dispatcher,
   });
 
   const data = await res.json();
@@ -44,7 +47,6 @@ async function getNaverAccessToken() {
   return data.access_token;
 }
 
-// 2. 스마트스토어 상품 목록 조회 (판매중 + 품절 상품)
 async function fetchNaverProducts(accessToken) {
   let allProducts = [];
   let page = 1;
@@ -62,6 +64,7 @@ async function fetchNaverProducts(accessToken) {
         page,
         size,
       }),
+      dispatcher,
     });
 
     const data = await res.json();
@@ -81,7 +84,6 @@ async function fetchNaverProducts(accessToken) {
   return allProducts;
 }
 
-// 3. Supabase store_products 테이블에 upsert
 async function syncToSupabase(products) {
   const rows = products
     .map((item) => {

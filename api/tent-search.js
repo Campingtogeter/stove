@@ -4,7 +4,35 @@
 
 const MEMORY_CACHE = new Map();
 const MAX_CACHE_ITEMS = 250;
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24시간 캐시 유지
+const RATE_LIMIT_MAP = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1분 윈도우
+const RATE_LIMIT_MAX = 5; // IP당 분당 최대 5회 호출 제한
 let CACHED_WORKING_MODEL = null;
+
+function getClientIp(req) {
+  const fwd = req.headers && (req.headers["x-forwarded-for"] || req.headers["x-real-ip"]);
+  if (fwd) return String(fwd).split(",")[0].trim();
+  return (req.socket && req.socket.remoteAddress) || "unknown";
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const prev = RATE_LIMIT_MAP.get(ip) || [];
+  const recent = prev.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    RATE_LIMIT_MAP.set(ip, recent);
+    const retrySec = Math.max(1, Math.ceil((RATE_LIMIT_WINDOW_MS - (now - recent[0])) / 1000));
+    return { allowed: false, retrySec };
+  }
+  recent.push(now);
+  RATE_LIMIT_MAP.set(ip, recent);
+  if (RATE_LIMIT_MAP.size > 1000) {
+    const oldestKey = RATE_LIMIT_MAP.keys().next().value;
+    RATE_LIMIT_MAP.delete(oldestKey);
+  }
+  return { allowed: true, retrySec: 0 };
+}
 
 function parseCmNumber(val) {
   if (typeof val === "number" && Number.isFinite(val)) {
@@ -221,9 +249,25 @@ module.exports = async function handler(req, res) {
   }
 
   const cacheKey = query.toLowerCase().replace(/\s+/g, " ");
-  if (MEMORY_CACHE.has(cacheKey)) {
+  const cachedEntry = MEMORY_CACHE.get(cacheKey);
+  if (cachedEntry && Date.now() - cachedEntry.savedAt < CACHE_TTL_MS) {
     res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
-    return res.status(200).json({ ...MEMORY_CACHE.get(cacheKey), cached: true });
+    return res.status(200).json({ ...cachedEntry.payload, cached: true });
+  }
+  if (cachedEntry) {
+    MEMORY_CACHE.delete(cacheKey);
+  }
+
+  // 캐시 미스 시에만 IP 기준 분당 호출 제한(Rate Limit) 적용
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit(clientIp);
+  if (!rl.allowed) {
+    res.setHeader("Retry-After", String(rl.retrySec));
+    return res.status(429).json({
+      ok: false,
+      code: "RATE_LIMITED",
+      error: `AI 검색 요청이 너무 많습니다. ${rl.retrySec}초 후 다시 시도하거나 아래 슬라이더로 높이를 직접 입력해 주세요.`
+    });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -368,7 +412,7 @@ module.exports = async function handler(req, res) {
       const firstKey = MEMORY_CACHE.keys().next().value;
       MEMORY_CACHE.delete(firstKey);
     }
-    MEMORY_CACHE.set(cacheKey, resultPayload);
+    MEMORY_CACHE.set(cacheKey, { savedAt: Date.now(), payload: resultPayload });
 
     res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
     return res.status(200).json(resultPayload);
