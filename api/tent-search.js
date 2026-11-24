@@ -4,6 +4,7 @@
 
 const MEMORY_CACHE = new Map();
 const MAX_CACHE_ITEMS = 250;
+let CACHED_WORKING_MODEL = null;
 
 function parseCmNumber(val) {
   if (typeof val === "number" && Number.isFinite(val)) {
@@ -152,6 +153,23 @@ async function callGeminiApi(apiKey, modelName, prompt, useGoogleSearch) {
   });
 }
 
+async function discoverAvailableFlashModels(apiKey) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = Array.isArray(data && data.models) ? data.models : [];
+    return list
+      .filter((m) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+      .map((m) => String(m.name || "").replace(/^models\//, ""))
+      .filter((id) => /^gemini-/i.test(id) && /flash/i.test(id) && !/tts|image|audio|live|omni|embedding/i.test(id))
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      .slice(0, 4);
+  } catch (e) {
+    return [];
+  }
+}
+
 function parseGeminiCandidates(data, query) {
   const candidate = data && data.candidates && data.candidates[0];
   const parts = candidate && candidate.content && candidate.content.parts ? candidate.content.parts : [];
@@ -211,14 +229,14 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
-      ok: false,
-      code: "NO_API_KEY",
-      error: "Vercel 환경변수에 GEMINI_API_KEY가 아직 설정되지 않았습니다."
-    });
-  }
-
-  const primaryModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const modelsToTry = Array.from(new Set([primaryModel, "gemini-2.5-flash", "gemini-2.0-flash"]));
+  const primaryModel = process.env.GEMINI_MODEL || CACHED_WORKING_MODEL || "gemini-3.8-flash";
+  let modelsToTry = Array.from(new Set([
+    primaryModel,
+    "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.6-flash",
+    "gemini-3.1-flash-lite"
+  ].filter(Boolean)));
 
   const prompt = [
     `Find the official tent specifications (peakHeight, tentWidth, tentLength in cm) for the camping tent "${query}".`,
@@ -260,6 +278,7 @@ module.exports = async function handler(req, res) {
         continue;
       }
       anyHttpOk = true;
+      CACHED_WORKING_MODEL = modelName;
       const data = await apiRes.json();
       const parsed = parseGeminiCandidates(data, query);
       if (parsed.candidates.length > 0) {
@@ -269,15 +288,42 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // 1.5단계: 기본 모델이 모두 404 등 실패한 경우 API 키에서 활성 Flash 모델 자동 탐색
+    if (!anyHttpOk) {
+      const discovered = await discoverAvailableFlashModels(apiKey);
+      const extraModels = discovered.filter((m) => !modelsToTry.includes(m));
+      if (extraModels.length > 0) {
+        modelsToTry = [...modelsToTry, ...extraModels];
+        for (const modelName of extraModels) {
+          const apiRes = await callGeminiApi(apiKey, modelName, prompt, true);
+          if (!apiRes.ok) {
+            lastErrDetail = await apiRes.text().catch(() => `HTTP ${apiRes.status}`);
+            continue;
+          }
+          anyHttpOk = true;
+          CACHED_WORKING_MODEL = modelName;
+          const data = await apiRes.json();
+          const parsed = parseGeminiCandidates(data, query);
+          if (parsed.candidates.length > 0) {
+            bestCandidates = parsed.candidates;
+            bestSources = parsed.sources;
+            break;
+          }
+        }
+      }
+    }
+
     // 2단계: 그라운딩 호출 실패 또는 JSON 누락 시 구조화 JSON 모드로 폴백
     if (bestCandidates.length === 0) {
-      for (const modelName of modelsToTry) {
+      const fallbackModels = CACHED_WORKING_MODEL ? [CACHED_WORKING_MODEL] : modelsToTry;
+      for (const modelName of fallbackModels) {
         const apiRes = await callGeminiApi(apiKey, modelName, prompt, false);
         if (!apiRes.ok) {
           lastErrDetail = await apiRes.text().catch(() => `HTTP ${apiRes.status}`);
           continue;
         }
         anyHttpOk = true;
+        CACHED_WORKING_MODEL = modelName;
         const data = await apiRes.json();
         const parsed = parseGeminiCandidates(data, query);
         if (parsed.candidates.length > 0) {
