@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
-import { ProxyAgent } from 'undici';
+import { fetch, ProxyAgent } from 'undici';
 
 const {
   NAVER_CLIENT_ID,
