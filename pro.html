@@ -1120,10 +1120,23 @@
 
       const elbowEff = elbowCount * (17 - overlap);
       const reqStraightCnt = Math.max(2, Math.ceil(Math.max(0, totalReqEffLen - rawDamperLen - elbowEff) / effPipeLen));
+      // 73/76파이 엘보가 없으므로 45°/90° 엘보 사용 시 2번째(텐트 바깥쪽) 엘보까지는 모두 Ø70 연통으로 연결
+      const isTapered70Base = state.pipeSystem === "tapered_70_73_76" || state.pipeSystem === "ti_nested_70_76";
+      let pipe70Count = 5;
+      let extra70ForElbow = 0;
+      if (elbowCount > 0 && isTapered70Base) {
+        const lenToElbow2 = indoorVertLen + angledOrHorizLen;
+        const straightToElbow2 = Math.max(1, Math.ceil(Math.max(0, lenToElbow2 - rawDamperLen - elbowEff) / effPipeLen));
+        const req70Total = 1 + straightToElbow2;
+        pipe70Count = Math.max(5, req70Total);
+        extra70ForElbow = Math.max(0, req70Total - 5);
+      }
+
       const defaultIncludedStraight = (isTi3mSet || isMstove33mSet) ? Math.max(2, (stoveObj.includedPipes || 0) - 1) : 2;
-      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight);
+      const minStraightForTapered = (elbowCount > 0 && isTapered70Base) ? Math.max(2, pipe70Count + 1) : 2;
+      const baseStraightCnt = Math.max(reqStraightCnt, defaultIncludedStraight, minStraightForTapered);
       const extraOutPipes = Math.max(-4, Math.min(6, Number(state.extraOutPipes) || 0));
-      const straightPipeCount = Math.max(2, baseStraightCnt + extraOutPipes);
+      const straightPipeCount = Math.max(minStraightForTapered, baseStraightCnt + extraOutPipes);
       const actualExtraPipes = straightPipeCount - baseStraightCnt;
       const extraOutCm = actualExtraPipes * effPipeLen;
 
@@ -1174,7 +1187,7 @@
         leftWallGapCm, rightWallGapCm, minWallGapCm, effectivePathMode, autoBypassActive,
         overlap, clearance, rawPipeLen, effPipeLen, rawDamperLen, elbowAngle, elbowCount,
         indoorVertLen, angledOrHorizLen, outdoorVertLen, isTi3mSet, isMstove33mSet,
-        straightPipeCount, actualExtraPipes, extraOutCm, totalSegments, jointCount,
+        pipe70Count, extra70ForElbow, straightPipeCount, actualExtraPipes, extraOutCm, totalSegments, jointCount,
         actualRawTotalLen, totalOverlapLost, actualEffTotalLen, actualTopHeight, actualRoofClearance,
         sparkSafe, isPhysicallyBlocked, warnings, diffLevel, diffLabel, diffBadgeClass, diffReason
       };
@@ -1291,42 +1304,50 @@
         const dStart = (accWeight / safeTotalWeight) * safeTotalPolyPx;
         accWeight += w;
         const dEnd = (accWeight / safeTotalWeight) * safeTotalPolyPx;
-        const isExtraAdded = sim.actualExtraPipes > 0 && i >= sim.totalSegments - sim.actualExtraPipes;
+        const isTopCap = i === sim.totalSegments - 1;
+        // 임의 추가된 외부 연통(+)은 최상단 불티캡 바로 아래 구간에 배치 (최상단 연통은 항상 맨 위 유지)
+        const isExtraAdded = !isTopCap && sim.actualExtraPipes > 0 && i >= sim.totalSegments - 1 - sim.actualExtraPipes;
+        const p70End = sim.pipe70Count || 5;
 
         let diaLabel = "Ø70", segColor = "#f59e0b";
         if (isTiMat) {
           if (state.pipeSystem === "ti_nested_83_89") {
-            diaLabel = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSegments / 2) ? "Ti Ø83" : "Ti Ø89");
-            segColor = i < Math.ceil(sim.totalSegments / 2) ? "#6366f1" : "#7c3aed";
+            if (isTopCap) { diaLabel = "Ti Ø89불티캡"; segColor = "#7c3aed"; }
+            else {
+              diaLabel = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSegments / 2) ? "Ti Ø83" : "Ti Ø89");
+              segColor = i < Math.ceil(sim.totalSegments / 2) ? "#6366f1" : "#7c3aed";
+            }
           } else if (state.pipeSystem === "ti_nested_70_76") {
-            if (i <= 4) { diaLabel = "Ti Ø70"; segColor = "#6366f1"; }
-            else if (i === 5) { diaLabel = "Ti Ø70-76"; segColor = "#4f46e5"; }
-            else if (i <= 9) { diaLabel = "Ti Ø76"; segColor = "#8b5cf6"; }
-            else if (i === 10) { diaLabel = "Ti Ø76불티캡"; segColor = "#a855f7"; }
-            else { diaLabel = "Ti Ø76"; segColor = "#0284c7"; }
+            if (isTopCap) { diaLabel = "Ti Ø76불티캡"; segColor = "#a855f7"; }
+            else if (i < p70End) { diaLabel = i >= 5 ? "Ti Ø70(추가)" : "Ti Ø70"; segColor = i >= 5 ? "#0284c7" : "#6366f1"; }
+            else if (i === p70End) { diaLabel = "Ti Ø70-76"; segColor = "#4f46e5"; }
+            else { diaLabel = "Ti Ø76"; segColor = "#8b5cf6"; }
           } else {
-            diaLabel = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70"; segColor = "#6366f1";
+            if (isTopCap) { diaLabel = "Ti Ø70불티캡"; segColor = "#7c3aed"; }
+            else { diaLabel = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70"; segColor = "#6366f1"; }
           }
         } else if (state.pipeSystem === "tapered_70_73_76") {
-          if (i === 0) { diaLabel = "Ø70댐퍼"; segColor = "#f59e0b"; }
-          else if (i <= 4) { diaLabel = "Ø70"; segColor = "#f59e0b"; }
-          else if (i === 5) { diaLabel = "Ø70-73"; segColor = "#ea580c"; }
-          else if (i <= 9) { diaLabel = "Ø73"; segColor = "#f97316"; }
-          else if (i === 10) { diaLabel = "Ø73-76"; segColor = "#e11d48"; }
-          else if (i === 11) { diaLabel = "Ø76불티캡"; segColor = "#f43f5e"; }
-          else { diaLabel = "Ø76"; segColor = "#0284c7"; }
+          if (isTopCap) { diaLabel = "Ø76불티캡"; segColor = "#f43f5e"; }
+          else if (i === 0) { diaLabel = "Ø70댐퍼"; segColor = "#f59e0b"; }
+          else if (i < p70End) { diaLabel = i >= 5 ? "Ø70(추가)" : "Ø70"; segColor = i >= 5 ? "#0284c7" : "#f59e0b"; }
+          else if (i === p70End) { diaLabel = "Ø70-73"; segColor = "#ea580c"; }
+          else if (i <= p70End + 4) { diaLabel = "Ø73"; segColor = "#f97316"; }
+          else if (i === p70End + 5) { diaLabel = "Ø73-76"; segColor = "#e11d48"; }
+          else { diaLabel = "Ø76"; segColor = "#f43f5e"; }
         } else if (state.pipeSystem === "single_70") {
-          diaLabel = i === 0 ? "Ø70댐퍼" : "Ø70";
+          diaLabel = isTopCap ? "Ø70불티캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
         } else {
-          diaLabel = i === 0 ? "Ø70-75" : "Ø75"; segColor = i === 0 ? "#f59e0b" : "#f97316";
+          diaLabel = isTopCap ? "Ø75불티캡" : (i === 0 ? "Ø70-75" : "Ø75");
+          segColor = i === 0 ? "#f59e0b" : "#f97316";
         }
         if (isExtraAdded) segColor = "#0284c7";
 
         pipeSvgMarkup += `<polyline points="${buildSubPolyline(dStart, dEnd)}" fill="none" stroke="${segColor}" stroke-width="7.5" stroke-linejoin="round" />`;
+
         if (i > 0) {
           const jp = samplePolylineAt(dStart);
-          nodeTicksMarkup += `<line x1="${(jp.x - jp.nx * 7).toFixed(1)}" y1="${(jp.y - jp.ny * 7).toFixed(1)}" x2="${(jp.x + jp.nx * 7).toFixed(1)}" y2="${(jp.y + jp.ny * 7).toFixed(1)}" stroke="#fff" stroke-width="2.4" />`;
-          nodeTicksMarkup += `<line x1="${(jp.x - jp.nx * 7).toFixed(1)}" y1="${(jp.y - jp.ny * 7).toFixed(1)}" x2="${(jp.x + jp.nx * 7).toFixed(1)}" y2="${(jp.y + jp.ny * 7).toFixed(1)}" stroke="#0f172a" stroke-width="1.1" />`;
+          nodeTicksMarkup += `<line x1="${(jp.x - jp.nx * 7).toFixed(1)}" y1="${(jp.y - jp.ny * 7).toFixed(1)}" x2="${(jp.x + jp.nx * 7).toFixed(1)}" y2="${(jp.y + jp.ny * 7).toFixed(1)}" stroke="#fff" stroke-width="2.4"/>`;
+          nodeTicksMarkup += `<line x1="${(jp.x - jp.nx * 7).toFixed(1)}" y1="${(jp.y - jp.ny * 7).toFixed(1)}" x2="${(jp.x + jp.nx * 7).toFixed(1)}" y2="${(jp.y + jp.ny * 7).toFixed(1)}" stroke="#0f172a" stroke-width="1.1"/>`;
         }
         if (state.showPipeNodes) {
           const mp = samplePolylineAt((dStart + dEnd) / 2);
@@ -1445,7 +1466,7 @@
 
       const incPipes = Number(stoveObj.includedPipes) || 0;
       const incRings = Number(stoveObj.includedRings) || 0;
-      const needRings = sim.actualTopHeight > 390 || sim.effectivePathMode === "elbow90" ? 2 : 1;
+      const needRings = 1;
       const extraRings = Math.max(0, needRings - incRings);
 
       if (incPipes > 0) {
@@ -1464,6 +1485,7 @@
         });
       }
 
+      const extra70Cnt = sim.extra70ForElbow || 0;
       if (isTi) {
         if (stoveObj.isRollPipe) {
           if (sim.elbowCount > 0 || sim.totalSegments > incPipes) {
@@ -1472,9 +1494,16 @@
         } else if (incPipes === 0) {
           if (state.pipeSystem === "ti_nested_83_89") addBuy("p_ti_set_83_89", 1, "티타늄 연통 세트");
           else if (state.pipeSystem === "ti_single_70_76") { addBuy("p_ti_damper_base", 1, "티타늄 댐퍼"); addBuy("p_ti_pipe_70_76", sim.straightPipeCount, "티타늄 직관"); }
-          else addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
-        } else if (sim.totalSegments > incPipes) {
-          addBuy("p_ti_pipe_70_76", sim.totalSegments - incPipes, "티타늄 추가 직관", `기본 ${incPipes}본 초과분`);
+          else {
+            addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
+            if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+            const extraTopTi = Math.max(0, sim.totalSegments - 11 - extra70Cnt);
+            if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 상단 연장 직관");
+          }
+        } else {
+          if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          const extraTopTi = Math.max(0, sim.totalSegments - incPipes - extra70Cnt);
+          if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 76파이 연장 직관", `상단 연장 (+${extraTopTi * sim.effPipeLen}cm)`);
         }
         if (sim.elbowCount > 0) addBuy("p_ti_elbow_70", sim.elbowCount, `티타늄 ${sim.elbowAngle}° 엘보`);
         if (state.protectionType === "ti_guard_70" && isFixed60or70Pipe(stoveObj, state.pipeSystem)) {
@@ -1487,7 +1516,9 @@
         if (incPipes === 0) {
           if (state.pipeSystem === "tapered_70_73_76") {
             addBuy("p_set_33m", 1, "스텐 기본 세트");
-            if (sim.totalSegments > 12) addBuy("p_pipe_76", sim.totalSegments - 12, "스텐 추가 직관");
+            if (extra70Cnt > 0) addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+            const extraTopSt = Math.max(0, sim.totalSegments - 12 - extra70Cnt);
+            if (extraTopSt > 0) addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관");
           } else if (state.pipeSystem === "single_70") {
             addBuy("p_damper_70", 1, "스텐 하단 댐퍼");
             addBuy("p_pipe_70", sim.straightPipeCount, "스텐 직관");
@@ -1496,11 +1527,16 @@
             addBuy("p_pipe_75", sim.straightPipeCount, "스텐 직관");
             addBuy("p_spark_cap_75", 1, "스텐 불티캡");
           }
-        } else if (sim.totalSegments > incPipes) {
-          const ex = sim.totalSegments - incPipes;
-          if (state.pipeSystem === "tapered_70_73_76") addBuy("p_pipe_76", ex, "스텐 추가 직관", `기본 ${incPipes}본 초과분`);
-          else if (state.pipeSystem === "single_75") { addBuy("p_reducer_70_75", 1, "스텐 레듀셔"); addBuy("p_pipe_75", ex, "스텐 추가 직관"); }
-          else addBuy("p_pipe_70", ex, "스텐 추가 직관", `기본 ${incPipes}본 초과분`);
+        } else {
+          if (extra70Cnt > 0 && state.pipeSystem === "tapered_70_73_76") {
+            addBuy("p_pipe_70", extra70Cnt, "스텐 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          }
+          const extraTopSt = Math.max(0, sim.totalSegments - incPipes - extra70Cnt);
+          if (extraTopSt > 0) {
+            if (state.pipeSystem === "tapered_70_73_76") addBuy("p_pipe_76", extraTopSt, "스텐 76파이 연장 직관", "상단 연장 · 3중 겹침 수납 호환");
+            else if (state.pipeSystem === "single_75") { addBuy("p_reducer_70_75", 1, "스텐 레듀셔"); addBuy("p_pipe_75", extraTopSt, "스텐 추가 직관"); }
+            else addBuy("p_pipe_70", extraTopSt, "스텐 추가 직관", `기본 ${incPipes}본 초과분`);
+          }
         }
         if (sim.elbowCount > 0) addBuy(state.pipeSystem === "single_75" ? "p_elbow_75" : "p_elbow_70", sim.elbowCount, `스텐 ${sim.elbowAngle}° 엘보`);
         if (state.protectionType === "double_pipe" || state.protectionType === "both_guard") addBuy(state.pipeSystem === "single_75" ? "p_double_75" : "p_double_70", 1, "스킨 보호");
