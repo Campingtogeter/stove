@@ -1,4 +1,7 @@
-// ... existing code ...
+// Vercel Serverless Function: api/tent-search.js
+// 배포 위치: Vercel 프로젝트 루트의 api/tent-search.js
+// 필수 환경변수: Vercel Project Settings -> Environment Variables -> GEMINI_API_KEY
+
 const MEMORY_CACHE = new Map();
 const MAX_CACHE_ITEMS = 250;
 
@@ -9,12 +12,14 @@ function parseCmNumber(val) {
     return Math.round(val);
   }
   const str = String(val || "").trim().toLowerCase();
-  const m = str.match(/(\d+(?:\.\d+)?)\s*(mm|cm|m)?/);
+  const m = str.match(/(\d+(?:\.\d+)?)\s*(mm|cm|m|ft|feet|in|inch)?/);
   if (!m) return NaN;
   let n = parseFloat(m[1]);
   const unit = m[2] || "";
   if (unit === "mm" || (!unit && n >= 1000)) n = n / 10;
   else if (unit === "m" || (!unit && n > 0 && n < 10)) n = n * 100;
+  else if (unit === "ft" || unit === "feet") n = n * 30.48;
+  else if (unit === "in" || unit === "inch") n = n * 2.54;
   return Math.round(n);
 }
 
@@ -27,7 +32,6 @@ function sanitizeNum(val, min, max, fallback) {
 function extractJsonPayload(text) {
   if (!text) return null;
   const cleaned = String(text).replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  // Try object first, then array
   const objStart = cleaned.indexOf("{");
   const objEnd = cleaned.lastIndexOf("}");
   if (objStart !== -1 && objEnd > objStart) {
@@ -43,6 +47,50 @@ function extractJsonPayload(text) {
     } catch (e) {}
   }
   return null;
+}
+
+// JSON 형식이 깨졌을 때 그라운딩 텍스트에서 직접 규격을 추출하는 안전망
+function extractFallbackFromProse(text, query) {
+  const s = String(text || "");
+  if (!s) return null;
+  let peakH = NaN;
+  let widthCm = NaN;
+  let lengthCm = NaN;
+
+  const hMatch = s.match(/(?:height|높이|전고|천장고|peakHeight)[^\d]{0,20}(\d+(?:\.\d+)?)\s*(cm|mm|m|ft)/i);
+  if (hMatch) peakH = parseCmNumber(`${hMatch[1]} ${hMatch[2]}`);
+
+  const dim3 = s.match(/(\d+(?:\.\d+)?)\s*(?:cm|mm|m)?\s*[xX×*]\s*(\d+(?:\.\d+)?)\s*(?:cm|mm|m)?\s*[xX×*]\s*(?:\(?[hH]\)?\s*)?(\d+(?:\.\d+)?)\s*(cm|mm|m)?/);
+  if (dim3) {
+    const unit = dim3[4] || "";
+    const a = parseCmNumber(`${dim3[1]} ${unit}`);
+    const b = parseCmNumber(`${dim3[2]} ${unit}`);
+    const c = parseCmNumber(`${dim3[3]} ${unit}`);
+    if (!Number.isFinite(peakH) && c >= 110 && c <= 380) peakH = c;
+    if (a >= 150 && b >= 150) {
+      widthCm = Math.min(a, b);
+      lengthCm = Math.max(a, b);
+    }
+  }
+
+  if (!Number.isFinite(peakH) || peakH < 110 || peakH > 400) return null;
+
+  const lower = (s + " " + query).toLowerCase();
+  let shape = "dome";
+  if (/tipi|티피|원폴/.test(lower)) shape = "tipi";
+  else if (/bell|벨텐트/.test(lower)) shape = "bell";
+  else if (/tunnel|터널|리빙쉘|2룸/.test(lower)) shape = "tunnel";
+  else if (/cabin|캐빈|에어텐트/.test(lower)) shape = "cabin";
+
+  return {
+    brand: "",
+    name: query,
+    peakHeight: peakH,
+    tentWidth: Number.isFinite(widthCm) ? widthCm : 340,
+    tentLength: Number.isFinite(lengthCm) ? lengthCm : 340,
+    jackEstimated: true,
+    shape
+  };
 }
 
 function normalizeCandidate(raw, fallbackQuery) {
@@ -84,15 +132,19 @@ function normalizeCandidate(raw, fallbackQuery) {
   };
 }
 
-async function callGeminiGrounded(apiKey, modelName, prompt) {
+async function callGeminiApi(apiKey, modelName, prompt, useGoogleSearch) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const body = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    tools: [{ google_search: {} }],
     generationConfig: {
       temperature: 0.1
     }
   };
+  if (useGoogleSearch) {
+    body.tools = [{ google_search: {} }];
+  } else {
+    body.generationConfig.responseMimeType = "application/json";
+  }
   return fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -100,8 +152,63 @@ async function callGeminiGrounded(apiKey, modelName, prompt) {
   });
 }
 
+function parseGeminiCandidates(data, query) {
+  const candidate = data && data.candidates && data.candidates[0];
+  const parts = candidate && candidate.content && candidate.content.parts ? candidate.content.parts : [];
+  const text = parts.map((p) => p.text || "").join("\n");
+  const parsed = extractJsonPayload(text);
+
+  let rawList = [];
+  if (parsed && Array.isArray(parsed.candidates)) {
+    rawList = parsed.candidates;
+  } else if (parsed && (parsed.peakHeight || parsed.height)) {
+    rawList = [parsed];
+  } else {
+    const proseFallback = extractFallbackFromProse(text, query);
+    if (proseFallback) rawList = [proseFallback];
+  }
+
+  const candidates = rawList
+    .map((item) => normalizeCandidate(item, query))
+    .filter(Boolean)
+    .slice(0, 5);
+
+  const chunks = candidate && candidate.groundingMetadata && Array.isArray(candidate.groundingMetadata.groundingChunks)
+    ? candidate.groundingMetadata.groundingChunks
+    : [];
+  const sources = chunks
+    .filter((c) => c && c.web && c.web.uri)
+    .slice(0, 3)
+    .map((c) => ({ title: c.web.title || "검색 출처", url: c.web.uri }));
+
+  return { candidates, sources, rawText: text };
+}
+
 module.exports = async function handler(req, res) {
-// ... existing code ...
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  const rawQuery = req.method === "POST"
+    ? (req.body && req.body.query ? String(req.body.query) : "")
+    : (req.query && req.query.q ? String(req.query.q) : "");
+
+  const query = rawQuery.trim().slice(0, 80);
+  if (!query || query.length < 2) {
+    return res.status(400).json({ ok: false, code: "INVALID_QUERY", error: "검색할 텐트 모델명을 2글자 이상 입력해 주세요." });
+  }
+
+  const cacheKey = query.toLowerCase().replace(/\s+/g, " ");
+  if (MEMORY_CACHE.has(cacheKey)) {
+    res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
+    return res.status(200).json({ ...MEMORY_CACHE.get(cacheKey), cached: true });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
       ok: false,
@@ -111,72 +218,114 @@ module.exports = async function handler(req, res) {
   }
 
   const primaryModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const fallbackModels = ["gemini-2.5-flash", "gemini-2.0-flash"].filter((m) => m !== primaryModel);
-  const modelsToTry = [primaryModel, ...fallbackModels];
+  const modelsToTry = Array.from(new Set([primaryModel, "gemini-2.5-flash", "gemini-2.0-flash"]));
 
   const prompt = [
-    `구글 웹 검색을 사용해 "${query}" 텐트(또는 쉘터)의 공식 설치 규격(가로, 세로, 최고 높이 cm)을 찾아주세요.`,
-    `한국 네이버 쇼핑, 다나와, 캠핑연구소, 공식 브랜드몰, 캠핑 블로그/유튜브 제원을 폭넓게 검색하세요. 모델명이 한글/영문 혼용이거나 약칭이어도 실제 판매 중인 캠핑 텐트 모델을 찾아 매칭하세요.`,
-    `정확히 1개 모델이면 candidates 배열에 1개만, 시리즈나 사이즈 버전(M/L, 13.6/17.2 등)이 여러 개면 인기 순으로 최대 5개까지 담아주세요.`,
-    `반드시 아래 JSON 객체만 출력하세요 (코드블록이나 설명 문장 없이 순수 JSON만 출력):`,
+    `Find the official tent specifications (peakHeight, tentWidth, tentLength in cm) for the camping tent "${query}".`,
+    `Search official brand websites (e.g. pomoly.com, pomoly.co.kr, minimalworks, helsport, snowpeak, etc.), Korean Naver Shopping, Danawa, and camping review sites.`,
+    `If the model has closely related variants (e.g. Dome X4 and Dome X4 Pro, or M/L sizes), return up to 5 popular variants in "candidates". If it is a single model, return 1 item.`,
+    `Convert feet/inches/mm/m to integer centimeters (e.g. 5.4 ft = 165 cm, 3.6 m = 360 cm).`,
+    `Output ONLY valid JSON with no markdown fences or extra commentary:`,
     `{`,
     `  "found": true,`,
     `  "candidates": [`,
     `    {`,
-    `      "brand": "브랜드명",`,
-    `      "name": "공식 모델명",`,
-    `      "peakHeight": 210,`,
-    `      "tentWidth": 350,`,
-    `      "tentLength": 600,`,
-    `      "jackHeight": 150,`,
+    `      "brand": "POMOLY",`,
+    `      "name": "Dome X4",`,
+    `      "peakHeight": 165,`,
+    `      "tentWidth": 320,`,
+    `      "tentLength": 320,`,
+    `      "jackHeight": 120,`,
     `      "jackEstimated": true,`,
     `      "shape": "dome",`,
-    `      "defaultPath": "elbow45",`,
-    `      "summary": "설치크기 600×350×210cm"`,
+    `      "defaultPath": "straight",`,
+    `      "summary": "설치크기 약 320×320×165cm (면적 8㎡)"`,
     `    }`,
     `  ]`,
     `}`,
-    `주의: peakHeight, tentWidth, tentLength, jackHeight는 반드시 cm 단위의 정수 숫자로 적으세요(mm는 10으로 나누고 m는 100을 곱함). shape는 dome, tunnel, tipi, bell, cabin 중 하나, defaultPath는 straight, elbow45, elbow90 중 하나만 사용하세요. 진짜 텐트를 전혀 찾을 수 없을 때만 {"found": false, "candidates": []}를 반환하세요.`
+    `Allowed shape: dome, tunnel, tipi, bell, cabin. Allowed defaultPath: straight, elbow45, elbow90. Only return {"found": false, "candidates": []} if "${query}" is not a real tent.`
   ].join("\n");
 
   try {
-    let apiRes = null;
+    let bestCandidates = [];
+    let bestSources = [];
     let lastErrDetail = "";
+    let anyHttpOk = false;
+
+    // 1단계: Google Search 그라운딩으로 실시간 웹 검색 시도
     for (const modelName of modelsToTry) {
-      apiRes = await callGeminiGrounded(apiKey, modelName, prompt);
-      if (apiRes.ok) break;
-      lastErrDetail = await apiRes.text().catch(() => "");
+      const apiRes = await callGeminiApi(apiKey, modelName, prompt, true);
+      if (!apiRes.ok) {
+        lastErrDetail = await apiRes.text().catch(() => `HTTP ${apiRes.status}`);
+        continue;
+      }
+      anyHttpOk = true;
+      const data = await apiRes.json();
+      const parsed = parseGeminiCandidates(data, query);
+      if (parsed.candidates.length > 0) {
+        bestCandidates = parsed.candidates;
+        bestSources = parsed.sources;
+        break;
+      }
     }
 
-    if (!apiRes || !apiRes.ok) {
+    // 2단계: 그라운딩 호출 실패 또는 JSON 누락 시 구조화 JSON 모드로 폴백
+    if (bestCandidates.length === 0) {
+      for (const modelName of modelsToTry) {
+        const apiRes = await callGeminiApi(apiKey, modelName, prompt, false);
+        if (!apiRes.ok) {
+          lastErrDetail = await apiRes.text().catch(() => `HTTP ${apiRes.status}`);
+          continue;
+        }
+        anyHttpOk = true;
+        const data = await apiRes.json();
+        const parsed = parseGeminiCandidates(data, query);
+        if (parsed.candidates.length > 0) {
+          bestCandidates = parsed.candidates;
+          bestSources = parsed.sources;
+          break;
+        }
+      }
+    }
+
+    if (!anyHttpOk) {
       return res.status(502).json({
         ok: false,
         code: "UPSTREAM_ERROR",
-        error: "AI 웹 검색 API 응답 오류가 발생했습니다.",
-        detail: lastErrDetail.slice(0, 200)
+        error: "Gemini AI API 호출이 실패했습니다. Vercel의 GEMINI_API_KEY가 유효한지 확인해 주세요.",
+        detail: String(lastErrDetail).slice(0, 200)
       });
     }
 
-    const data = await apiRes.json();
-    const candidate = data && data.candidates && data.candidates[0];
-    const parts = candidate && candidate.content && candidate.content.parts ? candidate.content.parts : [];
-    const text = parts.map((p) => p.text || "").join("\n");
-    const parsed = extractJsonPayload(text);
-
-    const rawList = parsed && Array.isArray(parsed.candidates)
-      ? parsed.candidates
-      : (parsed && (parsed.peakHeight || parsed.height) ? [parsed] : []);
-
-    const candidates = rawList
-      .map((item) => normalizeCandidate(item, query))
-      .filter(Boolean)
-      .slice(0, 5);
-
-    if (!parsed || parsed.found === false || candidates.length === 0) {
+    if (bestCandidates.length === 0) {
       return res.status(404).json({
         ok: false,
         code: "NOT_FOUND",
         error: `"${query}"의 공식 텐트 규격을 찾지 못했습니다.`
       });
     }
-// ... existing code ...
+
+    const resultPayload = {
+      ok: true,
+      tent: bestCandidates[0],
+      candidates: bestCandidates,
+      sources: bestSources
+    };
+
+    if (MEMORY_CACHE.size >= MAX_CACHE_ITEMS) {
+      const firstKey = MEMORY_CACHE.keys().next().value;
+      MEMORY_CACHE.delete(firstKey);
+    }
+    MEMORY_CACHE.set(cacheKey, resultPayload);
+
+    res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
+    return res.status(200).json(resultPayload);
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      code: "SERVER_ERROR",
+      error: "AI 검색 처리 중 서버 오류가 발생했습니다.",
+      detail: err && err.message ? String(err.message).slice(0, 150) : ""
+    });
+  }
+};
