@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -372,14 +373,23 @@
       </div>
 
       <!-- 3-2. 별도 추가 구매 연통 · 부속품 -->
-      <div class="space-y-2 pt-2 border-t border-slate-100">
+      <div class="space-y-2.5 pt-2 border-t border-slate-100">
         <div class="flex items-center justify-between gap-2">
           <h3 class="text-xs sm:text-sm font-extrabold text-orange-800 flex items-center gap-1.5">
             <span>🛒 추가 구매 필요 연통 · 부속품</span>
             <span id="sExtraBuyBadge" class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-extrabold">별도 구매</span>
           </h3>
-          <span class="text-[11px] text-slate-500">품절 상품 합계 자동 제외</span>
+          <button id="sResetExtraBtn" type="button" class="hidden text-[11px] font-bold text-slate-500 hover:text-orange-700 underline">↺ 추천 기본값으로 초기화</button>
         </div>
+
+        <!-- 추가 구매 품목 직접 추가 바 -->
+        <div class="rounded-2xl bg-orange-50/70 border border-orange-200/90 p-2.5 flex flex-col sm:flex-row gap-2">
+          <select id="sAddExtraSelect" class="flex-1 min-w-0 rounded-xl bg-white border border-orange-200 px-3 py-2 text-xs font-bold text-slate-800 focus:border-orange-500 focus:outline-none"></select>
+          <button id="sAddExtraBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-extrabold whitespace-nowrap shadow-sm transition">
+            ➕ 추가 구매 담기
+          </button>
+        </div>
+
         <!-- Responsive Cards Grid -->
         <div id="sBomCards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </div>
@@ -445,7 +455,10 @@
       p_set_33m: { id: "p_set_33m", mat: "stainless", name: "스텐 70-73-76파이 3.3m 연통 세트 (12본)", price: 86000, status: "품절", url: "https://smartstore.naver.com/camping-together/products/11196831287" },
       p_damper_70: { id: "p_damper_70", mat: "stainless", name: "스텐 70파이 댐퍼 연통 (28cm)", price: 17000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11471381958" },
       p_pipe_70: { id: "p_pipe_70", mat: "stainless", name: "스텐 70파이 연통 직관 (33cm)", price: 5500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209918526" },
+      p_pipe_73: { id: "p_pipe_73", mat: "stainless", name: "스텐 73파이 연통 직관 (33cm)", price: 6000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209932324" },
       p_pipe_76: { id: "p_pipe_76", mat: "stainless", name: "스텐 76파이 연장 직관 (33cm)", price: 6500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11209936765" },
+      p_flange_v2: { id: "p_flange_v2", mat: "stainless", name: "스텐 연통 후렌지 (엠스토브·묠니르·따꿍)", price: 17000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/11201633536" },
+      p_pellet_docking: { id: "p_pellet_docking", mat: "stainless", name: "펠릿연소기 도킹툴 (엠스토브 V2·V3용)", price: 9500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/8013047406" },
       p_reducer_70_75: { id: "p_reducer_70_75", mat: "stainless", name: "스텐 레듀셔 Ø70수-75암 (30cm)", price: 9000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/13851610962" },
       p_pipe_75: { id: "p_pipe_75", mat: "stainless", name: "스텐 75파이 연통 직관 (32cm)", price: 6000, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12692680424" },
       p_spark_cap_75: { id: "p_spark_cap_75", mat: "stainless", name: "스텐 이중 불티캡 75파이 최상단", price: 19500, status: "판매중", url: "https://smartstore.naver.com/camping-together/products/12691610683" },
@@ -644,7 +657,10 @@
       { id: "ext_coody_172", brand: "쿠디", name: "에어텐트 17.2", aliases: "coody 17.2 에어텐트 대형", shape: "cabin", w: 360, l: 480, h: 220, jh: 160, path: "elbow45" },
       { id: "ext_tentmark_circus", brand: "텐트마크디자인", name: "서커스 TC DX", aliases: "tentmark circus tc 서커스tc 티피", shape: "tipi", w: 420, l: 442, h: 280, jh: 195, path: "straight" },
       { id: "ext_hilleberg_stalon", brand: "힐레베르그", name: "스탈론 XL", aliases: "hilleberg stalon xl 스탈론", shape: "tunnel", w: 290, l: 630, h: 205, jh: 155, path: "straight" },
-      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" }
+      { id: "ext_mobigarden_era", brand: "모비가든", name: "에라 290 / 코만더 185", aliases: "mobigarden commander era 모비가든 코만더185", shape: "dome", w: 380, l: 330, h: 185, jh: 140, path: "elbow45" },
+      { id: "ext_pomoly_dome_x4", brand: "포몰리", name: "Dome X4 (독립형 돔 핫텐트)", aliases: "pomoly dome x4 돔x4 포몰리 돔 x4", shape: "dome", w: 320, l: 320, h: 165, jh: 120, path: "straight" },
+      { id: "ext_pomoly_dome_x4_pro", brand: "포몰리", name: "Dome X4 Pro (독립형 돔 핫텐트)", aliases: "pomoly dome x4 pro 돔x4 프로 포몰리 돔 x4 프로", shape: "dome", w: 320, l: 320, h: 165, jh: 120, path: "straight" },
+      { id: "ext_pomoly_dome_x6", brand: "포몰리", name: "Dome X6 Pro (대형 돔 핫텐트)", aliases: "pomoly dome x6 pro 돔x6 포몰리 돔 x6", shape: "dome", w: 400, l: 400, h: 200, jh: 150, path: "straight" }
     ];
 
     const st = {
@@ -664,6 +680,9 @@
       jackPosCm: 42,
       extraOutPipes: 0,
       excluded: {},
+      includedSoldOut: {},
+      qtyOverrides: {},
+      extraBuyItems: {},
       dragging: false,
       dragTarget: null,
       dragGeom: null,
@@ -1163,11 +1182,55 @@
         addBuy(isDweller ? "p_dweller_stand" : "p_stand_550", 1, "난로 옵션 스탠드");
       }
 
-      return { includedList, buyList, incPipes, extraPipeNeeded };
+      // 3) 사용자 수량 조절(qtyOverrides) 및 직접 추가한 품목(extraBuyItems) 반영
+      buyList.forEach((it) => {
+        if (typeof st.qtyOverrides[it.id] === "number" && st.qtyOverrides[it.id] >= 1) {
+          it.qty = st.qtyOverrides[it.id];
+        }
+      });
+      Object.entries(st.extraBuyItems || {}).forEach(([pid, q]) => {
+        const qtyNum = Number(q) || 0;
+        if (qtyNum <= 0) return;
+        const existing = buyList.find((x) => x.id === pid);
+        if (existing) {
+          if (typeof st.qtyOverrides[pid] !== "number") existing.qty += qtyNum;
+        } else {
+          const p = PRODUCTS[pid];
+          if (!p) return;
+          buyList.push({
+            id: pid,
+            cat: "직접 추가",
+            name: p.name,
+            qty: qtyNum,
+            unit: p.price,
+            url: p.url,
+            soldOut: /품절/.test(p.status),
+            isManual: true
+          });
+        }
+      });
+
+      return { includedList, buyList, incPipes, extraPipeNeeded: Math.max(0, sim.totalSeg - incPipes) };
+    }
+
+    function populateExtraAddSelect() {
+      const sel = document.getElementById("sAddExtraSelect");
+      if (!sel) return;
+      const stoveObj = getActiveStove();
+      const prevVal = sel.value;
+      const stoveIds = new Set(STOVES.map((s) => s.pid).filter(Boolean));
+      const compatList = Object.values(PRODUCTS).filter(
+        (p) => !stoveIds.has(p.id) && (p.mat === stoveObj.mat || p.mat === "both")
+      );
+      sel.innerHTML = compatList
+        .map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} — ${formatKRW(p.price)} (${escapeHtml(p.status)})</option>`)
+        .join("");
+      if (prevVal && compatList.some((p) => p.id === prevVal)) sel.value = prevVal;
     }
 
     function render() {
       syncMaterialSelectors();
+      populateExtraAddSelect();
       const sim = compute();
       const t = getTent();
       const stoveObj = getActiveStove();
@@ -1298,26 +1361,46 @@
         extraBadgeEl.textContent = buyList.length === 0 ? "추가 구매 없음" : `${buyList.length}개 품목`;
       }
 
+      const resetExtraBtn = document.getElementById("sResetExtraBtn");
+      if (resetExtraBtn) {
+        const hasCustom =
+          Object.keys(st.extraBuyItems).length > 0 ||
+          Object.keys(st.qtyOverrides).length > 0 ||
+          Object.keys(st.excluded).length > 0 ||
+          Object.keys(st.includedSoldOut).length > 0;
+        resetExtraBtn.classList.toggle("hidden", !hasCustom);
+      }
+
       let sum = 0, qtySum = 0;
       const cards = buyList.map((it) => {
-        const inc = !it.soldOut && !st.excluded[it.id];
+        const inc = it.soldOut ? Boolean(st.includedSoldOut[it.id]) : !st.excluded[it.id];
         const sub = it.qty * it.unit;
         if (inc) { sum += sub; qtySum += it.qty; }
         return `
-          <div class="rounded-2xl border ${it.soldOut ? "border-rose-200 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"} p-3.5 flex flex-col justify-between gap-2.5 ${inc ? "" : "opacity-55"}">
+          <div class="rounded-2xl border ${it.isManual ? "border-orange-300 bg-orange-50/30" : (it.soldOut ? "border-rose-200 bg-rose-50/30" : "border-slate-200 bg-slate-50/50")} p-3.5 flex flex-col justify-between gap-2.5 ${inc ? "" : "opacity-60"}">
             <div class="flex items-start gap-2.5">
-              <input type="checkbox" data-bom-id="${escapeHtml(it.id)}" ${inc ? "checked" : ""} ${it.soldOut ? "disabled" : ""} class="s-bom-chk mt-1 w-4 h-4 accent-orange-600 cursor-pointer shrink-0"/>
+              <input type="checkbox" data-bom-id="${escapeHtml(it.id)}" data-soldout="${it.soldOut ? "1" : "0"}" ${inc ? "checked" : ""} class="s-bom-chk mt-1 w-4 h-4 accent-orange-600 cursor-pointer shrink-0"/>
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-bold text-slate-600">${escapeHtml(it.cat)}</span>
-                  ${it.soldOut ? `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-extrabold">품절·합계제외</span>` : ""}
+                <div class="flex items-center justify-between gap-1.5">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md ${it.isManual ? "bg-orange-100 text-orange-800 border border-orange-200" : "bg-white border border-slate-200 text-slate-600"} text-[10px] font-bold">${escapeHtml(it.cat)}</span>
+                    ${it.soldOut ? `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-extrabold">품절</span>` : ""}
+                  </div>
+                  ${it.isManual ? `<button type="button" data-bom-del="${escapeHtml(it.id)}" class="text-[11px] font-bold text-slate-400 hover:text-rose-600 px-1" title="추가 품목 삭제">✕</button>` : ""}
                 </div>
                 <div class="text-xs sm:text-sm font-bold text-slate-900 mt-1 leading-snug ${inc ? "" : "line-through"}">${escapeHtml(it.name)}</div>
               </div>
             </div>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-200/70">
-              <span class="text-xs font-extrabold text-orange-700">${it.qty}개 · ${formatKRW(sub)}</span>
-              <a href="${sanitizeUrl(it.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300 text-[11px] font-bold transition">상품 바로가기 ↗</a>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/70">
+              <div class="flex items-center gap-1.5">
+                <div class="inline-flex items-center bg-white border border-slate-200 rounded-lg p-0.5">
+                  <button type="button" data-bom-dec="${escapeHtml(it.id)}" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs">−</button>
+                  <span class="min-w-[34px] text-center text-xs font-extrabold text-slate-900">${it.qty}개</span>
+                  <button type="button" data-bom-inc="${escapeHtml(it.id)}" class="w-6 h-6 rounded bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs">+</button>
+                </div>
+                <span class="text-xs font-extrabold text-orange-700">${formatKRW(sub)}</span>
+              </div>
+              <a href="${sanitizeUrl(it.url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300 text-[11px] font-bold whitespace-nowrap transition">상품 바로가기 ↗</a>
             </div>
           </div>
         `;
@@ -1325,7 +1408,7 @@
 
       document.getElementById("sBomCards").innerHTML = cards.length > 0
         ? cards.join("")
-        : `<div class="sm:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-xs font-bold text-emerald-800">✓ 난로 기본 포함 연통·부속품만으로 설치가 가능합니다. 별도 추가 구매 품목이 없습니다.</div>`;
+        : `<div class="sm:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 text-xs font-bold text-emerald-800">✓ 난로 기본 포함 연통·부속품만으로 설치가 가능합니다. 위 선택창에서 여유 연통이나 부속품을 자유롭게 추가할 수 있습니다.</div>`;
       const copyBtn = document.getElementById("sCopyQuoteBtn");
       if (sim.blocked) {
         document.getElementById("sTotalQty").textContent = "추천 보류";
@@ -1348,7 +1431,7 @@
         `- 연통 총 높이: ${sim.topH}cm (천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm · 총 ${sim.totalSeg}본 · 난이도 ${sim.diff})`,
         `- [기본 포함 연통·부속]: ${includedList.length ? includedList.map((x) => `${x.name} (${x.detail})`).join(" / ") : "없음"}`,
         `- [추가 구매 필요 품목]:`,
-        ...buyList.filter((it) => !it.soldOut && !st.excluded[it.id]).map((it) => `  · ${it.cat}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unit)}) → ${it.url}`),
+        ...buyList.filter((it) => (it.soldOut ? Boolean(st.includedSoldOut[it.id]) : !st.excluded[it.id])).map((it) => `  · ${it.cat}: ${it.name} × ${it.qty}개 (${formatKRW(it.qty * it.unit)}) → ${it.url}`),
         `- 추가 구매 합계: ${formatKRW(sum)}`
       ].join("\n");
     }
@@ -1587,8 +1670,78 @@
         const c = e.target.closest(".s-bom-chk");
         if (!c) return;
         const id = c.getAttribute("data-bom-id");
-        if (c.checked) delete st.excluded[id]; else st.excluded[id] = true;
+        const isSoldOut = c.getAttribute("data-soldout") === "1";
+        if (isSoldOut) {
+          if (c.checked) st.includedSoldOut[id] = true; else delete st.includedSoldOut[id];
+        } else {
+          if (c.checked) delete st.excluded[id]; else st.excluded[id] = true;
+        }
         render();
+      });
+
+      document.getElementById("sBomCards").addEventListener("click", (e) => {
+        const incBtn = e.target.closest("[data-bom-inc]");
+        const decBtn = e.target.closest("[data-bom-dec]");
+        const delBtn = e.target.closest("[data-bom-del]");
+        if (incBtn) {
+          const id = incBtn.getAttribute("data-bom-inc");
+          const curItem = buildBom(compute()).buyList.find((x) => x.id === id);
+          const nextQty = Math.min(20, (curItem ? curItem.qty : 1) + 1);
+          if (curItem && curItem.isManual) st.extraBuyItems[id] = nextQty;
+          else st.qtyOverrides[id] = nextQty;
+          delete st.excluded[id];
+          render();
+          return;
+        }
+        if (decBtn) {
+          const id = decBtn.getAttribute("data-bom-dec");
+          const curItem = buildBom(compute()).buyList.find((x) => x.id === id);
+          if (!curItem) return;
+          if (curItem.isManual && curItem.qty <= 1) {
+            delete st.extraBuyItems[id];
+          } else {
+            const nextQty = Math.max(1, curItem.qty - 1);
+            if (curItem.isManual) st.extraBuyItems[id] = nextQty;
+            else st.qtyOverrides[id] = nextQty;
+          }
+          render();
+          return;
+        }
+        if (delBtn) {
+          const id = delBtn.getAttribute("data-bom-del");
+          delete st.extraBuyItems[id];
+          delete st.qtyOverrides[id];
+          render();
+        }
+      });
+
+      document.getElementById("sAddExtraBtn").addEventListener("click", () => {
+        const sel = document.getElementById("sAddExtraSelect");
+        const pid = sel ? sel.value : "";
+        const prod = PRODUCTS[pid];
+        if (!prod) return;
+        const curList = buildBom(compute()).buyList;
+        const existing = curList.find((x) => x.id === pid);
+        if (existing) {
+          const nextQty = Math.min(20, existing.qty + 1);
+          if (existing.isManual) st.extraBuyItems[pid] = nextQty;
+          else st.qtyOverrides[pid] = nextQty;
+        } else {
+          st.extraBuyItems[pid] = (st.extraBuyItems[pid] || 0) + 1;
+        }
+        delete st.excluded[pid];
+        if (/품절/.test(prod.status)) st.includedSoldOut[pid] = true;
+        render();
+        showToast(`"${prod.name}"이(가) 추가 구매 목록에 담겼습니다!`);
+      });
+
+      document.getElementById("sResetExtraBtn").addEventListener("click", () => {
+        st.extraBuyItems = {};
+        st.qtyOverrides = {};
+        st.excluded = {};
+        st.includedSoldOut = {};
+        render();
+        showToast("추가 구매 목록을 자동 추천 기본값으로 초기화했습니다.");
       });
 
       document.getElementById("sCopyQuoteBtn").addEventListener("click", () => {
@@ -1621,49 +1774,22 @@
         const qRaw = String(query || "").trim();
         const q = normalizeSearchStr(qRaw);
         if (!q) return [];
-        const tokens = qRaw.toLowerCase().split(/\s+/).filter(Boolean);
+        const tokens = qRaw.toLowerCase().split(/\s+/).map(normalizeSearchStr).filter(Boolean);
         const list = getAllSearchableTentsSimple();
         const scored = [];
         for (const item of list) {
           const hay = normalizeSearchStr(item.displayName + " " + item.aliases);
+          // 모든 검색어 토큰이 모두 포함될 때만 내장 DB 일치로 인정 (브랜드만 같은 다른 모델 오매칭 방지)
+          const allTokensMatch = tokens.every((tk) => hay.includes(tk));
+          if (!allTokensMatch) continue;
           let score = 0;
           if (hay === q) score += 100;
           else if (hay.includes(q)) score += 60;
-          for (const tk of tokens) {
-            const ntk = normalizeSearchStr(tk);
-            if (ntk && hay.includes(ntk)) score += 25;
-          }
-          if (score > 0) scored.push({ item, score });
+          else score += 35;
+          scored.push({ item, score });
         }
         scored.sort((a, b) => b.score - a.score);
         return scored.slice(0, 7).map((s) => s.item);
-      }
-
-      function applySearchedTentSimple(item) {
-        const suggest = document.getElementById("sTentSuggestBox");
-        const fb = document.getElementById("sTentSearchFeedback");
-        const resBox = document.getElementById("sTentResultsBox");
-        suggest.classList.add("hidden");
-        if (resBox) resBox.classList.add("hidden");
-
-        if (item.source === "main") {
-          st.tentId = item.id;
-          const t = TENTS.find((x) => x.id === item.id);
-          if (t) { st.tentH = t.h; st.jackH = t.jh; st.path = t.path; }
-        } else {
-          st.tentId = "custom_tent";
-          st.tentH = item.h;
-          st.jackH = item.jh;
-          st.path = item.path || "elbow45";
-          const cust = TENTS.find((x) => x.id === "custom_tent");
-          if (cust) { cust.w = item.w; cust.h = item.h; cust.jh = item.jh; cust.shape = item.shape || "dome"; }
-        }
-        st.extraOutPipes = 0;
-        resetPos(); syncInputs(); render();
-        fb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
-        fb.textContent = `✅ ${item.displayName} 자동 입력 완료 (최고높이 ${item.h}cm · 폭 ${item.w}cm · 홀잭 ${item.jh}cm)`;
-        fb.classList.remove("hidden");
-        showToast(`${item.displayName} 제원이 자동 입력되었습니다!`);
       }
 
       const sInput = document.getElementById("sTentSearchInput");
@@ -1676,7 +1802,40 @@
       const sResClose = document.getElementById("sTentResultsClose");
       const sForceAiBtn = document.getElementById("sTentForceAiBtn");
 
-      const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v2";
+      function applySearchedTentSimple(item) {
+        if (sSuggest) sSuggest.classList.add("hidden");
+        if (sResBox) sResBox.classList.add("hidden");
+        if (item.source === "main") {
+          st.tentId = item.id;
+          const t = TENTS.find((x) => x.id === item.id);
+          if (t) { st.tentH = t.h; st.jackH = t.jh; st.path = t.path; }
+        } else {
+          st.tentId = "custom_tent";
+          st.tentH = item.h;
+          st.jackH = item.jh;
+          st.path = item.path || "elbow45";
+          const cust = TENTS.find((x) => x.id === "custom_tent");
+          if (cust) {
+            cust.w = item.w || 340;
+            cust.l = item.l || item.w || 380;
+            cust.h = item.h;
+            cust.jh = item.jh;
+            cust.shape = item.shape || "dome";
+          }
+        }
+        st.extraOutPipes = 0;
+        resetPos();
+        syncInputs();
+        render();
+        if (sFb) {
+          sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
+          sFb.textContent = `✅ ${item.displayName} 자동 입력 완료 (최고높이 ${item.h}cm · 폭 ${item.w}cm · 홀잭 ${item.jh}cm)`;
+          sFb.classList.remove("hidden");
+        }
+        showToast(`${item.displayName} 제원이 자동 입력되었습니다!`);
+      }
+
+      const AI_TENT_CACHE_KEY = "ct_ai_tent_web_cache_v3";
       function readAiTentCache(q) {
         try {
           const map = JSON.parse(localStorage.getItem(AI_TENT_CACHE_KEY) || "{}");
@@ -1692,6 +1851,56 @@
           localStorage.setItem(AI_TENT_CACHE_KEY, JSON.stringify(map));
         } catch (e) {}
       }
+      function parseCmSimple(val) {
+        if (typeof val === "number" && Number.isFinite(val)) return val >= 1000 ? Math.round(val / 10) : (val > 0 && val < 10 ? Math.round(val * 100) : Math.round(val));
+        const m = String(val || "").toLowerCase().match(/(\d+(?:\.\d+)?)\s*(mm|cm|m)?/);
+        if (!m) return NaN;
+        let n = parseFloat(m[1]);
+        const u = m[2] || "";
+        if (u === "mm" || (!u && n >= 1000)) n /= 10;
+        else if (u === "m" || (!u && n > 0 && n < 10)) n *= 100;
+        return Math.round(n);
+      }
+      async function callDirectGeminiSimple(query) {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const prompt = [
+          `구글 웹 검색으로 "${query}" 캠핑 텐트(또는 쉘터)의 공식 설치 규격(가로, 세로, 최고 높이 cm)을 찾아주세요.`,
+          `정확히 1개 모델이면 candidates에 1개, 여러 세부 모델이면 최대 5개까지 담아 순수 JSON 객체만 출력하세요:`,
+          `{"found":true,"candidates":[{"brand":"브랜드","name":"모델명","peakHeight":210,"tentWidth":350,"tentLength":600,"jackHeight":150,"jackEstimated":true,"shape":"dome","defaultPath":"elbow45","summary":"600×350×210cm"}]}`,
+          `shape는 dome/tunnel/tipi/cabin 중 하나, defaultPath는 straight/elbow45/elbow90 중 하나, 수치는 모두 cm 정수.`
+        ].join("\n");
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }] })
+        });
+        if (!res.ok) return { ok: false, code: "UPSTREAM_ERROR", error: `AI 검색 응답 오류 (HTTP ${res.status})` };
+        const data = await res.json();
+        const cand = data?.candidates?.[0];
+        const txt = (cand?.content?.parts || []).map((p) => p.text || "").join("\n");
+        const cleaned = txt.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+        const s = cleaned.indexOf("{"), e = cleaned.lastIndexOf("}");
+        if (s === -1 || e <= s) return { ok: false, code: "PARSE_ERROR", error: "검색 결과 형식을 해석하지 못했습니다." };
+        const parsed = JSON.parse(cleaned.slice(s, e + 1));
+        const rawList = Array.isArray(parsed.candidates) ? parsed.candidates : (parsed.peakHeight ? [parsed] : []);
+        const candidates = rawList.map((r) => {
+          const ph = parseCmSimple(r.peakHeight ?? r.height);
+          if (!Number.isFinite(ph) || ph < 100) return null;
+          const peakHeight = Math.max(130, Math.min(350, ph));
+          const tentWidth = Math.max(200, Math.min(620, parseCmSimple(r.tentWidth ?? r.width) || 340));
+          const tentLength = Math.max(200, Math.min(900, parseCmSimple(r.tentLength ?? r.length) || 420));
+          const jhRaw = parseCmSimple(r.jackHeight);
+          const jackHeight = Number.isFinite(jhRaw) && jhRaw >= 90 && jhRaw < peakHeight ? jhRaw : Math.max(100, Math.min(peakHeight - 15, Math.round((peakHeight * 0.72) / 5) * 5));
+          const shape = ["dome", "tunnel", "tipi", "cabin"].includes(r.shape) ? r.shape : "dome";
+          const defaultPath = ["straight", "elbow45", "elbow90"].includes(r.defaultPath) ? r.defaultPath : (shape === "tunnel" ? "elbow90" : "elbow45");
+          return { brand: r.brand || "", name: r.name || query, peakHeight, tentWidth, tentLength, jackHeight, jackEstimated: r.jackEstimated !== false, shape, defaultPath, summary: r.summary || `${tentLength}×${tentWidth}×${peakHeight}cm` };
+        }).filter(Boolean).slice(0, 5);
+        if (!candidates.length) return { ok: false, code: "NOT_FOUND", error: `"${query}"의 공식 텐트 규격을 찾지 못했습니다.` };
+        const chunks = cand?.groundingMetadata?.groundingChunks || [];
+        const sources = chunks.filter((c) => c?.web?.uri).slice(0, 3).map((c) => ({ title: c.web.title || "출처", url: c.web.uri }));
+        return { ok: true, tent: candidates[0], candidates, sources };
+      }
       async function fetchAiTentSpecFromWeb(query) {
         const cached = readAiTentCache(query);
         if (cached && cached.ok && (Array.isArray(cached.candidates) ? cached.candidates.length > 0 : cached.tent)) {
@@ -1699,10 +1908,16 @@
         }
         const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
         if (!isHttp) {
-          return { ok: false, code: "LOCAL_PREVIEW", error: "Vercel 배포 사이트에서 AI 자동 웹 검색이 실시간으로 작동합니다." };
+          try {
+            const direct = await callDirectGeminiSimple(query);
+            if (direct && direct.ok) writeAiTentCache(query, direct);
+            return direct;
+          } catch (err) {
+            return { ok: false, code: "PREVIEW_ERR", error: "미리보기 환경 AI 검색에 실패했습니다. Vercel 배포 사이트에서 api/tent-search.js와 GEMINI_API_KEY를 확인해 주세요." };
+          }
         }
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 18000);
+        const timer = setTimeout(() => ctrl.abort(), 22000);
         try {
           const res = await fetch(`/api/tent-search?q=${encodeURIComponent(query)}`, { signal: ctrl.signal });
           clearTimeout(timer);
@@ -1711,10 +1926,13 @@
             writeAiTentCache(query, data);
             return data;
           }
-          return data || { ok: false, code: "HTTP_ERR", error: "검색 결과를 찾지 못했습니다." };
+          if (res.status === 404 && !data) {
+            return { ok: false, code: "API_NOT_DEPLOYED", error: "Vercel 프로젝트의 api/tent-search.js 파일이 배포되지 않았습니다." };
+          }
+          return data || { ok: false, code: "HTTP_ERR", error: `검색 요청 실패 (HTTP ${res.status})` };
         } catch (err) {
           clearTimeout(timer);
-          return { ok: false, code: "NETWORK_ERR", error: "AI 검색 서버에 연결하지 못했습니다." };
+          return { ok: false, code: "NETWORK_ERR", error: err?.name === "AbortError" ? "AI 검색 응답 시간이 초과되었습니다. 다시 시도해 주세요." : "AI 검색 서버에 연결하지 못했습니다." };
         }
       }
 
@@ -1824,9 +2042,9 @@
         } else {
           sFb.className = "rounded-xl px-3 py-2 text-[11px] font-semibold leading-relaxed bg-amber-50 border border-amber-200 text-amber-800";
           const msg = (aiRes && aiRes.code === "NO_API_KEY")
-            ? "Vercel 환경변수(GEMINI_API_KEY)가 설정되면 AI가 인터넷에서 자동으로 사이즈를 찾아 입력합니다."
-            : (aiRes && aiRes.code === "LOCAL_PREVIEW")
-              ? "배포된 사이트(Vercel)에서 AI가 인터넷을 검색해 텐트 사이즈를 자동 입력합니다. 아래 슬라이더로 직접 높이를 조정할 수도 있습니다."
+            ? "Vercel 환경변수(GEMINI_API_KEY)가 설정되지 않았습니다. Vercel 설정에 키를 추가 후 재배포해 주세요."
+            : (aiRes && aiRes.error)
+              ? `⚠️ ${escapeHtml(aiRes.error)}`
               : `"${escapeHtml(q)}"의 공식 규격을 찾지 못했습니다. 브랜드명과 모델명을 함께 입력해 다시 검색해 보세요.`;
           sFb.innerHTML = msg;
           sFb.classList.remove("hidden");
@@ -1961,3 +2179,4 @@
   </script>
 </body>
 </html>
+```
