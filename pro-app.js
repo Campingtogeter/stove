@@ -1,6 +1,7 @@
 /* =========================================================
  * 캠핑투게더 난로·연통 시뮬레이터 (상세 버전) 애플리케이션 로직
- * - 시뮬레이션 계산, SVG 실시간 도면, BOM 관리, AI 검색, 관리자 동기화
+ * - 시뮬레이션 계산, SVG 실시간 도면, BOM 관리, AI 검색,
+ *   관리자 동기화 및 Supabase 텐트 DB 영구 저장 연동
  * - 선행 파일: ./pro-data.js (window.CT_PRO_DATA)
  * ========================================================= */
 
@@ -22,6 +23,10 @@
     TENT_MODELS,
     EXTRA_TENT_CATALOG
   } = DATA;
+
+  // 로컬 초기화 및 원격 병합 시 기준이 되는 초기 데이터 스냅샷
+  const INITIAL_PRODUCTS = JSON.parse(JSON.stringify(PRODUCTS));
+  const INITIAL_TENTS = JSON.parse(JSON.stringify(TENT_MODELS));
 
   /* =========================================================
    * 1. 공통 유틸리티 & DOM 헬퍼
@@ -50,6 +55,10 @@
     return Number(n || 0).toLocaleString("ko-KR") + "원";
   }
 
+  function round1(n) {
+    return Math.round(Number(n) * 10) / 10;
+  }
+
   function normalizeSearchStr(s) {
     return String(s || "").toLowerCase().replace(/[\s\-_·.,()\[\]\/]+/g, "");
   }
@@ -61,7 +70,7 @@
     m.textContent = msg;
     b.classList.remove("hidden");
     clearTimeout(window.__ctProToastTimer);
-    window.__ctProToastTimer = setTimeout(() => b.classList.add("hidden"), 2500);
+    window.__ctProToastTimer = setTimeout(() => b.classList.add("hidden"), 2800);
   }
 
   async function copyTextToClipboard(text, successMsg) {
@@ -85,17 +94,73 @@
     }
   }
 
+  // 비HTTPS(file://, LAN HTTP 등) 환경에서도 동일하게 동작하는 순수 JS SHA-256 폴백
+  function sha256FallbackHex(ascii) {
+    const rightRotate = (v, amt) => (v >>> amt) | (v << (32 - amt));
+    const maxWord = Math.pow(2, 32);
+    const bytes = Array.from(new TextEncoder().encode(ascii));
+    const bitLen = bytes.length * 8;
+    const hash = [];
+    const k = [];
+    let primeCounter = 0;
+    const isComposite = {};
+    for (let candidate = 2; primeCounter < 64; candidate++) {
+      if (!isComposite[candidate]) {
+        for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+        hash[primeCounter] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+        k[primeCounter++] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+      }
+    }
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    const words = [];
+    for (let i = 0; i < bytes.length; i++) {
+      words[i >> 2] |= bytes[i] << ((3 - (i % 4)) * 8);
+    }
+    words[words.length] = (bitLen / maxWord) | 0;
+    words[words.length] = bitLen | 0;
+
+    for (let j = 0; j < words.length;) {
+      const w = words.slice(j, (j += 16));
+      const oldHash = hash.slice(0, 8);
+      for (let i = 0; i < 64; i++) {
+        const w15 = w[i - 15], w2 = w[i - 2];
+        const a = hash[0], e = hash[4];
+        const temp1 = (hash[7]
+          + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+          + ((e & hash[5]) ^ ((~e) & hash[6]))
+          + k[i]
+          + (w[i] = i < 16 ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0)) | 0;
+        const temp2 = ((rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+          + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]))) | 0;
+        hash.unshift((temp1 + temp2) | 0);
+        hash[4] = (hash[4] + temp1) | 0;
+        hash.pop();
+      }
+      for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+
+    let result = "";
+    for (let i = 0; i < 8; i++) {
+      for (let j = 3; j >= 0; j--) {
+        const b = (hash[i] >> (j * 8)) & 255;
+        result += (b < 16 ? "0" : "") + b.toString(16);
+      }
+    }
+    return result;
+  }
+
   async function sha256Hex(str) {
     if (window.crypto && window.crypto.subtle) {
       const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
       return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
     }
-    let h = 2166136261;
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return (h >>> 0).toString(16);
+    return sha256FallbackHex(str);
   }
 
   /* =========================================================
@@ -133,8 +198,11 @@
     isAiEstimated: false,
     isSearchingAi: false,
     adminUnlocked: false,
+    adminPassword: "", // 메모리 전용 (잠금 시 즉시 초기화, localStorage 미저장)
     syncEndpoint: "/api/products",
+    tentSyncEndpoint: "/api/tents",
     lastSyncInfo: "",
+    lastTentSyncInfo: "",
     dragging: false,
     dragTarget: null,
     dragGeom: null,
@@ -144,7 +212,7 @@
   };
 
   /* =========================================================
-   * 3. 상품 동기화 및 관리자 로컬 저장
+   * 3. 상품 & 텐트 DB 동기화 및 Supabase 영구 저장
    * ========================================================= */
   function extractProductNoFromUrl(url) {
     const m = String(url || "").match(/\/products\/(\d+)/);
@@ -172,6 +240,8 @@
     try {
       const ep = localStorage.getItem("ct_pro_sync_endpoint");
       if (ep) state.syncEndpoint = ep;
+      const tep = localStorage.getItem("ct_pro_tent_sync_endpoint");
+      if (tep) state.tentSyncEndpoint = tep;
       const raw = localStorage.getItem("ct_pro_products_override_v1");
       if (!raw) return;
       const map = JSON.parse(raw);
@@ -182,6 +252,208 @@
         });
       }
     } catch (e) {}
+  }
+
+  function resetLocalProductsInMemory() {
+    Object.keys(PRODUCTS).forEach((k) => { delete PRODUCTS[k]; });
+    Object.keys(INITIAL_PRODUCTS).forEach((k) => {
+      PRODUCTS[k] = JSON.parse(JSON.stringify(INITIAL_PRODUCTS[k]));
+    });
+    syncStoveModelsFromProducts();
+  }
+
+  function saveLocalTentOverrides() {
+    try {
+      localStorage.setItem("ct_pro_tents_override_v1", JSON.stringify(TENT_MODELS));
+    } catch (e) {}
+  }
+
+  function loadLocalTentOverrides() {
+    try {
+      const raw = localStorage.getItem("ct_pro_tents_override_v1");
+      if (!raw) return;
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr) || arr.length === 0) return;
+      const valid = arr.filter((t) => t && t.id && t.brand && t.name);
+      if (valid.length > 0) {
+        TENT_MODELS.length = 0;
+        valid.forEach((t) => TENT_MODELS.push(t));
+      }
+    } catch (e) {}
+  }
+
+  function resetLocalTentsInMemory() {
+    TENT_MODELS.length = 0;
+    INITIAL_TENTS.forEach((t) => TENT_MODELS.push(JSON.parse(JSON.stringify(t))));
+  }
+
+  function applyRemoteTents(remoteList) {
+    if (!Array.isArray(remoteList)) {
+      return { updated: 0, added: 0, removed: 0 };
+    }
+    // 기본 내장 36종 스냅샷을 기준으로 Supabase 변경(추가·수정·삭제)을 정확히 병합
+    resetLocalTentsInMemory();
+
+    let updated = 0, added = 0, removed = 0;
+    const remoteAdded = [];
+
+    remoteList.forEach((r) => {
+      if (!r || !r.id) return;
+      const idx = TENT_MODELS.findIndex((t) => t.id === r.id);
+
+      if (r.deleted) {
+        if (idx !== -1) {
+          TENT_MODELS.splice(idx, 1);
+          removed++;
+        }
+        return;
+      }
+
+      const normalized = {
+        id: String(r.id),
+        origin: r.origin === "해외" ? "해외" : "국내",
+        brand: String(r.brand || "").trim(),
+        name: String(r.name || "").trim(),
+        shape: ["dome", "tipi", "tunnel", "cabin"].includes(r.shape) ? r.shape : "dome",
+        w: Math.max(150, Math.min(800, Math.round(Number(r.w) || 320))),
+        l: Math.max(150, Math.min(1000, Math.round(Number(r.l) || 400))),
+        peakHeight: Math.max(130, Math.min(350, Math.round(Number(r.peakHeight) || 200))),
+        sw: Math.max(0, Math.min(350, Math.round(Number(r.sw) || 0))),
+        defaultJackHeight: Math.max(80, Math.min(320, Math.round(Number(r.defaultJackHeight) || 150))),
+        defaultPath: ["straight", "elbow45", "elbow90"].includes(r.defaultPath) ? r.defaultPath : "straight",
+        isRemoteSynced: true
+      };
+
+      if (!normalized.brand || !normalized.name) return;
+
+      if (idx !== -1) {
+        TENT_MODELS[idx] = normalized;
+        updated++;
+      } else {
+        normalized.isAdminAdded = true;
+        remoteAdded.push(normalized);
+        added++;
+      }
+    });
+
+    // Supabase에 신규 추가된 텐트를 목록 최상단에 노출
+    if (remoteAdded.length > 0) {
+      TENT_MODELS.unshift(...remoteAdded);
+    }
+
+    if (TENT_MODELS.length === 0) {
+      resetLocalTentsInMemory();
+    }
+
+    if (state.selectedTentId !== "custom_tent" && !TENT_MODELS.some((t) => t.id === state.selectedTentId)) {
+      state.selectedTentId = TENT_MODELS[0].id;
+    }
+
+    saveLocalTentOverrides();
+    return { updated, added, removed };
+  }
+
+  async function syncTentsFromServer(showNotify) {
+    const badge = byId("proTentSyncBadge");
+    const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+    if (!isHttp) {
+      if (badge) badge.textContent = "로컬 미리보기 모드";
+      return;
+    }
+    if (badge) badge.textContent = "⏳ 텐트 DB 동기화 중...";
+    try {
+      const url = state.tentSyncEndpoint || "/api/tents";
+      const res = await fetch(url, { cache: "no-store" });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data && data.ok && Array.isArray(data.tents)) {
+        const stat = applyRemoteTents(data.tents);
+        const tStr = data.syncedAt
+          ? new Date(data.syncedAt).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+          : "방금";
+        state.lastTentSyncInfo = `Supabase 연동됨 (${tStr} · 추가 ${stat.added} / 수정 ${stat.updated}${stat.removed ? ` / 삭제 ${stat.removed}` : ""})`;
+        if (badge) {
+          badge.textContent = `✓ ${state.lastTentSyncInfo}`;
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200";
+        }
+        populateTentDropdown();
+        renderTentsTab();
+        updateUI();
+        if (showNotify) {
+          showToast(`텐트 DB Supabase 동기화 완료! (추가 ${stat.added}건, 수정 ${stat.updated}건, 삭제 ${stat.removed}건)`);
+        }
+      } else {
+        const errMsg = (data && data.error) ? data.error : "텐트 API(/api/tents) 미연결";
+        if (badge) {
+          badge.textContent = "⚠️ 기본 내장 DB 사용 중 (API 연결 필요)";
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200";
+        }
+        if (showNotify) showToast(`텐트 DB 동기화 실패: ${errMsg}`);
+      }
+    } catch (err) {
+      if (badge) {
+        badge.textContent = "⚠️ 기본 내장 DB 사용 중";
+        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200";
+      }
+      if (showNotify) {
+        showToast("텐트 동기화 API(/api/tents)에 연결할 수 없습니다. Vercel 배포 및 환경변수를 확인해 주세요.");
+      }
+    }
+  }
+
+  async function pushTentToServer(method, payload) {
+    const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+    if (!isHttp) {
+      return { ok: false, offline: true, error: "로컬 미리보기 환경에서는 브라우저에만 임시 저장됩니다." };
+    }
+    try {
+      const url = state.tentSyncEndpoint || "/api/tents";
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": state.adminPassword || ""
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data && data.ok) {
+        return { ok: true, data };
+      }
+      return { ok: false, error: (data && data.error) || `HTTP ${res.status} 오류` };
+    } catch (err) {
+      return { ok: false, error: "서버(/api/tents) 연결 실패" };
+    }
+  }
+
+  function updateTentCountLabels() {
+    const total = TENT_MODELS.length;
+    const kr = TENT_MODELS.filter((t) => t.origin === "국내").length;
+    const intl = TENT_MODELS.filter((t) => t.origin === "해외").length;
+
+    setText("tabBtn-tents", `⛺ 텐트 DB (${total}종)`);
+    setText("tentDbTitle", `⛺ 국내·해외 인기 텐트 제원 DB (${total}종)`);
+
+    document.querySelectorAll(".tent-origin-btn").forEach((b) => {
+      const o = b.getAttribute("data-origin");
+      if (o === "all") b.textContent = `전체 (${total})`;
+      else if (o === "국내") b.textContent = `국내 (${kr})`;
+      else if (o === "해외") b.textContent = `해외 (${intl})`;
+    });
+
+    document.querySelectorAll(".tent-db-filter-btn").forEach((b) => {
+      const o = b.getAttribute("data-tfilter");
+      if (o === "all") b.textContent = `전체 (${total})`;
+      else if (o === "국내") b.textContent = `국내 (${kr})`;
+      else if (o === "해외") b.textContent = `해외 (${intl})`;
+    });
+  }
+
+  function syncOriginFilterButtons() {
+    document.querySelectorAll(".tent-origin-btn").forEach((x) => {
+      x.className = x.getAttribute("data-origin") === state.tentOriginFilter
+        ? "tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition"
+        : "tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+    });
   }
 
   function applyRemoteProducts(remoteList) {
@@ -298,20 +570,34 @@
   function renderAdminUiState() {
     const hdrBtn = byId("adminToggleHeaderBtn");
     const panel = byId("proAdminPanel");
+    const tentPanel = byId("proTentAdminPanel");
+    const tentAdminTh = byId("tentDbAdminTh");
     const manSync = byId("proManualSyncBtn");
+    const tentManSync = byId("proTentManualSyncBtn");
     const epInp = byId("proSyncEndpointInput");
+    const tentEpInp = byId("proTentSyncEndpointInput");
     if (hdrBtn) hdrBtn.textContent = state.adminUnlocked ? "🔓" : "🔒";
     if (panel) panel.classList.toggle("hidden", !state.adminUnlocked);
+    if (tentPanel) tentPanel.classList.toggle("hidden", !state.adminUnlocked);
+    if (tentAdminTh) tentAdminTh.classList.toggle("hidden", !state.adminUnlocked);
     if (manSync) manSync.classList.toggle("hidden", !state.adminUnlocked);
+    if (tentManSync) tentManSync.classList.toggle("hidden", !state.adminUnlocked);
     if (epInp) epInp.value = state.syncEndpoint || "/api/products";
+    if (tentEpInp) tentEpInp.value = state.tentSyncEndpoint || "/api/tents";
     renderProductsTab();
+    renderTentsTab();
   }
 
   /* =========================================================
    * 4. 선택 모델 조회 & 좌표 보정
    * ========================================================= */
   function getActiveStove() {
-    return STOVE_MODELS.find((s) => s.id === state.selectedStoveId) || STOVE_MODELS[0];
+    const active = STOVE_MODELS.filter((s) => !s.deleted);
+    const pool = active.length ? active : STOVE_MODELS;
+    const found = pool.find((s) => s.id === state.selectedStoveId);
+    if (found) return found;
+    state.selectedStoveId = pool[0].id;
+    return pool[0];
   }
 
   function getActiveTent() {
@@ -482,19 +768,25 @@
     const sel = byId("stoveSelect");
     if (!sel) return;
     sel.innerHTML = "";
+    const activeStoves = STOVE_MODELS.filter((s) => !s.deleted);
+    const pool = activeStoves.length ? activeStoves : STOVE_MODELS;
+    if (!pool.some((s) => s.id === state.selectedStoveId)) {
+      state.selectedStoveId = pool[0].id;
+    }
+
     const gSt = document.createElement("optgroup");
     gSt.label = "🔩 스테인리스 난로 (스테인리스 연통 전용)";
     const gTi = document.createElement("optgroup");
     gTi.label = "🪶 티타늄 난로 (티타늄 연통 전용)";
-    STOVE_MODELS.forEach((s) => {
+    pool.forEach((s) => {
       const o = document.createElement("option");
       o.value = s.id;
       o.textContent = s.name;
       if (s.id === state.selectedStoveId) o.selected = true;
       (s.mat === "titanium" ? gTi : gSt).appendChild(o);
     });
-    sel.appendChild(gSt);
-    sel.appendChild(gTi);
+    if (gSt.children.length) sel.appendChild(gSt);
+    if (gTi.children.length) sel.appendChild(gTi);
   }
 
   function populateTentDropdown() {
@@ -572,7 +864,7 @@
 
   function applyStoveModel(stoveId) {
     const prevMat = getActiveStove().mat;
-    const s = STOVE_MODELS.find((x) => x.id === stoveId) || STOVE_MODELS[0];
+    const s = STOVE_MODELS.find((x) => x.id === stoveId && !x.deleted) || getActiveStove();
     state.selectedStoveId = s.id;
     state.stoveHeight = s.stoveHeight;
     state.pipeSystem = s.recommendedPipeSystem;
@@ -600,7 +892,7 @@
     const H_jack = Math.max(80, Math.min(320, Number(state.jackHeight) || 175));
     const H_stove = Math.max(20, Math.min(90, Number(state.stoveHeight) || 35));
     const H_stand = Math.max(0, Math.min(80, Number(state.standHeight) || 0));
-    const H_start = H_stove + H_stand;
+    const H_start = round1(H_stove + H_stand);
 
     const isTi3mSet = (stoveObj.id === "lumora_ti" || stoveObj.id === "dweller_ti3") && state.pipeSystem === "ti_nested_70_76";
     const isMstove33mSet = (stoveObj.id === "mstove_v3" || stoveObj.id === "mstove_v2_down") && state.pipeSystem === "tapered_70_73_76";
@@ -680,16 +972,16 @@
     const baseEffTotal = baseRawTotal - (((1 + baseStraightCnt) - 1 + elbowCnt) * overlap);
     const baseExtraRound = Math.max(0, baseEffTotal - reqEff);
     const topH = effMode === "straight"
-      ? H_start + effTotal
+      ? round1(H_start + effTotal)
       : Math.round(H_jack + outVert + baseExtraRound + extraOutCm);
-    const roofClr = topH - H_tent;
+    const roofClr = round1(topH - H_tent);
     const sparkSafe = roofClr >= SPARK_MIN_CLEARANCE_CM;
 
     const warns = [];
     let blocked = false;
     if (H_jack - H_start < 50) {
       blocked = true;
-      warns.push(`[설치 불가] 배기구(${H_start}cm)와 홀잭(${H_jack}cm) 사이가 ${H_jack - H_start}cm뿐이라 50cm 스킨 보호 연통을 넣을 수 없습니다.`);
+      warns.push(`[설치 불가] 배기구(${H_start}cm)와 홀잭(${H_jack}cm) 사이가 ${round1(H_jack - H_start)}cm뿐이라 50cm 스킨 보호 연통을 넣을 수 없습니다.`);
     }
     if (H_jack >= H_tent) {
       blocked = true;
@@ -812,12 +1104,10 @@
       return arr.join(" ");
     };
 
-    // 2D AABB 충돌 회피 유틸리티
     const placedBoxes = [];
     const overlapsAny = (x, y, w, h) => placedBoxes.some((b) => !(x + w + 4 < b.x || x > b.x + b.w + 4 || y + h + 3 < b.y || y > b.y + b.h + 3));
     const reserveBox = (x, y, w, h) => { placedBoxes.push({ x, y, w, h }); };
 
-    // 1) 좌측 구역: 불티방지 기준선 & 텐트 높이 치수
     const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
     const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
     const sparkBoxX = 12, sparkBoxW = 148, sparkBoxH = 18;
@@ -828,7 +1118,6 @@
     const tentDimMidY = Math.max(sparkBoxY + sparkBoxH + 18, Math.round((gY + py) / 2));
     reserveBox(lDim - 40, tentDimMidY - 10, 80, 20);
 
-    // 2) 우측 구역: 천장~연통끝 + 총높이
     const roofDimX = 664;
     const roofMidY = Math.max(24, Math.min(gY - 56, Math.round((py + topY) / 2)));
     reserveBox(roofDimX + 6, roofMidY - 10, 112, 20);
@@ -837,7 +1126,6 @@
     const totalDimMidY = Math.max(roofMidY + 30, Math.min(gY - 24, Math.round(topY + (gY - topY) * 0.65)));
     reserveBox(rDim - 44, totalDimMidY - 10, 88, 20);
 
-    // 3) 홀잭 배지 위치
     const jackSide = jackPt.x >= cx ? 1 : -1;
     const jBadgeW = 94, jBadgeH = 20;
     let jBadgeX = jackSide > 0 ? Math.min(646 - jBadgeW, jackPt.x + 28) : Math.max(165, jackPt.x - 28 - jBadgeW);
@@ -847,7 +1135,6 @@
     }
     reserveBox(jBadgeX, jBadgeY, jBadgeW, jBadgeH);
 
-    // 파이프 마디 및 비겹침 라벨 배치
     let pipesHtml = `<polyline points="${pts.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
     let ticksHtml = "", labelsHtml = "";
     const totalW = Math.max(1, sim.rawFirst + sim.straightCnt * sim.effPipe);
@@ -1055,7 +1342,15 @@
     const addBuy = (pid, qty, cat, note) => {
       if (!qty || qty <= 0) return;
       const p = PRODUCTS[pid];
-      if (!p) return;
+      if (!p || p.deleted) return;
+      const existing = buyList.find((x) => x.id === pid);
+      if (existing) {
+        existing.qty += qty;
+        if (note && !existing.name.includes(note)) {
+          existing.name = `${existing.name} + ${note}`;
+        }
+        return;
+      }
       buyList.push({
         id: pid,
         cat,
@@ -1107,14 +1402,14 @@
           addBuy("p_ti_pipe_70_76", sim.straightCnt, "티타늄 직관 연통");
         } else {
           addBuy("p_ti_set_70_76", 1, "티타늄 연통 세트");
-          if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+          if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 추가 직관", `Ø70 엘보연결 ${extra70Cnt}본`);
           const extraTopTi = Math.max(0, sim.totalSeg - 11 - extra70Cnt);
-          if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 상단 연장 직관");
+          if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 추가 직관", `상단 연장 ${extraTopTi}본`);
         }
       } else {
-        if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 70파이 추가 직관", "2번째 엘보까지 Ø70 연결 필수");
+        if (extra70Cnt > 0) addBuy("p_ti_pipe_70_76", extra70Cnt, "티타늄 추가 직관", `Ø70 엘보연결 ${extra70Cnt}본`);
         const extraTopTi = Math.max(0, sim.totalSeg - incPipes - extra70Cnt);
-        if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 76파이 연장 직관", `상단 연장 (+${extraTopTi * sim.effPipe}cm)`);
+        if (extraTopTi > 0) addBuy("p_ti_pipe_70_76", extraTopTi, "티타늄 추가 직관", `Ø76 상단연장 ${extraTopTi}본 (+${extraTopTi * sim.effPipe}cm)`);
       }
       if (sim.elbowCnt > 0) addBuy("p_ti_elbow_70", sim.elbowCnt, `티타늄 ${sim.elbowAng}° 엘보`);
       if (state.protectionType === "ti_guard_70" && isFixed60or70Pipe(stoveObj, state.pipeSystem)) {
@@ -1169,12 +1464,12 @@
     Object.keys(state.extraBuyItems || {}).forEach((pid) => {
       const qtyNum = Number(state.extraBuyItems[pid]) || 0;
       if (qtyNum <= 0) return;
+      const p = PRODUCTS[pid];
+      if (!p || p.deleted) return;
       const existing = buyList.find((x) => x.id === pid);
       if (existing) {
         if (typeof state.qtyOverrides[pid] !== "number") existing.qty += qtyNum;
       } else {
-        const p = PRODUCTS[pid];
-        if (!p) return;
         buyList.push({
           id: pid,
           cat: "직접 추가",
@@ -1408,6 +1703,7 @@
   }
 
   function renderTentsTab() {
+    updateTentCountLabels();
     const tbody = byId("tentDbTableBody");
     if (!tbody) return;
     const kw = (state.tentDbSearch || "").trim().toLowerCase();
@@ -1416,15 +1712,44 @@
       const okK = !kw || `${t.brand} ${t.name}`.toLowerCase().includes(kw);
       return okO && okK;
     });
+
+    if (list.length === 0) {
+      const colSpan = state.adminUnlocked ? 8 : 7;
+      tbody.innerHTML = `<tr><td colspan="${colSpan}" class="py-8 px-4 text-center text-xs text-slate-400 font-semibold">조건에 맞는 텐트 모델이 없습니다.</td></tr>`;
+      return;
+    }
+
     tbody.innerHTML = list.map((t) => `
       <tr class="hover:bg-slate-50 transition">
-        <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.origin === "국내" ? "bg-sky-100 text-sky-800" : "bg-purple-100 text-purple-800"}">${t.origin}</span></td>
-        <td class="py-2.5 px-3 font-bold text-slate-900">${escapeHtml(t.brand)} ${escapeHtml(t.name)}</td>
+        <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.origin === "국내" ? "bg-sky-100 text-sky-800" : "bg-purple-100 text-purple-800"}">${escapeHtml(t.origin)}</span></td>
+        <td class="py-2.5 px-3 font-bold text-slate-900">
+          ${escapeHtml(t.brand)} ${escapeHtml(t.name)}
+          ${t.isAdminAdded ? `<span class="ml-1 px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-extrabold">${t.isRemoteSynced ? "서버 등록" : "추가됨"}</span>` : ""}
+        </td>
         <td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">${t.l}×${t.w}×${t.peakHeight} cm</td>
-        <td class="py-2.5 px-3 text-center font-extrabold text-orange-700">${t.peakHeight} cm</td>
-        <td class="py-2.5 px-3 text-center font-bold text-amber-700">${t.defaultJackHeight} cm</td>
-        <td class="py-2.5 px-3 whitespace-nowrap font-bold ${t.defaultPath === "straight" ? "text-emerald-700" : t.defaultPath === "elbow45" ? "text-amber-700" : "text-rose-700"}">${t.defaultPath === "straight" ? "천장 직상" : t.defaultPath === "elbow45" ? "45° 경사" : "측면 90°"}</td>
-        <td class="py-2.5 px-3 text-center"><button type="button" data-apply-tent="${t.id}" class="apply-tent-db-btn px-2.5 py-1 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">적용</button></td>
+        <td class="py-2.5 px-3 text-center font-extrabold text-orange-700">
+          ${state.adminUnlocked
+            ? `<input type="number" min="130" max="350" data-adm-tent-h="${escapeHtml(t.id)}" value="${t.peakHeight}" class="w-16 rounded-md bg-white border border-slate-300 px-1.5 py-0.5 text-center text-xs font-extrabold text-orange-700" />`
+            : `${t.peakHeight} cm`}
+        </td>
+        <td class="py-2.5 px-3 text-center font-bold text-amber-700">
+          ${state.adminUnlocked
+            ? `<input type="number" min="80" max="320" data-adm-tent-jh="${escapeHtml(t.id)}" value="${t.defaultJackHeight}" class="w-16 rounded-md bg-amber-50 border border-amber-300 px-1.5 py-0.5 text-center text-xs font-bold text-amber-800" />`
+            : `${t.defaultJackHeight} cm`}
+        </td>
+        <td class="py-2.5 px-3 whitespace-nowrap font-bold ${t.defaultPath === "straight" ? "text-emerald-700" : t.defaultPath === "elbow45" ? "text-amber-700" : "text-rose-700"}">
+          ${state.adminUnlocked
+            ? `<select data-adm-tent-path="${escapeHtml(t.id)}" class="rounded-md bg-white border border-slate-300 px-1.5 py-0.5 text-xs font-bold text-slate-800">
+                <option value="straight" ${t.defaultPath === "straight" ? "selected" : ""}>천장 직상</option>
+                <option value="elbow45" ${t.defaultPath === "elbow45" ? "selected" : ""}>45° 경사</option>
+                <option value="elbow90" ${t.defaultPath === "elbow90" ? "selected" : ""}>측면 90°</option>
+              </select>`
+            : (t.defaultPath === "straight" ? "천장 직상" : t.defaultPath === "elbow45" ? "45° 경사" : "측면 90°")}
+        </td>
+        <td class="py-2.5 px-3 text-center"><button type="button" data-apply-tent="${escapeHtml(t.id)}" class="apply-tent-db-btn px-2.5 py-1 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">적용</button></td>
+        ${state.adminUnlocked
+          ? `<td class="py-2.5 px-3 text-center"><button type="button" data-adm-tent-del="${escapeHtml(t.id)}" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold transition">삭제</button></td>`
+          : ""}
       </tr>
     `).join("");
   }
@@ -1485,6 +1810,7 @@
       b.addEventListener("click", () => {
         const p = b.getAttribute("data-preset");
         state.tentOriginFilter = "all";
+        syncOriginFilterButtons();
         populateTentDropdown();
         state.standHeight = 0;
         if (p === "valhall_mstove") { applyStoveModel("mstove_v3"); applyTentModel("helsport_valhall"); }
@@ -1499,11 +1825,7 @@
       b.addEventListener("click", () => {
         const orig = b.getAttribute("data-origin");
         state.tentOriginFilter = orig;
-        document.querySelectorAll(".tent-origin-btn").forEach((x) => {
-          x.className = x.getAttribute("data-origin") === orig
-            ? "tent-origin-btn py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition"
-            : "tent-origin-btn py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
-        });
+        syncOriginFilterButtons();
         populateTentDropdown();
         if (orig === "custom") {
           applyTentModel("custom_tent");
@@ -1634,7 +1956,7 @@
         if (!isJack && !isStove) return;
         state.dragging = true;
         state.dragTarget = isJack ? "jack" : "stove";
-        state.dragGeom = state.geom ? Object.assign({}, state.geom) : { cx: 365, scaleX: 1, gY: 394, scaleY: 1, span: 300 };
+        state.dragGeom = state.geom ? Object.assign({}, state.geom) : { cx: 395, scaleX: 1, gY: 412, scaleY: 1, span: 300 };
         const curSim = computeSimulation();
         state.lockedMaxH = Math.max(curSim.H_tent + 160, curSim.topH + 35, 405);
         try { svg.setPointerCapture(e.pointerId); } catch (err) {}
@@ -1677,7 +1999,7 @@
       svg.addEventListener("pointercancel", stopDrag);
     }
 
-    // 6) 경고창 자동 보정 및 BOM 인터랙션 (복구 완료)
+    // 6) 경고창 자동 보정 및 BOM 인터랙션
     onEl("safetyAlertBox", "click", (e) => {
       const b = e.target && e.target.closest ? e.target.closest(".pro-qfix") : null;
       if (!b) return;
@@ -1832,11 +2154,12 @@
       const hashed = await sha256Hex(val);
       if (hashed === ADMIN_PW_HASH) {
         state.adminUnlocked = true;
+        state.adminPassword = val;
         if (inp) inp.value = "";
         closeAdminModal();
         renderAdminUiState();
-        switchTab("products");
-        showToast("관리자 인증 완료! 동기화 및 상품 관리가 활성화되었습니다.");
+        if (state.activeTab === "simulator") switchTab("products");
+        showToast("관리자 인증 완료! 난로·연통 DB 및 텐트 DB 관리가 활성화되었습니다.");
       } else {
         if (err) err.classList.remove("hidden");
       }
@@ -1848,9 +2171,15 @@
     onEl("adminUnlockSubmitBtn", "click", handleUnlock);
     onEl("adminPasswordInput", "keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleUnlock(); } });
     onEl("adminGoProductsBtn", "click", () => { closeAdminModal(); switchTab("products"); });
-    onEl("adminSyncQuickBtn", "click", () => { closeAdminModal(); syncProductsFromServer(true); });
+    onEl("adminGoTentsBtn", "click", () => { closeAdminModal(); switchTab("tents"); });
+    onEl("adminSyncQuickBtn", "click", () => {
+      closeAdminModal();
+      syncProductsFromServer(true);
+      syncTentsFromServer(true);
+    });
     onEl("adminLockBtn", "click", () => {
       state.adminUnlocked = false;
+      state.adminPassword = "";
       closeAdminModal();
       renderAdminUiState();
       showToast("관리자 잠금이 완료되었습니다.");
@@ -1866,8 +2195,12 @@
     });
     onEl("proAdminResetLocalBtn", "click", () => {
       try { localStorage.removeItem("ct_pro_products_override_v1"); } catch (e) {}
-      showToast("로컬 수정 기록을 초기화했습니다. 새로고침 시 최신 동기화 데이터를 불러옵니다.");
-      syncProductsFromServer(true);
+      resetLocalProductsInMemory();
+      populateStoveDropdown();
+      renderProductsTab();
+      updateUI();
+      showToast("로컬 상품 수정 기록을 초기 기본값으로 복원했습니다.");
+      syncProductsFromServer(false);
     });
     onEl("adminAddProdBtn", "click", () => {
       const name = (byId("adminNewName") ? byId("adminNewName").value : "").trim();
@@ -1910,6 +2243,156 @@
       showToast(`"${PRODUCTS[pid].name}" 변경사항이 저장되었습니다.`);
     });
 
+    // 7-2) 관리자 모드: 텐트 DB Supabase 연동 + 추가·수정·삭제·초기화·JSON 복사
+    onEl("proTentManualSyncBtn", "click", () => syncTentsFromServer(true));
+    onEl("proAdminSyncTentsNowBtn", "click", () => syncTentsFromServer(true));
+    onEl("proSaveTentSyncEndpointBtn", "click", () => {
+      const inp = byId("proTentSyncEndpointInput");
+      state.tentSyncEndpoint = (inp && inp.value.trim()) ? inp.value.trim() : "/api/tents";
+      try { localStorage.setItem("ct_pro_tent_sync_endpoint", state.tentSyncEndpoint); } catch (e) {}
+      syncTentsFromServer(true);
+    });
+
+    onEl("adminAddTentBtn", "click", async () => {
+      if (!state.adminUnlocked) return;
+      const origin = byId("adminTentOrigin") ? byId("adminTentOrigin").value : "국내";
+      const brand = (byId("adminTentBrand") ? byId("adminTentBrand").value : "").trim();
+      const name = (byId("adminTentName") ? byId("adminTentName").value : "").trim();
+      const shape = byId("adminTentShape") ? byId("adminTentShape").value : "dome";
+      const defaultPath = byId("adminTentPath") ? byId("adminTentPath").value : "straight";
+      const w = Math.round(Number(byId("adminTentWidth") ? byId("adminTentWidth").value : 0));
+      const l = Math.round(Number(byId("adminTentLength") ? byId("adminTentLength").value : 0));
+      const peakHeight = Math.round(Number(byId("adminTentHeight") ? byId("adminTentHeight").value : 0));
+      const defaultJackHeight = Math.round(Number(byId("adminTentJackHeight") ? byId("adminTentJackHeight").value : 0));
+      const swRaw = (byId("adminTentSw") ? byId("adminTentSw").value : "").trim();
+
+      if (!brand || !name) {
+        showToast("브랜드명과 텐트 모델명을 모두 입력해 주세요.");
+        return;
+      }
+      if (!Number.isFinite(w) || w < 150 || w > 800 || !Number.isFinite(l) || l < 150 || l > 1000) {
+        showToast("설치 폭(150~800cm)과 길이(150~1000cm)를 올바르게 입력해 주세요.");
+        return;
+      }
+      if (!Number.isFinite(peakHeight) || peakHeight < 130 || peakHeight > 350) {
+        showToast("최고 높이는 130~350cm 범위로 입력해 주세요.");
+        return;
+      }
+      if (!Number.isFinite(defaultJackHeight) || defaultJackHeight < 80 || defaultJackHeight > 320 || defaultJackHeight >= peakHeight) {
+        showToast("권장 홀잭 높이는 80cm 이상이며 텐트 최고 높이보다 낮아야 합니다.");
+        return;
+      }
+
+      const sw = swRaw !== "" && Number.isFinite(Number(swRaw))
+        ? Math.max(0, Math.min(peakHeight, Math.round(Number(swRaw))))
+        : (shape === "tipi" ? 0 : Math.round(peakHeight * 0.6));
+
+      const newTent = {
+        id: `tent_adm_${Date.now()}`,
+        origin,
+        brand,
+        name,
+        shape,
+        w,
+        l,
+        peakHeight,
+        sw,
+        defaultJackHeight,
+        defaultPath,
+        isAdminAdded: true
+      };
+
+      const addBtn = byId("adminAddTentBtn");
+      if (addBtn) { addBtn.disabled = true; addBtn.textContent = "저장 중..."; }
+
+      const remoteRes = await pushTentToServer("POST", newTent);
+      if (remoteRes.ok) {
+        newTent.isRemoteSynced = true;
+      }
+
+      TENT_MODELS.unshift(newTent);
+      saveLocalTentOverrides();
+      populateTentDropdown();
+      renderTentsTab();
+
+      if (addBtn) { addBtn.disabled = false; addBtn.textContent = "➕ 텐트 추가"; }
+      if (byId("adminTentBrand")) byId("adminTentBrand").value = "";
+      if (byId("adminTentName")) byId("adminTentName").value = "";
+      if (byId("adminTentSw")) byId("adminTentSw").value = "";
+
+      if (remoteRes.ok) {
+        showToast(`✅ "${brand} ${name}" Supabase에 영구 저장 완료! 모든 고객에게 자동 노출됩니다.`);
+        syncTentsFromServer(false);
+      } else if (remoteRes.offline) {
+        showToast(`"${brand} ${name}" 추가됨 (로컬 미리보기 저장)`);
+      } else {
+        showToast(`로컬에만 추가됨 · Supabase 저장 실패: ${remoteRes.error}`);
+      }
+    });
+
+    onEl("proAdminResetTentsBtn", "click", () => {
+      if (!state.adminUnlocked) return;
+      try { localStorage.removeItem("ct_pro_tents_override_v1"); } catch (e) {}
+      resetLocalTentsInMemory();
+      if (!TENT_MODELS.some((t) => t.id === state.selectedTentId) && state.selectedTentId !== "custom_tent") {
+        state.selectedTentId = TENT_MODELS[0].id;
+      }
+      populateTentDropdown();
+      renderTentsTab();
+      updateUI();
+      showToast("로컬 텐트 캐시를 초기화했습니다. Supabase 최신 데이터를 불러옵니다.");
+      syncTentsFromServer(false);
+    });
+
+    onEl("proAdminExportTentsBtn", "click", () => {
+      if (!state.adminUnlocked) return;
+      const cleanList = TENT_MODELS.map(({ isAdminAdded, isRemoteSynced, ...rest }) => rest);
+      copyTextToClipboard(JSON.stringify(cleanList, null, 2), "현재 텐트 DB JSON이 클립보드에 복사되었습니다.");
+    });
+
+    onEl("tentDbTableBody", "change", async (e) => {
+      if (!state.adminUnlocked) return;
+      const el = e.target;
+      if (!el || !el.getAttribute) return;
+      const tidH = el.getAttribute("data-adm-tent-h");
+      const tidJh = el.getAttribute("data-adm-tent-jh");
+      const tidPath = el.getAttribute("data-adm-tent-path");
+      const tid = tidH || tidJh || tidPath;
+      if (!tid) return;
+      const tent = TENT_MODELS.find((t) => t.id === tid);
+      if (!tent) return;
+
+      if (tidH) {
+        const v = Math.max(130, Math.min(350, Math.round(Number(el.value) || tent.peakHeight)));
+        tent.peakHeight = v;
+        if (tent.defaultJackHeight >= v) tent.defaultJackHeight = Math.max(80, v - 15);
+      }
+      if (tidJh) {
+        const v = Math.max(80, Math.min(Math.min(320, tent.peakHeight - 5), Math.round(Number(el.value) || tent.defaultJackHeight)));
+        tent.defaultJackHeight = v;
+      }
+      if (tidPath && ["straight", "elbow45", "elbow90"].includes(el.value)) {
+        tent.defaultPath = el.value;
+      }
+
+      saveLocalTentOverrides();
+      populateTentDropdown();
+      renderTentsTab();
+      if (state.selectedTentId === tent.id) {
+        applyTentModel(tent.id);
+      }
+
+      const remoteRes = await pushTentToServer("PATCH", tent);
+      if (remoteRes.ok) {
+        tent.isRemoteSynced = true;
+        showToast(`✅ "${tent.brand} ${tent.name}" 수정사항이 Supabase에 영구 반영되었습니다.`);
+      } else if (remoteRes.offline) {
+        showToast(`"${tent.brand} ${tent.name}" 제원이 수정되었습니다 (로컬 저장).`);
+      } else {
+        showToast(`로컬 수정됨 · Supabase 반영 실패: ${remoteRes.error}`);
+      }
+    });
+
     document.querySelectorAll(".prod-cat-btn").forEach((b) => {
       b.addEventListener("click", () => {
         state.productCategoryFilter = b.getAttribute("data-pcat");
@@ -1939,10 +2422,43 @@
       renderTentsTab();
     });
 
-    onEl("tentDbTableBody", "click", (e) => {
-      const b = e.target && e.target.closest ? e.target.closest(".apply-tent-db-btn") : null;
+    onEl("tentDbTableBody", "click", async (e) => {
+      const target = e.target && e.target.closest ? e.target : null;
+      if (!target) return;
+
+      const delBtn = target.closest("[data-adm-tent-del]");
+      if (delBtn && state.adminUnlocked) {
+        const tid = delBtn.getAttribute("data-adm-tent-del");
+        const idx = TENT_MODELS.findIndex((t) => t.id === tid);
+        if (idx === -1) return;
+        const removed = TENT_MODELS[idx];
+        if (TENT_MODELS.length <= 1) {
+          showToast("최소 1개 이상의 텐트 모델이 필요합니다.");
+          return;
+        }
+        TENT_MODELS.splice(idx, 1);
+        saveLocalTentOverrides();
+        if (state.selectedTentId === tid) {
+          applyTentModel(TENT_MODELS[0].id);
+        }
+        populateTentDropdown();
+        renderTentsTab();
+
+        const remoteRes = await pushTentToServer("DELETE", removed);
+        if (remoteRes.ok) {
+          showToast(`✅ "${removed.brand} ${removed.name}" 삭제가 Supabase에 영구 반영되었습니다.`);
+        } else if (remoteRes.offline) {
+          showToast(`"${removed.brand} ${removed.name}" 텐트가 삭제되었습니다 (로컬 저장).`);
+        } else {
+          showToast(`로컬 삭제됨 · Supabase 반영 실패: ${remoteRes.error}`);
+        }
+        return;
+      }
+
+      const b = target.closest(".apply-tent-db-btn");
       if (!b) return;
       state.tentOriginFilter = "all";
+      syncOriginFilterButtons();
       populateTentDropdown();
       applyTentModel(b.getAttribute("data-apply-tent"));
       switchTab("simulator");
@@ -1990,6 +2506,7 @@
 
       if (item.source === "main") {
         state.tentOriginFilter = "all";
+        syncOriginFilterButtons();
         populateTentDropdown();
         applyTentModel(item.id);
       } else {
@@ -2013,12 +2530,17 @@
 
     const applyAi = (item, sources, origQ) => {
       const label = `${item.brand ? item.brand + " " : ""}${item.name || origQ}`.trim();
+      const peakH = Math.max(130, Math.min(350, Math.round(Number(item.peakHeight) || 200)));
+      const jackH = Math.max(80, Math.min(Math.min(320, peakH - 10), Math.round(Number(item.jackHeight) || Math.round(peakH * 0.78))));
+      const tentW = Math.max(150, Math.min(800, Math.round(Number(item.tentWidth) || 340)));
+      const tentL = Math.max(150, Math.min(1000, Math.round(Number(item.tentLength) || 420)));
+
       input.value = label;
       state.selectedTentId = "custom_tent";
-      state.customTentWidth = item.tentWidth || 340;
-      state.customTentLength = item.tentLength || 420;
-      state.tentHeight = item.peakHeight;
-      state.jackHeight = item.jackHeight;
+      state.customTentWidth = tentW;
+      state.customTentLength = tentL;
+      state.tentHeight = peakH;
+      state.jackHeight = jackH;
       state.tentShape = ["dome", "tunnel", "tipi", "cabin"].includes(item.shape) ? item.shape : "dome";
       if (["straight", "elbow45", "elbow90"].includes(item.defaultPath)) state.pathType = item.defaultPath;
       state.extraOutPipes = 0;
@@ -2032,7 +2554,7 @@
         ? ` · <a href="${sanitizeUrl(sources[0].url)}" target="_blank" rel="noopener noreferrer" class="underline font-bold">출처 ↗</a>`
         : "";
       fb.className = "rounded-lg px-2.5 py-2 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800";
-      fb.innerHTML = `🤖 <strong>AI 자동입력:</strong> ${escapeHtml(label)} (높이 ${item.peakHeight}cm · 폭 ${item.tentWidth}cm · 홀잭 ${item.jackHeight}cm)${srcHtml}`;
+      fb.innerHTML = `🤖 <strong>AI 자동입력:</strong> ${escapeHtml(label)} (높이 ${peakH}cm · 폭 ${tentW}cm · 홀잭 ${jackH}cm)${srcHtml}`;
       fb.classList.remove("hidden");
     };
 
@@ -2135,7 +2657,12 @@
     // 1단계: UI 이벤트 최우선 바인딩
     try { bindEvents(); } catch (err) { console.error("[Pro bindEvents Error]", err); }
 
-    // 2단계: 세션 및 URL 파라미터 복원
+    // 2단계: 로컬 캐시 선행 로드 (URL 파라미터 복원 시 추가된 텐트/상품 인식 보장)
+    try { loadLocalAdminOverrides(); } catch (e) {}
+    try { loadLocalTentOverrides(); } catch (e) {}
+    try { syncStoveModelsFromProducts(); } catch (e) {}
+
+    // 3단계: 세션 및 URL 파라미터 복원
     try {
       const rawV = sessionStorage.getItem("ct_pro_visited_links");
       if (rawV) state.visitedLinks = JSON.parse(rawV) || {};
@@ -2144,7 +2671,9 @@
     try {
       const p = new URLSearchParams(window.location.search);
       const tId = p.get("tent") || "";
-      if (tId) {
+      if (tId === "custom_tent") {
+        state.selectedTentId = "custom_tent";
+      } else if (tId) {
         const ft = TENT_MODELS.find((t) => t.id === tId || t.id.endsWith("_" + tId));
         if (ft) {
           state.selectedTentId = ft.id;
@@ -2156,7 +2685,7 @@
       }
       const stId = p.get("stove") || "";
       if (stId) {
-        const fs = STOVE_MODELS.find((s) => s.id === stId || s.id.startsWith(stId));
+        const fs = STOVE_MODELS.find((s) => !s.deleted && (s.id === stId || s.id.startsWith(stId)));
         if (fs) {
           state.selectedStoveId = fs.id;
           state.stoveHeight = fs.stoveHeight;
@@ -2181,19 +2710,17 @@
       if (Number.isFinite(ex) && ex >= -4 && ex <= 6) state.extraOutPipes = ex;
     } catch (e) {}
 
-    // 3단계: 로컬 관리자 오버라이드, 드롭다운·도면·DB 초기 렌더링, 서버 자동 동기화
-    try { loadLocalAdminOverrides(); } catch (e) {}
-    try { syncStoveModelsFromProducts(); } catch (e) {}
+    // 4단계: 드롭다운·도면·DB 초기 렌더링 및 서버(Supabase) 자동 동기화
     try { populateStoveDropdown(); } catch (e) {}
     try { populateTentDropdown(); } catch (e) {}
+    try { syncOriginFilterButtons(); } catch (e) {}
     try { syncMaterialSelectors(); } catch (e) {}
     try { resetStoveAndJackPositions(); } catch (e) {}
     try { syncInputsFromState(); } catch (e) {}
     try { renderAdminUiState(); } catch (e) {}
-    try { renderProductsTab(); } catch (e) {}
-    try { renderTentsTab(); } catch (e) {}
     try { updateUI(); } catch (e) {}
     try { syncProductsFromServer(false); } catch (e) {}
+    try { syncTentsFromServer(false); } catch (e) {}
   }
 
   if (document.readyState === "loading") {

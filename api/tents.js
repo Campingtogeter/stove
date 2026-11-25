@@ -1,256 +1,308 @@
-// Vercel Serverless Function: api/tents.js
-// 배포 위치: Vercel 프로젝트 루트의 api/tents.js
-// 필수 환경변수 (Vercel Project Settings -> Environment Variables):
-//   - SUPABASE_URL: Supabase 프로젝트 URL (예: https://xxxx.supabase.co)
-//   - SUPABASE_SERVICE_ROLE_KEY (권장, 쓰기/삭제 권한 포함) 또는 SUPABASE_ANON_KEY
-// 선택 환경변수:
-//   - SUPABASE_TENTS_TABLE: 텐트 테이블명 (기본값: "tents")
-//   - ADMIN_PASSWORD: 관리자 비밀번호 재정의 시 선택 입력 (미설정 시 기존 관리자 비밀번호 자동 사용)
+/**
+ * Vercel Serverless Function: /api/tents.js
+ * - 캠핑투게더 시뮬레이터 텐트 DB Supabase 영구 저장 및 전체 고객 자동 노출 API
+ *
+ * 필수 Vercel 환경변수:
+ *   - SUPABASE_URL               (예: https://xxxx.supabase.co)
+ *   - SUPABASE_SERVICE_ROLE_KEY  (Supabase Project Settings > API > service_role key)
+ * 선택 환경변수:
+ *   - ADMIN_PW_HASH              (미설정 시 pro-data.js의 기본 관리자 해시 사용)
+ */
 
 const crypto = require("crypto");
 
-const DEFAULT_ADMIN_HASH = "c4b2fa036cc79e0f84169a1cafa18f89eb9a7431b7fa6842336d91245b12f483";
-const ALLOWED_SHAPES = ["dome", "tunnel", "tipi", "cabin"];
-const ALLOWED_PATHS = ["straight", "elbow45", "elbow90"];
+const DEFAULT_ADMIN_PW_HASH = "c4b2fa036cc79e0f84169a1cafa18f89eb9a7431b7fa6842336d91245b12f483";
+const VALID_ORIGINS = new Set(["국내", "해외"]);
+const VALID_SHAPES = new Set(["dome", "tipi", "tunnel", "cabin"]);
+const VALID_PATHS = new Set(["straight", "elbow45", "elbow90"]);
 
-function parseBody(req) {
-  if (!req || req.body == null) return {};
-  if (typeof req.body === "object") return req.body;
-  try {
-    return JSON.parse(String(req.body));
-  } catch (e) {
-    return {};
-  }
+function sha256Hex(str) {
+  return crypto.createHash("sha256").update(String(str || ""), "utf8").digest("hex");
 }
 
-function verifyAdmin(req, body) {
-  const provided = String(
-    (req.headers && (req.headers["x-admin-password"] || req.headers["X-Admin-Password"])) ||
-    (body && body.adminPassword) ||
-    ""
-  ).trim();
-  if (!provided) return false;
-  if (process.env.ADMIN_PASSWORD && provided === process.env.ADMIN_PASSWORD.trim()) {
-    return true;
-  }
-  const expectedHash = (process.env.ADMIN_PASSWORD_HASH || DEFAULT_ADMIN_HASH).trim().toLowerCase();
-  const actualHash = crypto.createHash("sha256").update(provided).digest("hex");
-  return actualHash === expectedHash;
+function verifyAdminPassword(req) {
+  const expectedHash = (process.env.ADMIN_PW_HASH || DEFAULT_ADMIN_PW_HASH).trim().toLowerCase();
+  const rawPw = String(req.headers["x-admin-password"] || "").trim();
+  if (!rawPw) return false;
+  const actualHash = sha256Hex(rawPw);
+  if (actualHash.length !== expectedHash.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(actualHash), Buffer.from(expectedHash));
 }
 
-function clampInt(val, min, max, fallback) {
-  const n = Math.round(Number(val));
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, n));
+function getSupabaseConfig() {
+  const url = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+  return { url, key };
 }
 
-function normalizeRow(row) {
-  if (!row || typeof row !== "object") return null;
-  const id = String(row.id || row.tent_id || "").trim();
-  const name = String(row.name || row.model_name || "").trim();
-  if (!id || !name) return null;
-
-  const origin = row.origin === "해외" ? "해외" : "국내";
-  const brand = String(row.brand || "기타").trim().slice(0, 40);
-  const rawShape = String(row.shape || "dome").toLowerCase();
-  const shape = ALLOWED_SHAPES.includes(rawShape) ? rawShape : "dome";
-  const rawPath = String(row.default_path || row.defaultPath || "straight").toLowerCase();
-  const defaultPath = ALLOWED_PATHS.includes(rawPath) ? rawPath : "straight";
-
-  const w = clampInt(row.width_cm ?? row.width ?? row.w, 150, 700, 340);
-  const l = clampInt(row.length_cm ?? row.length ?? row.l, 150, 950, 400);
-  const peakHeight = clampInt(row.peak_height_cm ?? row.peak_height ?? row.peakHeight ?? row.h, 130, 350, 200);
-  const sw = shape === "tipi" ? 0 : clampInt(row.side_wall_cm ?? row.side_wall ?? row.sw, 0, peakHeight, Math.round(peakHeight * 0.55));
-  const defaultJackHeight = clampInt(
-    row.jack_height_cm ?? row.jack_height ?? row.defaultJackHeight ?? row.jh,
-    80,
-    Math.max(85, peakHeight - 5),
-    Math.min(peakHeight - 15, Math.round((peakHeight * 0.75) / 5) * 5)
-  );
-
+function toClientTent(row) {
   return {
-    id,
-    origin,
-    brand,
-    name: name.slice(0, 80),
-    shape,
-    w,
-    l,
-    peakHeight,
-    sw,
-    defaultJackHeight,
-    defaultPath,
-    isSupabase: true,
-    createdAt: row.created_at || null
+    id: String(row.id),
+    origin: row.origin || "국내",
+    brand: row.brand || "",
+    name: row.name || "",
+    shape: row.shape || "dome",
+    w: Number(row.w) || 320,
+    l: Number(row.l) || 400,
+    peakHeight: Number(row.peak_height) || 200,
+    sw: Number(row.sw) || 0,
+    defaultJackHeight: Number(row.default_jack_height) || 150,
+    defaultPath: row.default_path || "straight",
+    deleted: Boolean(row.deleted),
+    updatedAt: row.updated_at || null
   };
+}
+
+function validateTentPayload(body, isPartial) {
+  if (!body || typeof body !== "object") {
+    return { error: "요청 본문이 올바르지 않습니다." };
+  }
+
+  const id = String(body.id || "").trim();
+  if (!id || id.length > 100 || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return { error: "올바른 텐트 ID가 필요합니다." };
+  }
+
+  const row = { id };
+
+  if (!isPartial || body.origin !== undefined) {
+    const origin = String(body.origin || "국내").trim();
+    if (!VALID_ORIGINS.has(origin)) return { error: "구분은 '국내' 또는 '해외'만 가능합니다." };
+    row.origin = origin;
+  }
+
+  if (!isPartial || body.brand !== undefined) {
+    const brand = String(body.brand || "").trim();
+    if (!brand || brand.length > 60) return { error: "브랜드명을 입력해 주세요 (최대 60자)." };
+    row.brand = brand;
+  }
+
+  if (!isPartial || body.name !== undefined) {
+    const name = String(body.name || "").trim();
+    if (!name || name.length > 100) return { error: "텐트 모델명을 입력해 주세요 (최대 100자)." };
+    row.name = name;
+  }
+
+  if (!isPartial || body.shape !== undefined) {
+    const shape = String(body.shape || "dome").trim();
+    if (!VALID_SHAPES.has(shape)) return { error: "올바른 텐트 형태를 선택해 주세요." };
+    row.shape = shape;
+  }
+
+  if (!isPartial || body.w !== undefined) {
+    const w = Math.round(Number(body.w));
+    if (!Number.isFinite(w) || w < 150 || w > 800) return { error: "설치 폭은 150~800cm 범위여야 합니다." };
+    row.w = w;
+  }
+
+  if (!isPartial || body.l !== undefined) {
+    const l = Math.round(Number(body.l));
+    if (!Number.isFinite(l) || l < 150 || l > 1000) return { error: "설치 길이는 150~1000cm 범위여야 합니다." };
+    row.l = l;
+  }
+
+  if (!isPartial || body.peakHeight !== undefined) {
+    const peakHeight = Math.round(Number(body.peakHeight));
+    if (!Number.isFinite(peakHeight) || peakHeight < 130 || peakHeight > 350) {
+      return { error: "최고 높이는 130~350cm 범위여야 합니다." };
+    }
+    row.peak_height = peakHeight;
+  }
+
+  if (!isPartial || body.defaultJackHeight !== undefined) {
+    const jackH = Math.round(Number(body.defaultJackHeight));
+    if (!Number.isFinite(jackH) || jackH < 80 || jackH > 320) {
+      return { error: "권장 홀잭 높이는 80~320cm 범위여야 합니다." };
+    }
+    if (row.peak_height !== undefined && jackH >= row.peak_height) {
+      return { error: "권장 홀잭 높이는 텐트 최고 높이보다 낮아야 합니다." };
+    }
+    row.default_jack_height = jackH;
+  }
+
+  if (!isPartial || body.sw !== undefined) {
+    const fallbackSw = row.shape === "tipi" ? 0 : Math.round((row.peak_height || 200) * 0.6);
+    const sw = body.sw === undefined || body.sw === null || body.sw === ""
+      ? fallbackSw
+      : Math.round(Number(body.sw));
+    if (!Number.isFinite(sw) || sw < 0 || sw > 350) return { error: "측벽 높이 값이 올바르지 않습니다." };
+    row.sw = sw;
+  }
+
+  if (!isPartial || body.defaultPath !== undefined) {
+    const defaultPath = String(body.defaultPath || "straight").trim();
+    if (!VALID_PATHS.has(defaultPath)) return { error: "올바른 권장 경로를 선택해 주세요." };
+    row.default_path = defaultPath;
+  }
+
+  if (body.deleted !== undefined) {
+    row.deleted = Boolean(body.deleted);
+  } else if (!isPartial) {
+    row.deleted = false;
+  }
+
+  return { row };
+}
+
+async function supabaseRequest(cfg, path, options) {
+  const res = await fetch(`${cfg.url}/rest/v1/${path}`, {
+    method: options.method || "GET",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    },
+    body: options.body ? JSON.stringify(options.body) : undefined
+  });
+
+  const text = await res.text();
+  let json = null;
+  try { json = text ? JSON.parse(text) : null; } catch (e) {}
+  return { ok: res.ok, status: res.status, data: json, raw: text };
 }
 
 module.exports = async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-password");
 
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    return res.status(204).end();
   }
 
-  const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "");
-  const supabaseKey = (
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    ""
-  ).trim();
-  const tableName = (process.env.SUPABASE_TENTS_TABLE || "tents").trim();
-
-  if (!supabaseUrl || !supabaseKey) {
-    return res.status(200).json({
+  const cfg = getSupabaseConfig();
+  if (!cfg.url || !cfg.key) {
+    return res.status(500).json({
       ok: false,
-      code: "NO_SUPABASE_ENV",
-      error: "Vercel 환경변수(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)가 설정되지 않았습니다.",
-      tents: []
+      error: "Vercel 환경변수(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)가 설정되지 않았습니다."
     });
   }
 
-  const baseHeaders = {
-    apikey: supabaseKey,
-    Authorization: `Bearer ${supabaseKey}`,
-    Accept: "application/json",
-    "Content-Type": "application/json"
-  };
-
-  // 1. GET: 전체 고객용 텐트 DB 목록 조회
-  if (req.method === "GET") {
-    try {
-      let sbRes = await fetch(
-        `${supabaseUrl}/rest/v1/${encodeURIComponent(tableName)}?select=*&order=created_at.desc`,
-        { method: "GET", headers: baseHeaders }
-      );
-      if (!sbRes.ok) {
-        sbRes = await fetch(
-          `${supabaseUrl}/rest/v1/${encodeURIComponent(tableName)}?select=*`,
-          { method: "GET", headers: baseHeaders }
-        );
-      }
-      if (!sbRes.ok) {
-        const detail = await sbRes.text().catch(() => "");
+  try {
+    // 1. GET: 모든 고객에게 Supabase 텐트 목록 반환
+    if (req.method === "GET") {
+      const result = await supabaseRequest(cfg, "tents?select=*&order=created_at.desc", { method: "GET" });
+      if (!result.ok) {
         return res.status(502).json({
           ok: false,
-          code: "SUPABASE_ERROR",
-          error: `Supabase 테이블(${tableName}) 조회 실패 (HTTP ${sbRes.status})`,
-          detail: detail.slice(0, 200),
-          tents: []
+          error: (result.data && result.data.message) || "Supabase 텐트 목록 조회에 실패했습니다."
         });
       }
+      const tents = Array.isArray(result.data) ? result.data.map(toClientTent) : [];
+      return res.status(200).json({
+        ok: true,
+        syncedAt: new Date().toISOString(),
+        tents
+      });
+    }
 
-      const rows = await sbRes.json();
-      const tents = (Array.isArray(rows) ? rows : []).map(normalizeRow).filter(Boolean);
-
-      res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
-      return res.status(200).json({ ok: true, count: tents.length, tents });
-    } catch (err) {
-      return res.status(500).json({
+    // 2. 쓰기 요청(POST / PATCH / DELETE)은 관리자 비밀번호 검증 필수
+    if (!verifyAdminPassword(req)) {
+      return res.status(401).json({
         ok: false,
-        code: "SERVER_ERROR",
-        error: "Supabase 텐트 목록 조회 중 오류가 발생했습니다.",
-        tents: []
+        error: "관리자 인증에 실패했습니다. 다시 로그인해 주세요."
       });
     }
-  }
 
-  // 2. POST: 관리자 전용 신규 텐트 영구 저장
-  if (req.method === "POST") {
-    const body = parseBody(req);
-    if (!verifyAdmin(req, body)) {
-      return res.status(401).json({ ok: false, code: "UNAUTHORIZED", error: "관리자 인증에 실패했습니다." });
-    }
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
 
-    const name = String(body.name || "").trim().slice(0, 80);
-    if (!name) {
-      return res.status(400).json({ ok: false, code: "INVALID_INPUT", error: "텐트 모델명을 입력해 주세요." });
-    }
+    // POST: 신규 텐트 추가 (또는 기존 ID upsert)
+    if (req.method === "POST") {
+      const { row, error } = validateTentPayload(body, false);
+      if (error) return res.status(400).json({ ok: false, error });
 
-    const origin = body.origin === "해외" ? "해외" : "국내";
-    const brand = String(body.brand || "기타").trim().slice(0, 40) || "기타";
-    const shape = ALLOWED_SHAPES.includes(String(body.shape || "").toLowerCase()) ? String(body.shape).toLowerCase() : "dome";
-    const defaultPath = ALLOWED_PATHS.includes(String(body.defaultPath || "").toLowerCase()) ? String(body.defaultPath).toLowerCase() : "straight";
-    const widthCm = clampInt(body.w ?? body.width_cm, 150, 700, 340);
-    const lengthCm = clampInt(body.l ?? body.length_cm, 150, 950, 400);
-    const peakHeightCm = clampInt(body.peakHeight ?? body.peak_height_cm, 130, 350, 200);
-    const sideWallCm = shape === "tipi" ? 0 : clampInt(body.sw ?? body.side_wall_cm, 0, peakHeightCm, 110);
-    const jackHeightCm = clampInt(body.defaultJackHeight ?? body.jack_height_cm, 80, Math.max(85, peakHeightCm - 5), 150);
-
-    const id = String(body.id || `sb_tent_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
-
-    const insertRow = {
-      id,
-      origin,
-      brand,
-      name,
-      shape,
-      width_cm: widthCm,
-      length_cm: lengthCm,
-      peak_height_cm: peakHeightCm,
-      side_wall_cm: sideWallCm,
-      jack_height_cm: jackHeightCm,
-      default_path: defaultPath
-    };
-
-    try {
-      const sbRes = await fetch(`${supabaseUrl}/rest/v1/${encodeURIComponent(tableName)}`, {
+      const result = await supabaseRequest(cfg, "tents?on_conflict=id", {
         method: "POST",
-        headers: { ...baseHeaders, Prefer: "return=representation" },
-        body: JSON.stringify(insertRow)
+        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+        body: row
       });
-      if (!sbRes.ok) {
-        const detail = await sbRes.text().catch(() => "");
+      if (!result.ok) {
         return res.status(502).json({
           ok: false,
-          code: "SUPABASE_INSERT_ERROR",
-          error: `Supabase 저장 실패 (HTTP ${sbRes.status}) — tents 테이블과 SERVICE_ROLE_KEY를 확인해 주세요.`,
-          detail: detail.slice(0, 200)
+          error: (result.data && result.data.message) || "Supabase 텐트 저장에 실패했습니다."
         });
       }
-      const inserted = await sbRes.json().catch(() => [insertRow]);
-      const savedTent = normalizeRow(Array.isArray(inserted) ? inserted[0] : inserted) || normalizeRow(insertRow);
-      res.setHeader("Cache-Control", "no-store");
-      return res.status(200).json({ ok: true, tent: savedTent });
-    } catch (err) {
-      return res.status(500).json({ ok: false, code: "SERVER_ERROR", error: "Supabase 텐트 저장 중 서버 오류가 발생했습니다." });
-    }
-  }
-
-  // 3. DELETE: 관리자 전용 텐트 영구 삭제
-  if (req.method === "DELETE") {
-    const body = parseBody(req);
-    if (!verifyAdmin(req, body)) {
-      return res.status(401).json({ ok: false, code: "UNAUTHORIZED", error: "관리자 인증에 실패했습니다." });
-    }
-    const id = String((req.query && req.query.id) || (body && body.id) || "").trim();
-    if (!id) {
-      return res.status(400).json({ ok: false, code: "INVALID_ID", error: "삭제할 텐트 ID가 필요합니다." });
+      const saved = Array.isArray(result.data) && result.data[0] ? toClientTent(result.data[0]) : toClientTent(row);
+      return res.status(200).json({ ok: true, tent: saved });
     }
 
-    try {
-      const sbRes = await fetch(
-        `${supabaseUrl}/rest/v1/${encodeURIComponent(tableName)}?id=eq.${encodeURIComponent(id)}`,
-        { method: "DELETE", headers: baseHeaders }
-      );
-      if (!sbRes.ok) {
-        const detail = await sbRes.text().catch(() => "");
+    // PATCH: 기존 텐트 제원 수정 (내장 텐트 최초 수정 시에도 upsert로 영구 반영)
+    if (req.method === "PATCH") {
+      const { row, error } = validateTentPayload(body, false);
+      if (error) return res.status(400).json({ ok: false, error });
+
+      const result = await supabaseRequest(cfg, "tents?on_conflict=id", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+        body: row
+      });
+      if (!result.ok) {
         return res.status(502).json({
           ok: false,
-          code: "SUPABASE_DELETE_ERROR",
-          error: `Supabase 삭제 실패 (HTTP ${sbRes.status})`,
-          detail: detail.slice(0, 200)
+          error: (result.data && result.data.message) || "Supabase 텐트 수정에 실패했습니다."
         });
       }
-      res.setHeader("Cache-Control", "no-store");
-      return res.status(200).json({ ok: true, deletedId: id });
-    } catch (err) {
-      return res.status(500).json({ ok: false, code: "SERVER_ERROR", error: "Supabase 텐트 삭제 중 서버 오류가 발생했습니다." });
+      const saved = Array.isArray(result.data) && result.data[0] ? toClientTent(result.data[0]) : toClientTent(row);
+      return res.status(200).json({ ok: true, tent: saved });
     }
-  }
 
-  return res.status(405).json({ ok: false, error: "허용되지 않은 HTTP 메서드입니다." });
+    // DELETE: 텐트 삭제
+    // - 관리자 추가 텐트(tent_adm_*)는 완전 삭제, 기본 내장 텐트는 deleted=true로 소프트 삭제하여 모든 고객에게 숨김 반영
+    if (req.method === "DELETE") {
+      const id = String(body.id || (req.query && req.query.id) || "").trim();
+      if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+        return res.status(400).json({ ok: false, error: "삭제할 텐트 ID가 올바르지 않습니다." });
+      }
+
+      if (id.startsWith("tent_adm_")) {
+        const result = await supabaseRequest(cfg, `tents?id=eq.${encodeURIComponent(id)}`, {
+          method: "DELETE"
+        });
+        if (!result.ok) {
+          return res.status(502).json({
+            ok: false,
+            error: (result.data && result.data.message) || "Supabase 텐트 삭제에 실패했습니다."
+          });
+        }
+        return res.status(200).json({ ok: true, id, hardDeleted: true });
+      }
+
+      // 기본 내장 텐트 삭제: deleted=true 레코드로 upsert
+      const row = {
+        id,
+        origin: VALID_ORIGINS.has(body.origin) ? body.origin : "국내",
+        brand: String(body.brand || "기본"),
+        name: String(body.name || id),
+        shape: VALID_SHAPES.has(body.shape) ? body.shape : "dome",
+        w: Math.max(150, Math.min(800, Math.round(Number(body.w) || 300))),
+        l: Math.max(150, Math.min(1000, Math.round(Number(body.l) || 400))),
+        peak_height: Math.max(130, Math.min(350, Math.round(Number(body.peakHeight) || 200))),
+        sw: Math.max(0, Math.min(350, Math.round(Number(body.sw) || 0))),
+        default_jack_height: Math.max(80, Math.min(320, Math.round(Number(body.defaultJackHeight) || 150))),
+        default_path: VALID_PATHS.has(body.defaultPath) ? body.defaultPath : "straight",
+        deleted: true
+      };
+      const result = await supabaseRequest(cfg, "tents?on_conflict=id", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+        body: row
+      });
+      if (!result.ok) {
+        return res.status(502).json({
+          ok: false,
+          error: (result.data && result.data.message) || "Supabase 기본 텐트 숨김 처리에 실패했습니다."
+        });
+      }
+      return res.status(200).json({ ok: true, id, deleted: true });
+    }
+
+    return res.status(405).json({ ok: false, error: "허용되지 않은 HTTP 메서드입니다." });
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      error: (err && err.message) ? err.message : "서버 처리 중 오류가 발생했습니다."
+    });
+  }
 };

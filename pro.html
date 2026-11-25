@@ -56,7 +56,7 @@
           </button>
           <span class="px-2.5 py-1 rounded-full bg-orange-600 text-white text-xs font-extrabold shadow-sm whitespace-nowrap">상세</span>
         </div>
-        <button id="adminToggleHeaderBtn" type="button" title="관리자 설정 (동기화·상품관리)" aria-label="관리자 설정" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shrink-0">
+        <button id="adminToggleHeaderBtn" type="button" title="관리자 설정 (동기화·상품/텐트 관리)" aria-label="관리자 설정" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shrink-0">
           🔒
         </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
@@ -479,21 +479,95 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- TAB 3: TENTS DB (36 MODELS)                -->
+    <!-- TAB 3: TENTS DB                            -->
     <!-- ========================================== -->
     <section id="tabPanel-tents" class="hidden space-y-4">
-      <div class="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-900">⛺ 국내·해외 인기 텐트 제원 DB (36종)</h2>
-          <p class="text-xs text-slate-500 mt-0.5">원하는 텐트의 [적용] 버튼을 누르면 즉시 도면과 연통 구성이 계산됩니다.</p>
+      <div class="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 id="tentDbTitle" class="text-base font-extrabold text-slate-900">⛺ 국내·해외 인기 텐트 제원 DB (36종)</h2>
+              <span id="proTentSyncBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">동기화 확인 중...</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">관리자가 추가·수정한 텐트는 Supabase에 영구 저장되어 모든 고객에게 자동 노출됩니다.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="proTentManualSyncBtn" type="button" class="hidden px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">🔄 지금 동기화</button>
+            <input id="tentDbSearchInput" type="text" placeholder="텐트명·브랜드 검색 (예: 발할, 쉘터G, 쿠디)" class="w-56 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:outline-none" />
+            <button type="button" data-tfilter="all" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 (36)</button>
+            <button type="button" data-tfilter="국내" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">국내 (22)</button>
+            <button type="button" data-tfilter="해외" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">해외 (14)</button>
+          </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <input id="tentDbSearchInput" type="text" placeholder="텐트명·브랜드 검색 (예: 발할, 쉘터G, 쿠디)" class="w-56 rounded-lg bg-white border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:outline-none" />
-          <button type="button" data-tfilter="all" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체 (36)</button>
-          <button type="button" data-tfilter="국내" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">국내 (22)</button>
-          <button type="button" data-tfilter="해외" class="tent-db-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">해외 (14)</button>
+
+        <!-- 관리자 전용 텐트 DB 추가·관리 패널 (관리자 인증 시에만 노출) -->
+        <div id="proTentAdminPanel" class="hidden rounded-xl bg-indigo-50/70 border border-indigo-200 p-3.5 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-extrabold text-indigo-900">🔓 관리자 모드 · Supabase 텐트 DB 영구 저장 및 관리</div>
+            <div class="flex flex-wrap gap-1.5">
+              <button id="proAdminSyncTentsNowBtn" type="button" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">🔄 Supabase 즉시 동기화</button>
+              <button id="proAdminExportTentsBtn" type="button" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">📋 텐트 DB JSON 복사</button>
+              <button id="proAdminResetTentsBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold transition">↺ 로컬 캐시 초기화</button>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="proTentSyncEndpointInput" type="text" placeholder="텐트 동기화 API 주소 (기본값: /api/tents)" class="flex-1 rounded-lg bg-white border border-indigo-200 px-3 py-1.5 text-xs font-mono text-slate-800" />
+            <button id="proSaveTentSyncEndpointBtn" type="button" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold whitespace-nowrap transition">주소 저장·동기화</button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-2 border-t border-indigo-200/70">
+            <select id="adminTentOrigin" aria-label="구분" class="rounded-lg bg-white border border-slate-300 px-2 py-1.5 font-bold">
+              <option value="국내">국내</option>
+              <option value="해외">해외</option>
+            </select>
+            <input id="adminTentBrand" type="text" placeholder="브랜드명 * (예: 미니멀웍스)" class="rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+            <input id="adminTentName" type="text" placeholder="텐트 모델명 * (예: 쉘터 GP)" class="col-span-2 rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+            <select id="adminTentShape" aria-label="텐트 형태" class="rounded-lg bg-white border border-slate-300 px-2 py-1.5 font-bold">
+              <option value="dome">돔 쉘터</option>
+              <option value="tunnel">터널·리빙쉘</option>
+              <option value="cabin">캐빈·면텐트</option>
+              <option value="tipi">티피·원폴</option>
+            </select>
+            <select id="adminTentPath" aria-label="권장 경로" class="rounded-lg bg-white border border-slate-300 px-2 py-1.5 font-bold">
+              <option value="straight">천장 직상</option>
+              <option value="elbow45">45° 경사</option>
+              <option value="elbow90">측면 90°</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2">
+            <div>
+              <label for="adminTentWidth" class="block text-[10px] font-bold text-slate-600 mb-0.5">설치 폭 (cm) *</label>
+              <input id="adminTentWidth" type="number" min="150" max="800" value="320" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-1.5 font-bold" />
+            </div>
+            <div>
+              <label for="adminTentLength" class="block text-[10px] font-bold text-slate-600 mb-0.5">설치 길이 (cm) *</label>
+              <input id="adminTentLength" type="number" min="150" max="1000" value="400" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-1.5 font-bold" />
+            </div>
+            <div>
+              <label for="adminTentHeight" class="block text-[10px] font-bold text-slate-600 mb-0.5">최고 높이 (cm) *</label>
+              <input id="adminTentHeight" type="number" min="130" max="350" value="200" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-1.5 font-bold text-orange-700" />
+            </div>
+            <div>
+              <label for="adminTentJackHeight" class="block text-[10px] font-bold text-slate-600 mb-0.5">권장 홀잭 (cm) *</label>
+              <input id="adminTentJackHeight" type="number" min="80" max="320" value="150" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-1.5 font-bold text-amber-800" />
+            </div>
+            <div>
+              <label for="adminTentSw" class="block text-[10px] font-bold text-slate-600 mb-0.5">측벽 높이 (선택)</label>
+              <input id="adminTentSw" type="number" min="0" max="300" placeholder="자동 계산" class="w-full rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+            </div>
+            <div class="flex items-end">
+              <button id="adminAddTentBtn" type="button" class="w-full py-1.5 px-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-extrabold transition shadow-sm">➕ 텐트 추가</button>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-indigo-800 leading-relaxed">
+            • <strong>/api/tents</strong> 연결 시 텐트 추가·수정·삭제가 Supabase에 즉시 영구 저장되어 모든 방문 고객에게 자동 노출됩니다. (로컬 미리보기 환경에서는 브라우저 로컬 저장소로 폴백)
+          </p>
         </div>
       </div>
+
       <div class="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
         <div class="overflow-x-auto custom-scrollbar">
           <table class="w-full text-left border-collapse text-xs">
@@ -506,6 +580,7 @@
                 <th class="py-3 px-3 font-bold text-center">권장 홀잭</th>
                 <th class="py-3 px-3 font-bold">권장 경로</th>
                 <th class="py-3 px-3 font-bold text-center">적용</th>
+                <th id="tentDbAdminTh" class="hidden py-3 px-3 font-bold text-center text-indigo-700">관리</th>
               </tr>
             </thead>
             <tbody id="tentDbTableBody" class="divide-y divide-slate-100"></tbody>
@@ -528,7 +603,7 @@
       </div>
       <div id="adminModalLockedView" class="space-y-3">
         <p class="text-xs text-slate-600 leading-relaxed">
-          관리자 비밀번호를 입력하면 <strong>스마트스토어(Supabase) 수동 동기화</strong> 및 <strong>상품 DB 제목·가격·품절·추가/삭제 관리</strong> 기능을 사용할 수 있습니다.
+          관리자 비밀번호를 입력하면 <strong>스마트스토어(Supabase) 수동 동기화</strong>, <strong>상품 DB 관리</strong>, <strong>Supabase 텐트 DB 영구 추가·수정·삭제</strong> 기능을 사용할 수 있습니다.
         </p>
         <div class="flex gap-2">
           <input id="adminPasswordInput" type="password" inputmode="numeric" placeholder="비밀번호 입력"
@@ -541,13 +616,16 @@
       </div>
       <div id="adminModalUnlockedView" class="hidden space-y-2.5">
         <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 font-semibold">
-          ✓ 관리자 인증 완료 상태입니다. <strong>🔥 난로·연통 DB</strong> 탭에서 동기화 및 상품 관리를 진행하세요.
+          ✓ 관리자 인증 완료 상태입니다. <strong>🔥 난로·연통 DB</strong> 또는 <strong>⛺ 텐트 DB</strong> 탭에서 데이터를 관리하세요.
         </div>
         <button id="adminGoProductsBtn" type="button" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition">
           🔥 난로·연통 DB 관리 열기
         </button>
+        <button id="adminGoTentsBtn" type="button" class="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold transition">
+          ⛺ 텐트 DB 관리 열기 (Supabase 연동)
+        </button>
         <button id="adminSyncQuickBtn" type="button" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition">
-          🔄 스마트스토어(Supabase) 지금 동기화
+          🔄 상품·텐트 DB 전체 지금 동기화
         </button>
         <button id="adminLockBtn" type="button" class="w-full py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold transition">
           🔒 관리자 잠금 (로그아웃)
