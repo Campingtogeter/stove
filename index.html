@@ -655,6 +655,45 @@
       }
     }
 
+    const PRO_TO_SIMPLE_TENT_ID = {
+      helsport_valhall: "valhall",
+      helsport_varanger_8_10: "varanger",
+      minimalworks_shelter_g: "shelter_g",
+      minimalworks_shelter_ghe: "shelter_ghe",
+      minimalworks_jack_shelter_plus: "jack_plus",
+      minimalworks_vhouse_m: "vhouse_m",
+      minimalworks_vhouse_l: "vhouse_l",
+      backcountry_orison: "orison",
+      backcountry_280: "bc280",
+      coody_13_6: "coody136",
+      coody_familia_17_2: "coody172",
+      northpeak_a7_ex: "a7ex",
+      northpeak_pacific_ocean_ex: "pacific",
+      kzm_attica_x: "attica",
+      kzm_vivadome_plus: "vivadome",
+      kovea_ghost_plus: "ghost",
+      kovea_nest_w: "nestw",
+      zed_tmax_ex: "tmax",
+      snowline_miracle_family: "miracle",
+      jeep_grand_sylvester: "sylvester",
+      durango_r2: "durango_r2",
+      idoogen_vantagon_max: "vantagon",
+      idoogen_octagon_max: "octagon",
+      polaris_dx4: "polaris_dx4",
+      snowpeak_landlock: "landlock",
+      coleman_cocoon3: "cocoon3",
+      nordisk_asgard_12_6: "asgard",
+      nordisk_alfheim_12_6: "alfheim",
+      hilleberg_atlas: "atlas",
+      naturehike_village_13: "village13",
+      dod_kamaboko_3m: "kamaboko3m",
+      dod_kamaboko_3l: "kamaboko3l",
+      onetigris_solo_homestead_tc: "homestead",
+      naturehike_wormhole_6: "wormhole6",
+      naturehike_wormhole_10: "wormhole10",
+      naturehike_dune_10_9: "dune109"
+    };
+
     const TENTS = [
       { id: "valhall", name: "[해외] 헬스포츠 발할 (780×300×210)", shape: "tunnel", w: 300, l: 780, h: 210, sw: 135, jh: 180, path: "straight" },
       { id: "varanger", name: "[해외] 헬스포츠 바랑에르 돔 8-10 (435×470×210)", shape: "dome", w: 435, l: 470, h: 210, sw: 115, jh: 175, path: "straight" },
@@ -2430,7 +2469,8 @@
           const tId = p.get("tent") || "";
           const tName = p.get("tname") || "";
           if (tId || tName) {
-            let found = TENTS.find((x) => x.id === tId || tId.endsWith("_" + x.id));
+            const mappedTid = PRO_TO_SIMPLE_TENT_ID[tId] || tId;
+            let found = TENTS.find((x) => x.id === mappedTid || x.id === tId || tId.endsWith("_" + x.id));
             if (!found && tName) {
               const nq = normalizeSearchStr(tName);
               found = TENTS.find((x) => normalizeSearchStr(x.name).includes(nq));
@@ -2534,37 +2574,85 @@
         } catch (err) {}
       })();
 
-      // Supabase 영구 텐트 DB 자동 로드 (관리자가 등록한 텐트를 모든 고객에게 노출)
+      // Supabase 영구 텐트 DB 자동 로드 (관리자가 추가·수정·삭제한 텐트를 모든 고객에게 실시간 반영)
       (async function syncSimpleTentsFromServer() {
         const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
         if (!isHttp) return;
         try {
-          const res = await fetch("/api/tents", { cache: "no-store" });
+          const ep = (() => {
+            try { return localStorage.getItem("ct_pro_tent_sync_endpoint") || "/api/tents"; } catch (e) { return "/api/tents"; }
+          })();
+          const res = await fetch(ep, { cache: "no-store" });
           const data = await res.json().catch(() => null);
           if (!res.ok || !data || !data.ok || !Array.isArray(data.tents) || !data.tents.length) return;
-          let added = 0;
-          for (let i = data.tents.length - 1; i >= 0; i--) {
+
+          let changed = 0;
+          let selectedUpdated = null;
+          const addedList = [];
+
+          for (let i = 0; i < data.tents.length; i++) {
             const rt = data.tents[i];
-            if (!rt || !rt.id || !rt.name) continue;
-            if (TENTS.some((x) => x.id === rt.id)) continue;
-            TENTS.unshift({
-              id: rt.id,
-              name: `[${rt.origin}] ${rt.brand} ${rt.name} (${rt.l}×${rt.w}×${rt.peakHeight})`,
-              shape: rt.shape || "dome",
-              w: rt.w || 340,
-              l: rt.l || 400,
-              h: rt.peakHeight || 200,
-              sw: typeof rt.sw === "number" ? rt.sw : 110,
-              jh: rt.defaultJackHeight || 150,
-              path: rt.defaultPath || "straight",
-              isSupabase: true
-            });
-            added++;
+            if (!rt || !rt.id) continue;
+            const mappedId = PRO_TO_SIMPLE_TENT_ID[rt.id] || rt.id;
+            const idx = TENTS.findIndex((x) => x.id === mappedId || x.id === rt.id);
+
+            // 삭제된 텐트는 간편 버전 목록에서도 제거
+            if (rt.deleted) {
+              if (idx !== -1 && TENTS[idx].id !== "custom_tent") {
+                TENTS.splice(idx, 1);
+                changed++;
+              }
+              continue;
+            }
+
+            if (!rt.brand || !rt.name) continue;
+            const origin = rt.origin === "해외" ? "해외" : "국내";
+            const w = Math.max(150, Math.min(800, Math.round(Number(rt.w) || 340)));
+            const l = Math.max(150, Math.min(1000, Math.round(Number(rt.l) || 400)));
+            const h = Math.max(130, Math.min(350, Math.round(Number(rt.peakHeight) || 200)));
+            const sw = Math.max(0, Math.min(350, Math.round(typeof rt.sw === "number" ? rt.sw : Math.round(h * 0.6))));
+            const jh = Math.max(80, Math.min(320, Math.round(Number(rt.defaultJackHeight) || 150)));
+            const path = ["straight", "elbow45", "elbow90"].includes(rt.defaultPath) ? rt.defaultPath : "straight";
+            const shape = ["dome", "tipi", "tunnel", "cabin"].includes(rt.shape) ? rt.shape : "dome";
+            const displayName = `[${origin}] ${rt.brand} ${rt.name} (${l}×${w}×${h})`;
+
+            if (idx !== -1) {
+              // 기존 내장/등록 텐트 제원 업데이트 (중복 추가 방지)
+              const keepId = TENTS[idx].id;
+              TENTS[idx] = { id: keepId, name: displayName, shape, w, l, h, sw, jh, path, isSupabase: true };
+              if (st.tentId === keepId) selectedUpdated = TENTS[idx];
+              changed++;
+            } else {
+              addedList.push({ id: rt.id, name: displayName, shape, w, l, h, sw, jh, path, isSupabase: true });
+              changed++;
+            }
           }
-          if (!added) return;
+
+          if (addedList.length > 0) {
+            TENTS.unshift(...addedList);
+          }
+
+          if (!changed) return;
+
+          // 현재 선택된 텐트가 삭제되었다면 첫 번째 유효 텐트로 폴백
+          if (!TENTS.some((x) => x.id === st.tentId)) {
+            const fbTent = TENTS.find((x) => x.id !== "custom_tent") || TENTS[0];
+            if (fbTent) {
+              st.tentId = fbTent.id;
+              st.tentH = fbTent.h;
+              st.jackH = fbTent.jh;
+              st.path = fbTent.path;
+              resetPos();
+            }
+          } else if (selectedUpdated) {
+            const p0 = new URLSearchParams(window.location.search);
+            if (p0.get("th") === null) st.tentH = selectedUpdated.h;
+            if (p0.get("jh") === null) st.jackH = selectedUpdated.jh;
+            if (!p0.get("path")) st.path = selectedUpdated.path;
+          }
+
           const tSelEl = document.getElementById("sTentSelect");
           if (tSelEl) {
-            const prev = st.tentId;
             tSelEl.innerHTML = "";
             TENTS.forEach((t) => {
               const o = document.createElement("option");
@@ -2572,25 +2660,27 @@
               o.textContent = t.name;
               tSelEl.appendChild(o);
             });
-            tSelEl.value = prev;
+            tSelEl.value = st.tentId;
           }
           const cntBadge = document.getElementById("sTentCountBadge");
           if (cntBadge) cntBadge.textContent = `${Math.max(0, TENTS.length - 1)}종 + AI검색`;
 
-          // 공유 링크(?tent=...)가 Supabase 텐트 ID인 경우 자동 선택 복원
+          // 공유 링크(?tent=...)가 Supabase 신규 텐트 또는 상세버전 ID인 경우 자동 선택 복원
           const p = new URLSearchParams(window.location.search);
           const urlTentId = p.get("tent") || "";
-          if (urlTentId && urlTentId !== st.tentId) {
-            const matched = TENTS.find((x) => x.id === urlTentId);
-            if (matched) {
+          if (urlTentId) {
+            const mappedUrlId = PRO_TO_SIMPLE_TENT_ID[urlTentId] || urlTentId;
+            const matched = TENTS.find((x) => x.id === mappedUrlId || x.id === urlTentId);
+            if (matched && matched.id !== st.tentId) {
               st.tentId = matched.id;
               if (p.get("th") === null) st.tentH = matched.h;
               if (p.get("jh") === null) st.jackH = matched.jh;
               if (!p.get("path")) st.path = matched.path;
               if (!hasSharedPos) resetPos();
-              syncInputs();
+              if (tSelEl) tSelEl.value = st.tentId;
             }
           }
+          syncInputs();
           render();
         } catch (err) {}
       })();
