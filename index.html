@@ -218,7 +218,7 @@
             <span class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold inline-flex items-center justify-center">1</span>
             <span class="truncate">텐트 · 홀잭 높이</span>
           </h2>
-          <span class="text-[11px] font-semibold text-slate-400 shrink-0">36종 + AI검색</span>
+          <span id="sTentCountBadge" class="text-[11px] font-semibold text-slate-400 shrink-0">36종 + AI검색</span>
         </div>
 
         <div class="space-y-1.5 relative">
@@ -970,10 +970,10 @@
     function drawSvg(sim) {
       const svg = document.getElementById("heroSvg");
       if (!svg) return;
-      // 겹침 없는 3-Zone 레이아웃: 좌측(텐트/불티 라벨) | 중앙(텐트/파이프/마디) | 우측(천장~연통끝 + 총높이 2레인)
+      // 겹침 없는 3-Zone 레이아웃 & 텐트 축척 고정 (난로·홀잭 이동으로 sim.topH가 변해도 텐트 크기가 절대 변하지 않도록 고정)
       const W = 860, H = 470, gY = 412;
-      const baseMaxH = Math.max(sim.H_tent + 165, sim.topH + 38, 410);
-      const maxH = (st.dragging && st.lockedMaxH) ? Math.max(st.lockedMaxH, sim.topH + 25) : baseMaxH;
+      const extraHeadroom = Math.max(0, Number(st.extraOutPipes) || 0) * 32;
+      const maxH = Math.max(480, sim.H_tent + 280, sim.H_start + 390) + extraHeadroom;
       const scaleY = (gY - 42) / maxH;
       const yOf = (cm) => Math.round(gY - cm * scaleY);
       const t = getTent();
@@ -995,7 +995,7 @@
 
       const sx = Math.round(cx + sim.pos * scaleX);
       const jx = Math.round(cx + sim.jackXCm * scaleX);
-      const stTopY = yOf(sim.H_start), standY = yOf(sim.H_stand), jY = yOf(sim.H_jack), topY = yOf(sim.topH);
+      const stTopY = yOf(sim.H_start), standY = yOf(sim.H_stand), jY = yOf(sim.H_jack), topY = Math.max(22, yOf(sim.topH));
 
       let pts = [];
       let jackPt = { x: jx, y: jY, ang: 0 };
@@ -1685,17 +1685,18 @@
     }
 
     function syncInputs() {
-      document.getElementById("sTentSelect").value = st.tentId;
-      document.getElementById("sTentH").value = st.tentH;
-      document.getElementById("sTentHRange").value = st.tentH;
-      document.getElementById("sJackH").value = st.jackH;
-      document.getElementById("sJackHRange").value = st.jackH;
-      document.getElementById("sStoveSelect").value = st.stoveId;
-      document.getElementById("sStoveH").value = st.stoveH;
-      document.getElementById("sStoveHRange").value = st.stoveH;
-      document.getElementById("sStandH").value = st.standH;
-      document.getElementById("sPipeSys").value = st.pipeSys;
-      document.getElementById("sProtSys").value = st.protSys;
+      const setV = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      setV("sTentSelect", st.tentId);
+      setV("sTentH", st.tentH);
+      setV("sTentHRange", st.tentH);
+      setV("sJackH", st.jackH);
+      setV("sJackHRange", st.jackH);
+      setV("sStoveSelect", st.stoveId);
+      setV("sStoveH", st.stoveH);
+      setV("sStoveHRange", st.stoveH);
+      setV("sStandH", st.standH);
+      setV("sPipeSys", st.pipeSys);
+      setV("sProtSys", st.protSys);
     }
 
     function initApp() {
@@ -1898,9 +1899,7 @@
         if (!isJack && !isStove) return;
         st.dragging = true;
         st.dragTarget = isJack ? "jack" : "stove";
-        st.dragGeom = st.geom ? { ...st.geom } : { cx: 365, scaleX: 1, gY: 394, scaleY: 1, span: 300 };
-        const curSim = compute();
-        st.lockedMaxH = Math.max(curSim.H_tent + 160, curSim.topH + 35, 405);
+        st.dragGeom = st.geom ? { ...st.geom } : { cx: 395, scaleX: 1, gY: 412, scaleY: 1, span: 300 };
         try { svg.setPointerCapture(e.pointerId); } catch (err) {}
         e.preventDefault();
       });
@@ -1939,7 +1938,8 @@
       svg.addEventListener("pointercancel", stopDrag);
 
       document.getElementById("alertBox").addEventListener("click", (e) => {
-        const b = e.target.closest(".s-qfix");
+        const tEl = e.target && typeof e.target.closest === "function" ? e.target : null;
+        const b = tEl ? tEl.closest(".s-qfix") : null;
         if (!b) return;
         const qact = b.getAttribute("data-qfix");
         if (qact === "no_stand") st.standH = 0;
@@ -1950,7 +1950,8 @@
       });
 
       document.getElementById("sBomCards").addEventListener("change", (e) => {
-        const c = e.target.closest(".s-bom-chk");
+        const tEl = e.target && typeof e.target.closest === "function" ? e.target : null;
+        const c = tEl ? tEl.closest(".s-bom-chk") : null;
         if (!c) return;
         const id = c.getAttribute("data-bom-id");
         const isSoldOut = c.getAttribute("data-soldout") === "1";
@@ -1963,7 +1964,9 @@
       });
 
       document.getElementById("sBomCards").addEventListener("click", (e) => {
-        const visitLink = e.target.closest("[data-bom-visit]");
+        const tEl = e.target && typeof e.target.closest === "function" ? e.target : null;
+        if (!tEl) return;
+        const visitLink = tEl.closest("[data-bom-visit]");
         if (visitLink) {
           const id = visitLink.getAttribute("data-bom-visit");
           st.visitedLinks[id] = true;
@@ -1971,7 +1974,7 @@
           setTimeout(() => render(), 80);
           return;
         }
-        const unvisitBtn = e.target.closest("[data-bom-unvisit]");
+        const unvisitBtn = tEl.closest("[data-bom-unvisit]");
         if (unvisitBtn) {
           const id = unvisitBtn.getAttribute("data-bom-unvisit");
           delete st.visitedLinks[id];
@@ -1979,9 +1982,9 @@
           render();
           return;
         }
-        const incBtn = e.target.closest("[data-bom-inc]");
-        const decBtn = e.target.closest("[data-bom-dec]");
-        const delBtn = e.target.closest("[data-bom-del]");
+        const incBtn = tEl.closest("[data-bom-inc]");
+        const decBtn = tEl.closest("[data-bom-dec]");
+        const delBtn = tEl.closest("[data-bom-del]");
         if (incBtn) {
           const id = incBtn.getAttribute("data-bom-inc");
           const curItem = buildBom(compute()).buyList.find((x) => x.id === id);
@@ -2174,44 +2177,11 @@
         return Math.round(n);
       }
       async function callDirectGeminiSimple(query) {
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-        const prompt = [
-          `구글 웹 검색으로 "${query}" 캠핑 텐트(또는 쉘터)의 공식 설치 규격(가로, 세로, 최고 높이 cm)을 찾아주세요.`,
-          `정확히 1개 모델이면 candidates에 1개, 여러 세부 모델이면 최대 5개까지 담아 순수 JSON 객체만 출력하세요:`,
-          `{"found":true,"candidates":[{"brand":"브랜드","name":"모델명","peakHeight":210,"tentWidth":350,"tentLength":600,"jackHeight":150,"jackEstimated":true,"shape":"dome","defaultPath":"elbow45","summary":"600×350×210cm"}]}`,
-          `shape는 dome/tunnel/tipi/cabin 중 하나, defaultPath는 straight/elbow45/elbow90 중 하나, 수치는 모두 cm 정수.`
-        ].join("\n");
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }] })
-        });
-        if (!res.ok) return { ok: false, code: "UPSTREAM_ERROR", error: `AI 검색 응답 오류 (HTTP ${res.status})` };
-        const data = await res.json();
-        const cand = data?.candidates?.[0];
-        const txt = (cand?.content?.parts || []).map((p) => p.text || "").join("\n");
-        const cleaned = txt.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-        const s = cleaned.indexOf("{"), e = cleaned.lastIndexOf("}");
-        if (s === -1 || e <= s) return { ok: false, code: "PARSE_ERROR", error: "검색 결과 형식을 해석하지 못했습니다." };
-        const parsed = JSON.parse(cleaned.slice(s, e + 1));
-        const rawList = Array.isArray(parsed.candidates) ? parsed.candidates : (parsed.peakHeight ? [parsed] : []);
-        const candidates = rawList.map((r) => {
-          const ph = parseCmSimple(r.peakHeight ?? r.height);
-          if (!Number.isFinite(ph) || ph < 100) return null;
-          const peakHeight = Math.max(130, Math.min(350, ph));
-          const tentWidth = Math.max(200, Math.min(620, parseCmSimple(r.tentWidth ?? r.width) || 340));
-          const tentLength = Math.max(200, Math.min(900, parseCmSimple(r.tentLength ?? r.length) || 420));
-          const jhRaw = parseCmSimple(r.jackHeight);
-          const jackHeight = Number.isFinite(jhRaw) && jhRaw >= 90 && jhRaw < peakHeight ? jhRaw : Math.max(100, Math.min(peakHeight - 15, Math.round((peakHeight * 0.72) / 5) * 5));
-          const shape = ["dome", "tunnel", "tipi", "cabin"].includes(r.shape) ? r.shape : "dome";
-          const defaultPath = ["straight", "elbow45", "elbow90"].includes(r.defaultPath) ? r.defaultPath : (shape === "tunnel" ? "elbow90" : "elbow45");
-          return { brand: r.brand || "", name: r.name || query, peakHeight, tentWidth, tentLength, jackHeight, jackEstimated: r.jackEstimated !== false, shape, defaultPath, summary: r.summary || `${tentLength}×${tentWidth}×${peakHeight}cm` };
-        }).filter(Boolean).slice(0, 5);
-        if (!candidates.length) return { ok: false, code: "NOT_FOUND", error: `"${query}"의 공식 텐트 규격을 찾지 못했습니다.` };
-        const chunks = cand?.groundingMetadata?.groundingChunks || [];
-        const sources = chunks.filter((c) => c?.web?.uri).slice(0, 3).map((c) => ({ title: c.web.title || "출처", url: c.web.uri }));
-        return { ok: true, tent: candidates[0], candidates, sources };
+        return {
+          ok: false,
+          code: "LOCAL_PREVIEW",
+          error: "미리보기 환경입니다. 배포된 사이트(Vercel)에서 AI 자동 웹 검색이 실시간으로 작동합니다."
+        };
       }
       async function fetchAiTentSpecFromWeb(query) {
         const cached = readAiTentCache(query);
@@ -2412,7 +2382,7 @@
       sResClose.addEventListener("click", () => sResBox.classList.add("hidden"));
       sForceAiBtn.addEventListener("click", () => runSimpleSearch(true));
       document.addEventListener("click", (e) => {
-        if (!sInput.contains(e.target) && !sSuggest.contains(e.target)) sSuggest.classList.add("hidden");
+        if (sInput && sSuggest && !sInput.contains(e.target) && !sSuggest.contains(e.target)) sSuggest.classList.add("hidden");
       });
 
       // 상세 버전 전환 (미리보기 about:srcdoc 예외 방어)
@@ -2559,6 +2529,67 @@
               if (found) o.textContent = found.name;
             });
             sSel.value = prev;
+          }
+          render();
+        } catch (err) {}
+      })();
+
+      // Supabase 영구 텐트 DB 자동 로드 (관리자가 등록한 텐트를 모든 고객에게 노출)
+      (async function syncSimpleTentsFromServer() {
+        const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+        if (!isHttp) return;
+        try {
+          const res = await fetch("/api/tents", { cache: "no-store" });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data || !data.ok || !Array.isArray(data.tents) || !data.tents.length) return;
+          let added = 0;
+          for (let i = data.tents.length - 1; i >= 0; i--) {
+            const rt = data.tents[i];
+            if (!rt || !rt.id || !rt.name) continue;
+            if (TENTS.some((x) => x.id === rt.id)) continue;
+            TENTS.unshift({
+              id: rt.id,
+              name: `[${rt.origin}] ${rt.brand} ${rt.name} (${rt.l}×${rt.w}×${rt.peakHeight})`,
+              shape: rt.shape || "dome",
+              w: rt.w || 340,
+              l: rt.l || 400,
+              h: rt.peakHeight || 200,
+              sw: typeof rt.sw === "number" ? rt.sw : 110,
+              jh: rt.defaultJackHeight || 150,
+              path: rt.defaultPath || "straight",
+              isSupabase: true
+            });
+            added++;
+          }
+          if (!added) return;
+          const tSelEl = document.getElementById("sTentSelect");
+          if (tSelEl) {
+            const prev = st.tentId;
+            tSelEl.innerHTML = "";
+            TENTS.forEach((t) => {
+              const o = document.createElement("option");
+              o.value = t.id;
+              o.textContent = t.name;
+              tSelEl.appendChild(o);
+            });
+            tSelEl.value = prev;
+          }
+          const cntBadge = document.getElementById("sTentCountBadge");
+          if (cntBadge) cntBadge.textContent = `${Math.max(0, TENTS.length - 1)}종 + AI검색`;
+
+          // 공유 링크(?tent=...)가 Supabase 텐트 ID인 경우 자동 선택 복원
+          const p = new URLSearchParams(window.location.search);
+          const urlTentId = p.get("tent") || "";
+          if (urlTentId && urlTentId !== st.tentId) {
+            const matched = TENTS.find((x) => x.id === urlTentId);
+            if (matched) {
+              st.tentId = matched.id;
+              if (p.get("th") === null) st.tentH = matched.h;
+              if (p.get("jh") === null) st.jackH = matched.jh;
+              if (!p.get("path")) st.path = matched.path;
+              if (!hasSharedPos) resetPos();
+              syncInputs();
+            }
           }
           render();
         } catch (err) {}
