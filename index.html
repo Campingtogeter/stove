@@ -178,13 +178,11 @@
       <!-- MAIN INTERACTIVE DRAWING CANVAS -->
       <div class="p-2.5 sm:p-5">
         <div class="relative rounded-2xl bg-gradient-to-b from-sky-50/60 via-slate-50/80 to-slate-100/80 border border-slate-200/80 overflow-hidden">
-          <div class="absolute top-2 left-2.5 z-10 pointer-events-none inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-white/90 border border-slate-200 text-[10px] sm:text-[11px] font-bold text-slate-700 shadow-sm max-w-[78%] truncate">
-            <span id="canvasTentLabel" class="truncate">헬스포츠 발할 (780×300×210cm)</span>
+          <div class="px-3 py-1.5 border-b border-slate-200/70 bg-white/85 flex items-center justify-between gap-2 text-[10px] sm:text-[11px]">
+            <span id="canvasTentLabel" class="font-bold text-slate-700 truncate">헬스포츠 발할 (780×300×210cm)</span>
+            <span class="hidden sm:inline font-bold text-orange-700 shrink-0">🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내) 드래그</span>
           </div>
-          <div class="absolute top-2 right-2.5 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[11px] font-bold text-orange-700 shadow-sm">
-            🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내 이동) 드래그
-          </div>
-          <svg id="heroSvg" viewBox="0 0 800 440" class="w-full h-auto block select-none" style="touch-action: pan-y;"></svg>
+          <svg id="heroSvg" viewBox="0 0 860 470" class="w-full h-auto block select-none" style="touch-action: pan-y;"></svg>
         </div>
 
         <!-- Compact External Extra Chimney Strip -->
@@ -972,14 +970,15 @@
     function drawSvg(sim) {
       const svg = document.getElementById("heroSvg");
       if (!svg) return;
-      const W = 800, H = 440, gY = 394;
-      const baseMaxH = Math.max(sim.H_tent + 160, sim.topH + 35, 405);
+      // 겹침 없는 3-Zone 레이아웃: 좌측(텐트/불티 라벨) | 중앙(텐트/파이프/마디) | 우측(천장~연통끝 + 총높이 2레인)
+      const W = 860, H = 470, gY = 412;
+      const baseMaxH = Math.max(sim.H_tent + 165, sim.topH + 38, 410);
       const maxH = (st.dragging && st.lockedMaxH) ? Math.max(st.lockedMaxH, sim.topH + 25) : baseMaxH;
-      const scaleY = (gY - 40) / maxH;
+      const scaleY = (gY - 42) / maxH;
       const yOf = (cm) => Math.round(gY - cm * scaleY);
       const t = getTent();
-      const cx = 365;
-      const maxHalf = 235;
+      const cx = 395;
+      const maxHalf = 210;
       const scaleX = Math.min(scaleY, (maxHalf * 2) / Math.max(240, sim.span));
       const halfW = Math.round((sim.span / 2) * scaleX);
       const lx = cx - halfW, rx = cx + halfW, py = yOf(sim.H_tent);
@@ -1011,7 +1010,7 @@
         jackPt = { x: jx - dir * 5, y: jY + 5, ang: dir * 45 };
       } else {
         const outDir = jx >= cx ? 1 : -1;
-        const outX = jx + outDir * Math.max(24, Math.round(35 * scaleX));
+        const outX = Math.min(638, Math.max(152, jx + outDir * Math.max(24, Math.round(35 * scaleX))));
         pts = [{ x: sx, y: stTopY }, { x: sx, y: jY }, { x: outX, y: jY }, { x: outX, y: topY }];
         jackPt = { x: jx, y: jY, ang: 90 }; topPt = { x: outX, y: topY };
       }
@@ -1045,6 +1044,38 @@
         return arr.join(" ");
       };
 
+      // 2D AABB 충돌 회피 엔진 (모든 라벨 겹침 완전 방지)
+      const placedBoxes = [];
+      const overlapsAny = (x, y, w, h) => placedBoxes.some((b) => !(x + w + 4 < b.x || x > b.x + b.w + 4 || y + h + 3 < b.y || y > b.y + b.h + 3));
+      const reserveBox = (x, y, w, h) => { placedBoxes.push({ x, y, w, h }); };
+
+      const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
+      const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
+      const sparkBoxX = 12, sparkBoxW = 148, sparkBoxH = 18;
+      const sparkBoxY = Math.max(8, Math.min(py - 26, sparkMinY - 21));
+      reserveBox(sparkBoxX, sparkBoxY, sparkBoxW, sparkBoxH);
+
+      const lDim = 62;
+      const tentDimMidY = Math.max(sparkBoxY + sparkBoxH + 18, Math.round((gY + py) / 2));
+      reserveBox(lDim - 40, tentDimMidY - 10, 80, 20);
+
+      const roofDimX = 664;
+      const roofMidY = Math.max(24, Math.min(gY - 56, Math.round((py + topY) / 2)));
+      reserveBox(roofDimX + 6, roofMidY - 10, 112, 20);
+
+      const rDim = 804;
+      const totalDimMidY = Math.max(roofMidY + 30, Math.min(gY - 24, Math.round(topY + (gY - topY) * 0.65)));
+      reserveBox(rDim - 44, totalDimMidY - 10, 88, 20);
+
+      const jackSide = jackPt.x >= cx ? 1 : -1;
+      const jBadgeW = 94, jBadgeH = 20;
+      let jBadgeX = jackSide > 0 ? Math.min(646 - jBadgeW, jackPt.x + 28) : Math.max(165, jackPt.x - 28 - jBadgeW);
+      let jBadgeY = Math.max(18, Math.min(gY - 34, jackPt.y - 10));
+      if (overlapsAny(jBadgeX, jBadgeY, jBadgeW, jBadgeH)) {
+        jBadgeX = jackSide > 0 ? Math.max(165, jackPt.x - 28 - jBadgeW) : Math.min(646 - jBadgeW, jackPt.x + 28);
+      }
+      reserveBox(jBadgeX, jBadgeY, jBadgeW, jBadgeH);
+
       let pipesHtml = `<polyline points="${pts.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
       let ticksHtml = "", labelsHtml = "";
       const totalW = Math.max(1, sim.rawFirst + sim.straightCnt * sim.effPipe);
@@ -1057,41 +1088,38 @@
         accW += w;
         const d1 = (accW / totalW) * safeTotalPx;
         const isTopCap = i === sim.totalSeg - 1;
-        // 임의 추가된 외부 연통(+)은 최상단 불티캡 바로 아래 구간에 배치 (최상단 연통은 항상 맨 위 유지)
         const isExtraAdded = !isTopCap && sim.actualExtraPipes > 0 && i >= sim.totalSeg - 1 - sim.actualExtraPipes;
         const isTiMat = getActiveStove().mat === "titanium";
         const p70End = sim.pipe70Count || 5;
         let dia = "Ø70", col = "#f59e0b";
         if (isTiMat) {
           if (st.pipeSys === "ti_nested_83_89") {
-            if (isTopCap) { dia = "Ti Ø89불티캡"; col = "#7c3aed"; }
+            if (isTopCap) { dia = "Ti Ø89캡"; col = "#7c3aed"; }
             else {
               dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89");
               col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed";
             }
           } else if (st.pipeSys === "ti_nested_70_76") {
-            // 2번째 엘보까지 Ti Ø70 연결 -> 이후 Ti Ø70-76 레듀셔 -> Ti Ø76 직관 -> 최상단 Ti Ø76불티캡(항상 맨 위)
-            if (isTopCap) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
-            else if (i < p70End) { dia = i >= 5 ? "Ti Ø70(추가)" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
-            else if (i === p70End) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
+            if (isTopCap) { dia = "Ti Ø76캡"; col = "#a855f7"; }
+            else if (i < p70End) { dia = i >= 5 ? "Ti Ø70+" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
+            else if (i === p70End) { dia = "Ti 70-76"; col = "#4f46e5"; }
             else { dia = "Ti Ø76"; col = "#8b5cf6"; }
           } else {
-            if (isTopCap) { dia = "Ti Ø70불티캡"; col = "#7c3aed"; }
+            if (isTopCap) { dia = "Ti Ø70캡"; col = "#7c3aed"; }
             else { dia = i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70"; col = "#6366f1"; }
           }
         } else if (st.pipeSys === "tapered_70_73_76") {
-          // 2번째 엘보까지 Ø70 연결 -> 이후 Ø70-73 레듀셔 -> Ø73 직관 -> Ø73-76 레듀셔 -> Ø76 직관 -> 최상단 Ø76불티캡(항상 맨 위)
-          if (isTopCap) { dia = "Ø76불티캡"; col = "#f43f5e"; }
+          if (isTopCap) { dia = "Ø76캡"; col = "#f43f5e"; }
           else if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
-          else if (i < p70End) { dia = i >= 5 ? "Ø70(추가)" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
-          else if (i === p70End) { dia = "Ø70-73"; col = "#ea580c"; }
+          else if (i < p70End) { dia = i >= 5 ? "Ø70+" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
+          else if (i === p70End) { dia = "70-73"; col = "#ea580c"; }
           else if (i <= p70End + 4) { dia = "Ø73"; col = "#f97316"; }
-          else if (i === p70End + 5) { dia = "Ø73-76"; col = "#e11d48"; }
+          else if (i === p70End + 5) { dia = "73-76"; col = "#e11d48"; }
           else { dia = "Ø76"; col = "#f43f5e"; }
         } else if (st.pipeSys === "single_70") {
-          dia = isTopCap ? "Ø70불티캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
+          dia = isTopCap ? "Ø70캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
         } else {
-          dia = isTopCap ? "Ø75불티캡" : (i === 0 ? "Ø70-75" : "Ø75");
+          dia = isTopCap ? "Ø75캡" : (i === 0 ? "70-75" : "Ø75");
           col = i === 0 ? "#f59e0b" : "#f97316";
         }
         if (isExtraAdded) col = "#0284c7";
@@ -1105,76 +1133,104 @@
         if (st.showNode) {
           const mp = sample((d0 + d1) / 2);
           const horiz = Math.abs(mp.ux) > 0.7;
-          const side = horiz ? -1 : (i % 2 === 0 ? -1 : 1);
-          const lxPos = mp.x + (horiz ? 0 : side * 30);
-          const lyPos = mp.y + (horiz ? (i % 2 === 0 ? -15 : 17) : 0);
           const txt = `${i + 1}·${dia}${isExtraAdded ? "+" : ""}`;
-          const pw = Math.max(36, txt.length * 6.2 + 8);
-          labelsHtml += `
-            <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${lxPos.toFixed(1)}" y2="${lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
-            <rect x="${(lxPos - pw / 2).toFixed(1)}" y="${(lyPos - 7.5).toFixed(1)}" width="${pw.toFixed(1)}" height="15" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/>
-            <text x="${lxPos.toFixed(1)}" y="${(lyPos + 3.2).toFixed(1)}" fill="#0f172a" font-size="8.8" font-weight="800" text-anchor="middle">${txt}</text>
-          `;
+          const pw = Math.max(40, txt.length * 5.8 + 10);
+          const ph = 15;
+          const prefSide = i % 2 === 0 ? -1 : 1;
+
+          const candidates = horiz
+            ? [
+                { cx: mp.x, cy: mp.y - 18 },
+                { cx: mp.x, cy: mp.y + 18 },
+                { cx: mp.x, cy: mp.y - 34 },
+                { cx: mp.x, cy: mp.y + 34 }
+              ]
+            : [
+                { cx: mp.x + prefSide * (pw / 2 + 18), cy: mp.y },
+                { cx: mp.x - prefSide * (pw / 2 + 18), cy: mp.y },
+                { cx: mp.x + prefSide * (pw / 2 + 24), cy: mp.y - 16 },
+                { cx: mp.x - prefSide * (pw / 2 + 24), cy: mp.y - 16 },
+                { cx: mp.x + prefSide * (pw / 2 + 24), cy: mp.y + 16 },
+                { cx: mp.x - prefSide * (pw / 2 + 24), cy: mp.y + 16 },
+                { cx: mp.x + prefSide * (pw / 2 + 64), cy: mp.y },
+                { cx: mp.x - prefSide * (pw / 2 + 64), cy: mp.y }
+              ];
+
+          let chosen = null;
+          for (let cIdx = 0; cIdx < candidates.length; cIdx++) {
+            const cand = candidates[cIdx];
+            const bx = Math.max(115, Math.min(646 - pw, cand.cx - pw / 2));
+            const by = Math.max(8, Math.min(gY - ph - 8, cand.cy - ph / 2));
+            if (!overlapsAny(bx, by, pw, ph)) {
+              chosen = { bx, by, lxPos: bx + pw / 2, lyPos: by + ph / 2 };
+              break;
+            }
+          }
+          if (chosen) {
+            reserveBox(chosen.bx, chosen.by, pw, ph);
+            labelsHtml += `
+              <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${chosen.lxPos.toFixed(1)}" y2="${chosen.lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
+              <rect x="${chosen.bx.toFixed(1)}" y="${chosen.by.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph}" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/>
+              <text x="${chosen.lxPos.toFixed(1)}" y="${(chosen.lyPos + 3.2).toFixed(1)}" fill="#0f172a" font-size="8.6" font-weight="800" text-anchor="middle">${txt}</text>
+            `;
+          }
         }
       }
 
-      // 1. 홀잭 표현 아이콘: 굵은 선형(Bold Linear) 슬리브 + 플랜지 스타일
       const sleevePx = Math.max(26, Math.round(50 * scaleY));
+      const jLeaderX = jBadgeX > jackPt.x ? jBadgeX : jBadgeX + jBadgeW;
       const jackHtml = `
-        <g id="sDragJack" transform="translate(${jackPt.x},${jackPt.y})" style="cursor: move; touch-action: none;">
-          <circle cx="0" cy="0" r="26" fill="transparent"/>
-          <g transform="rotate(${jackPt.ang})">
-            <line x1="-12" y1="${-sleevePx / 2}" x2="-12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
-            <line x1="12" y1="${-sleevePx / 2}" x2="12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
-            <line x1="-16" y1="${-sleevePx / 2}" x2="16" y2="${-sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
-            <line x1="-16" y1="${sleevePx / 2}" x2="16" y2="${sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
-            <line x1="-18" y1="0" x2="-9" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
-            <line x1="9" y1="0" x2="18" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+        <g id="sDragJack" style="cursor: move; touch-action: none;">
+          <g transform="translate(${jackPt.x},${jackPt.y})">
+            <circle cx="0" cy="0" r="26" fill="transparent"/>
+            <g transform="rotate(${jackPt.ang})">
+              <line x1="-12" y1="${-sleevePx / 2}" x2="-12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+              <line x1="12" y1="${-sleevePx / 2}" x2="12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+              <line x1="-16" y1="${-sleevePx / 2}" x2="16" y2="${-sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+              <line x1="-16" y1="${sleevePx / 2}" x2="16" y2="${sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+              <line x1="-18" y1="0" x2="-9" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+              <line x1="9" y1="0" x2="18" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+            </g>
           </g>
-          <rect x="19" y="-11" width="112" height="20" rx="10" fill="#ffffff" fill-opacity="0.95" stroke="#0284c7" stroke-width="1.6"/>
-          <text x="75" y="2.5" fill="#0369a1" font-size="9.5" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm</text>
+          <line x1="${jackPt.x}" y1="${jackPt.y}" x2="${jLeaderX}" y2="${jBadgeY + jBadgeH / 2}" stroke="#0284c7" stroke-width="1.3" stroke-dasharray="3,2"/>
+          <rect x="${jBadgeX}" y="${jBadgeY}" width="${jBadgeW}" height="${jBadgeH}" rx="10" fill="#ffffff" fill-opacity="0.96" stroke="#0284c7" stroke-width="1.6"/>
+          <text x="${jBadgeX + jBadgeW / 2}" y="${jBadgeY + 13.5}" fill="#0369a1" font-size="9.5" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm</text>
         </g>
       `;
 
-      // 5. 불티 날림 방지 최소 권장 높이 가이드선 (텐트 천장 +60cm)
-      const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
-      const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
       const sparkLineHtml = `
-        <line x1="${Math.max(24, lx - 10)}" y1="${sparkMinY}" x2="${Math.min(776, Math.max(rx + 25, topPt.x + 48))}" y2="${sparkMinY}" stroke="${sparkLineCol}" stroke-width="1.5" stroke-dasharray="5,4" stroke-opacity="0.85"/>
-        <rect x="${Math.max(24, lx - 8)}" y="${sparkMinY - 17}" width="154" height="16" rx="4" fill="#ffffff" fill-opacity="0.92" stroke="${sparkLineCol}" stroke-width="1"/>
-        <text x="${Math.max(24, lx - 8) + 77}" y="${sparkMinY - 6}" fill="${sparkLineCol}" font-size="8.8" font-weight="800" text-anchor="middle">🔥 불티방지 최소권장 +${SPARK_MIN_CLEARANCE_CM}cm</text>
+        <line x1="12" y1="${sparkMinY}" x2="650" y2="${sparkMinY}" stroke="${sparkLineCol}" stroke-width="1.4" stroke-dasharray="5,4" stroke-opacity="0.8"/>
+        <rect x="${sparkBoxX}" y="${sparkBoxY}" width="${sparkBoxW}" height="${sparkBoxH}" rx="4" fill="#ffffff" fill-opacity="0.95" stroke="${sparkLineCol}" stroke-width="1.2"/>
+        <text x="${sparkBoxX + sparkBoxW / 2}" y="${sparkBoxY + 12.2}" fill="${sparkLineCol}" font-size="8.8" font-weight="800" text-anchor="middle">🔥 불티방지 최소 +${SPARK_MIN_CLEARANCE_CM}cm</text>
       `;
 
-      // 3. 치수선: 텐트 높이 + 연통 총 높이 + 텐트 천장에서 연통 끝부분까지 치수
       let dimHtml = "";
       if (st.showDim) {
-        const lDim = Math.max(46, lx - 34);
-        const rDim = Math.min(748, Math.max(rx + 42, topPt.x + 62));
         const clrCol = sim.sparkSafe ? "#059669" : "#e11d48";
-        const roofDimX = Math.max(92, topPt.x - 20);
-        const roofMidY = (py + topY) / 2;
         dimHtml = `
           <line x1="${lDim}" y1="${gY}" x2="${lDim}" y2="${py}" stroke="#475569" stroke-width="1.6"/>
           <line x1="${lDim - 5}" y1="${py}" x2="${cx}" y2="${py}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
-          <rect x="${lDim - 38}" y="${(gY + py) / 2 - 10}" width="76" height="20" rx="5" fill="#fff" stroke="#475569"/>
-          <text x="${lDim}" y="${(gY + py) / 2 + 3.5}" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
+          <rect x="${lDim - 40}" y="${tentDimMidY - 10}" width="80" height="20" rx="5" fill="#fff" stroke="#475569"/>
+          <text x="${lDim}" y="${tentDimMidY + 3.5}" fill="#0f172a" font-size="9.8" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
 
-          <line x1="${rDim}" y1="${gY}" x2="${rDim}" y2="${topY}" stroke="#ea580c" stroke-width="1.8"/>
-          <line x1="${topPt.x}" y1="${topY}" x2="${rDim + 5}" y2="${topY}" stroke="#ea580c" stroke-width="1.1" stroke-dasharray="3,3"/>
-          <rect x="${rDim - 46}" y="${(gY + topY) / 2 - 10}" width="92" height="20" rx="5" fill="#fff" stroke="#ea580c"/>
-          <text x="${rDim}" y="${(gY + topY) / 2 + 3.5}" fill="#c2410c" font-size="10" font-weight="bold" text-anchor="middle">총높이 ${sim.topH}cm</text>
-
-          <!-- 텐트 천장(최고점) ~ 연통 끝부분 치수선 -->
-          <line x1="${cx}" y1="${py}" x2="${roofDimX + 6}" y2="${py}" stroke="${clrCol}" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <line x1="${cx}" y1="${py}" x2="${roofDimX + 6}" y2="${py}" stroke="${clrCol}" stroke-width="1.1" stroke-dasharray="3,3"/>
+          <line x1="${topPt.x}" y1="${topY}" x2="${roofDimX + 6}" y2="${topY}" stroke="${clrCol}" stroke-width="1.1" stroke-dasharray="3,3"/>
           <line x1="${roofDimX - 4}" y1="${py}" x2="${roofDimX + 4}" y2="${py}" stroke="${clrCol}" stroke-width="2"/>
           <line x1="${roofDimX - 4}" y1="${topY}" x2="${roofDimX + 4}" y2="${topY}" stroke="${clrCol}" stroke-width="2"/>
           <line x1="${roofDimX}" y1="${py}" x2="${roofDimX}" y2="${topY}" stroke="${clrCol}" stroke-width="2.2"/>
-          <rect x="${roofDimX - 116}" y="${roofMidY - 10}" width="108" height="20" rx="5" fill="#fff" stroke="${clrCol}" stroke-width="1.4"/>
-          <text x="${roofDimX - 62}" y="${roofMidY + 3.5}" fill="${clrCol}" font-size="9.5" font-weight="800" text-anchor="middle">천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm</text>
+          <rect x="${roofDimX + 6}" y="${roofMidY - 10}" width="112" height="20" rx="5" fill="#fff" stroke="${clrCol}" stroke-width="1.4"/>
+          <text x="${roofDimX + 62}" y="${roofMidY + 3.5}" fill="${clrCol}" font-size="9.3" font-weight="800" text-anchor="middle">천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm</text>
 
-          <line x1="${lx}" y1="${gY + 24}" x2="${rx}" y2="${gY + 24}" stroke="#64748b" stroke-width="1.3"/>
-          <rect x="${cx - 58}" y="${gY + 14}" width="116" height="19" rx="4" fill="#fff" stroke="#cbd5e1"/>
-          <text x="${cx}" y="${gY + 27}" fill="#334155" font-size="9.5" font-weight="bold" text-anchor="middle">${st.view === "side" ? "길이" : "폭"} ${sim.span}cm</text>
+          <line x1="${rDim}" y1="${gY}" x2="${rDim}" y2="${topY}" stroke="#ea580c" stroke-width="1.8"/>
+          <line x1="${roofDimX + 6}" y1="${topY}" x2="${rDim + 5}" y2="${topY}" stroke="#ea580c" stroke-width="1" stroke-dasharray="3,3"/>
+          <rect x="${rDim - 44}" y="${totalDimMidY - 10}" width="88" height="20" rx="5" fill="#fff" stroke="#ea580c" stroke-width="1.4"/>
+          <text x="${rDim}" y="${totalDimMidY + 3.5}" fill="#c2410c" font-size="9.5" font-weight="bold" text-anchor="middle">총높이 ${sim.topH}cm</text>
+
+          <line x1="${lx}" y1="${gY + 40}" x2="${rx}" y2="${gY + 40}" stroke="#64748b" stroke-width="1.3"/>
+          <line x1="${lx}" y1="${gY + 34}" x2="${lx}" y2="${gY + 46}" stroke="#64748b" stroke-width="1.3"/>
+          <line x1="${rx}" y1="${gY + 34}" x2="${rx}" y2="${gY + 46}" stroke="#64748b" stroke-width="1.3"/>
+          <rect x="${cx - 58}" y="${gY + 30}" width="116" height="19" rx="4" fill="#fff" stroke="#cbd5e1"/>
+          <text x="${cx}" y="${gY + 43}" fill="#334155" font-size="9.5" font-weight="bold" text-anchor="middle">${st.view === "side" ? "길이" : "폭"} ${sim.span}cm</text>
         `;
       }
 
@@ -1188,7 +1244,7 @@
             <stop offset="100%" stop-color="#fde68a" stop-opacity="0.42"/>
           </linearGradient>
         </defs>
-        ${[100, 200, 300, 400].filter((c) => c <= maxH).map((c) => `<line x1="18" y1="${yOf(c)}" x2="${W - 18}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="20" y="${yOf(c) - 3}" fill="#94a3b8" font-size="9">${c}cm</text>`).join("")}
+        ${[100, 200, 300, 400].filter((c) => c <= maxH).map((c) => `<line x1="14" y1="${yOf(c)}" x2="${W - 14}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="16" y="${yOf(c) - 3}" fill="#94a3b8" font-size="8.5">${c}cm</text>`).join("")}
         <rect x="0" y="${gY}" width="${W}" height="${H - gY}" fill="#e2e8f0"/>
         <line x1="14" y1="${gY}" x2="${W - 14}" y2="${gY}" stroke="#475569" stroke-width="2.2"/>
         <path d="${tentD}" fill="url(#sTentGrad)" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
@@ -1197,8 +1253,8 @@
           ${sim.H_stand > 0 ? `<rect x="${sx - 26}" y="${standY}" width="52" height="${standHpx}" rx="3" fill="#bae6fd" fill-opacity="0.7" stroke="#0284c7" stroke-width="1.8"/>` : ""}
           <rect x="${sx - 23}" y="${stTopY}" width="46" height="${stoveHpx}" rx="5" fill="#334155" stroke="#ea580c" stroke-width="2"/>
           <path d="M ${sx - 6},${standY - 5} Q ${sx},${stTopY + 4} ${sx + 6},${standY - 5} Z" fill="#fb923c" class="flame-anim"/>
-          <rect x="${sx - 26}" y="${gY + 2}" width="52" height="14" rx="7" fill="#ea580c" stroke="#fff" stroke-width="1.2"/>
-          <text x="${sx}" y="${gY + 12}" fill="#fff" font-size="8.5" font-weight="bold" text-anchor="middle">↔ 이동</text>
+          <rect x="${sx - 26}" y="${gY + 4}" width="52" height="15" rx="7.5" fill="#ea580c" stroke="#fff" stroke-width="1.2"/>
+          <text x="${sx}" y="${gY + 14.5}" fill="#fff" font-size="8.5" font-weight="bold" text-anchor="middle">↔ 이동</text>
         </g>
         ${pipesHtml}
         ${ticksHtml}
@@ -1377,6 +1433,7 @@
       const canUseTiGuard = isFixed60or70Pipe(stoveObj, st.pipeSys);
       const stoveIds = new Set(STOVES.map((s) => s.pid).filter(Boolean));
       const compatList = Object.values(PRODUCTS).filter((p) => {
+        if (p.deleted) return false;
         if (stoveIds.has(p.id)) return false;
         if (p.id === "p_ti_guard_70" && !canUseTiGuard) return false;
         return p.mat === stoveObj.mat || p.mat === "both";
@@ -1851,8 +1908,8 @@
         if (!st.dragging || !st.dragGeom) return;
         const r = svg.getBoundingClientRect();
         if (!r.width || !r.height) return;
-        const xSvg = ((e.clientX - r.left) / r.width) * 800;
-        const ySvg = ((e.clientY - r.top) / r.height) * 440;
+        const xSvg = ((e.clientX - r.left) / r.width) * 860;
+        const ySvg = ((e.clientY - r.top) / r.height) * 470;
         if (st.dragTarget === "jack") {
           const rawX = (xSvg - st.dragGeom.cx) / st.dragGeom.scaleX;
           const rawH = (st.dragGeom.gY - ySvg) / st.dragGeom.scaleY;
@@ -2456,6 +2513,56 @@
       } catch (err) {
         console.error("[Init Error]", err);
       }
+
+      // 스마트스토어(Supabase) 실시간 상품 동기화 (제목·가격·품절·추가·삭제 자동 반영)
+      (async function syncSimpleProductsFromServer() {
+        const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+        if (!isHttp) return;
+        try {
+          const res = await fetch("/api/products", { cache: "no-store" });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data || !data.ok || !Array.isArray(data.products) || !data.products.length) return;
+          const byNo = {};
+          Object.values(PRODUCTS).forEach((p) => {
+            const m = String(p.url || "").match(/\/products\/(\d+)/);
+            if (m) byNo[m[1]] = p;
+          });
+          data.products.forEach((r) => {
+            if (!r || !r.name) return;
+            const no = String(r.productNo || "").trim();
+            const target = (r.id && PRODUCTS[r.id]) || (no && byNo[no]) || null;
+            if (target) {
+              if (r.deleted) { target.deleted = true; target.status = "삭제됨"; }
+              else {
+                target.deleted = false;
+                target.name = r.name;
+                if (typeof r.price === "number" && r.price > 0) target.price = r.price;
+                if (r.status) target.status = r.status;
+                if (r.url && /^https?:\/\//i.test(r.url)) target.url = r.url;
+              }
+            } else if (!r.deleted) {
+              const nid = r.id && !PRODUCTS[r.id] ? r.id : (no ? `naver_${no}` : `naver_${Date.now()}`);
+              PRODUCTS[nid] = { id: nid, mat: r.mat || "stainless", name: r.name, price: Number(r.price) || 0, status: r.status || "판매중", url: r.url || STORE_URL };
+            }
+          });
+          STOVES.forEach((s) => {
+            const p = s.pid ? PRODUCTS[s.pid] : null;
+            if (!p) return;
+            const prefix = s.mat === "titanium" ? "[티타늄]" : "[스텐]";
+            s.name = `${prefix} ${p.name.replace(/^\[(스텐|티타늄)\]\s*/, "")} (${s.h}cm)${/품절/.test(p.status) ? " [품절]" : ""}`;
+          });
+          const sSel = document.getElementById("sStoveSelect");
+          if (sSel) {
+            const prev = sSel.value;
+            sSel.querySelectorAll("option").forEach((o) => {
+              const found = STOVES.find((s) => s.id === o.value);
+              if (found) o.textContent = found.name;
+            });
+            sSel.value = prev;
+          }
+          render();
+        } catch (err) {}
+      })();
     }
 
     if (document.readyState === "loading") {

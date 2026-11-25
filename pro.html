@@ -91,15 +91,15 @@
         <button id="tabBtn-tents" data-tab="tents" type="button" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-white text-slate-700 hover:bg-slate-100 border border-slate-300 transition">
           ⛺ 텐트 DB (36종)
         </button>
-        <button id="tabBtn-rules" data-tab="rules" type="button" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap bg-white text-slate-700 hover:bg-slate-100 border border-slate-300 transition">
-          📘 설치 규칙
-        </button>
         <div class="inline-flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200 shrink-0 ml-0.5" role="group" aria-label="시뮬레이터 모드 선택">
           <button id="goSimpleVersionBtn" type="button" title="그림 중심 간편 버전으로 전환" class="px-2.5 py-1 rounded-full text-slate-600 hover:text-slate-900 text-xs font-bold whitespace-nowrap transition">
             간편
           </button>
           <span class="px-2.5 py-1 rounded-full bg-orange-600 text-white text-xs font-extrabold shadow-sm whitespace-nowrap">상세</span>
         </div>
+        <button id="adminToggleHeaderBtn" type="button" title="관리자 설정 (동기화·상품관리)" aria-label="관리자 설정" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition shrink-0">
+          🔒
+        </button>
         <a href="https://smartstore.naver.com/camping-together" target="_blank" rel="noopener noreferrer"
            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold whitespace-nowrap shadow-sm transition shrink-0">
           <span>스토어</span><span>↗</span>
@@ -365,10 +365,11 @@
 
             <!-- Interactive SVG -->
             <div class="relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-sky-50/70 via-slate-50 to-slate-100 border border-slate-200">
-              <div class="absolute top-2 right-2 z-10 pointer-events-none hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-orange-200 text-[10px] font-bold text-orange-700 shadow-sm">
-                🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내 이동) 드래그
+              <div class="px-3 py-1.5 border-b border-slate-200/70 bg-white/80 flex items-center justify-between gap-2 text-[10px] sm:text-[11px]">
+                <span class="font-bold text-slate-600">📐 1:1 실측 축척 도면 (글자 겹침 자동 회피 적용)</span>
+                <span class="font-bold text-orange-700">🖐️ 난로(좌우) · 홀잭(45°/90° 범위 내) 드래그</span>
               </div>
-              <svg id="simSvg" viewBox="0 0 800 440" class="w-full h-auto block select-none" style="touch-action: pan-y; min-height: 220px;"></svg>
+              <svg id="simSvg" viewBox="0 0 860 470" class="w-full h-auto block select-none" style="touch-action: pan-y; min-height: 230px;"></svg>
             </div>
 
             <!-- External Extra Pipe + Stove Quick Controls -->
@@ -468,16 +469,51 @@
     <!-- TAB 2: PRODUCTS DB                         -->
     <!-- ========================================== -->
     <section id="tabPanel-products" class="hidden space-y-4">
-      <div class="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-900">🔥 캠핑투게더 취급 난로 · 연통 DB</h2>
-          <p class="text-xs text-slate-500 mt-0.5">스테인리스 난로는 스테인리스 연통, 티타늄 난로는 티타늄 연통으로 호환 규격이 자동 분리됩니다.</p>
+      <div class="rounded-2xl bg-white border border-slate-200 p-4 sm:p-5 space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base font-extrabold text-slate-900">🔥 캠핑투게더 취급 난로 · 연통 DB</h2>
+              <span id="proSyncBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">동기화 확인 중...</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">스마트스토어 변경사항(제목·가격·품절·판매상태·추가·삭제)이 Supabase를 통해 자동 반영됩니다.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button id="proManualSyncBtn" type="button" class="hidden px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">🔄 지금 동기화</button>
+            <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체</button>
+            <button type="button" data-pcat="stainless" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">🔩 스테인리스</button>
+            <button type="button" data-pcat="titanium" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">🪶 티타늄</button>
+            <button type="button" data-pcat="both" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">공용 보호망·부속</button>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-1.5">
-          <button type="button" data-pcat="all" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white">전체</button>
-          <button type="button" data-pcat="stainless" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">🔩 스테인리스</button>
-          <button type="button" data-pcat="titanium" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">🪶 티타늄</button>
-          <button type="button" data-pcat="both" class="prod-cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">공용 보호망·부속</button>
+
+        <!-- 관리자 전용 동기화 & 상품 관리 패널 (관리자 인증 시에만 노출) -->
+        <div id="proAdminPanel" class="hidden rounded-xl bg-indigo-50/70 border border-indigo-200 p-3.5 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-extrabold text-indigo-900">🔓 관리자 모드 · 스마트스토어(Supabase) 자동 동기화 및 상품 관리</div>
+            <div class="flex flex-wrap gap-1.5">
+              <button id="proAdminSyncNowBtn" type="button" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">🔄 Supabase 즉시 동기화</button>
+              <button id="proAdminResetLocalBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold transition">↺ 로컬 수정 초기화</button>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="proSyncEndpointInput" type="text" placeholder="동기화 API 주소 (기본값: /api/products)" class="flex-1 rounded-lg bg-white border border-indigo-200 px-3 py-1.5 text-xs font-mono text-slate-800" />
+            <button id="proSaveSyncEndpointBtn" type="button" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold whitespace-nowrap transition">주소 저장·동기화</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-2 border-t border-indigo-200/70">
+            <select id="adminNewMat" class="rounded-lg bg-white border border-slate-300 px-2 py-1.5 font-bold">
+              <option value="stainless">🔩 스테인리스</option>
+              <option value="titanium">🪶 티타늄</option>
+              <option value="both">공용 부속</option>
+            </select>
+            <input id="adminNewName" type="text" placeholder="신규 상품명 *" class="col-span-2 rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+            <input id="adminNewPrice" type="number" placeholder="가격(원)" value="10000" class="rounded-lg bg-white border border-slate-300 px-2.5 py-1.5" />
+            <input id="adminNewUrl" type="url" placeholder="스마트스토어 상품 URL" class="col-span-2 sm:col-span-1 rounded-lg bg-white border border-slate-300 px-2 py-1.5" />
+            <button id="adminAddProdBtn" type="button" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-extrabold transition">➕ 상품 추가</button>
+          </div>
+          <p class="text-[11px] text-indigo-800 leading-relaxed">
+            • 아래 각 상품 카드에서 제목·가격·판매상태·URL을 직접 수정하거나 삭제할 수 있으며, <strong>/api/products</strong> 연결 시 스마트스토어 동기화 데이터(제목·가격·품절·추가·삭제)가 자동 반영됩니다.
+          </p>
         </div>
       </div>
       <div id="productCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
@@ -519,28 +555,47 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 4: INSTALLATION RULES                  -->
-    <!-- ========================================== -->
-    <section id="tabPanel-rules" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="rounded-2xl bg-white border border-slate-200 p-5 space-y-2.5">
-        <h3 class="text-sm font-extrabold text-slate-900">1. 기본세트 규격 및 마디 겹침 단축</h3>
-        <p class="text-xs text-slate-600 leading-relaxed">
-          • <strong>포몰리 루모라 Ti · 드웰러 맥스 Ti 3 (티타늄 3.0m 기본세트):</strong> 각 300mm(30cm) 11본 구성(Ø70 직관 5 + Ø70-76 레듀셔 1 + Ø76 직관 4 + Ø76 최상단 불티캡 1), 마디 겹침 30mm(3cm) → 결합 총 길이 3,000mm(3.0m).<br/>
-          • <strong>엠스토브 v3 · v2 다운사이징 (스텐 3.3m 기본세트):</strong> 각 330mm(33cm) 12본 구성, 마디 겹침 50mm(5cm) → 결합 총 길이 약 3.3m.
-        </p>
-      </div>
-      <div class="rounded-2xl bg-white border border-slate-200 p-5 space-y-2.5">
-        <h3 class="text-sm font-extrabold text-slate-900">2. 45°/90° 엘보 구간 Ø70 연결 &amp; 불티방지 최소 권장 높이</h3>
-        <p class="text-xs text-slate-600 leading-relaxed">
-          • <strong>2번째(텐트 바깥쪽) 엘보까지 Ø70 연결:</strong> 73/76파이 엘보가 없으므로 45°·90° 엘보 사용 시 2번째 엘보까지 모두 Ø70 연통으로 연결하며, 부족한 70파이 직관은 자동 추가됩니다.<br/>
-          • <strong>불티 날림 방지 최소 권장 높이:</strong> 텐트 천장 최고점 위 <strong>최소 +60cm 이상</strong> 돌출을 권장하며, 최상단 불티캡은 항상 맨 위에 배치됩니다.<br/>
-          • <strong>스킨 보호망 호환:</strong> 스텐 메쉬 보호망은 외경 Ø60~90mm 스텐·티타늄 연통에 유연 호환되며, 포몰리 티타늄 보호망(가변식)은 고정 직경 Ø60·70mm 연통 전용입니다.
-        </p>
-      </div>
-    </section>
-
   </main>
+
+  <!-- 관리자 인증 & 제어 모달 -->
+  <div id="adminAuthModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl bg-white border border-slate-300 shadow-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2">
+          <span id="adminModalIcon" class="text-lg">🔒</span>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">관리자 모드</h3>
+        </div>
+        <button id="closeAdminModalBtn" type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">✕ 닫기</button>
+      </div>
+      <div id="adminModalLockedView" class="space-y-3">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          관리자 비밀번호를 입력하면 <strong>스마트스토어(Supabase) 수동 동기화</strong> 및 <strong>상품 DB 제목·가격·품절·추가/삭제 관리</strong> 기능을 사용할 수 있습니다.
+        </p>
+        <div class="flex gap-2">
+          <input id="adminPasswordInput" type="password" inputmode="numeric" placeholder="비밀번호 입력"
+                 class="flex-1 rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none" />
+          <button id="adminUnlockSubmitBtn" type="button" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold shadow transition whitespace-nowrap">
+            🔓 확인
+          </button>
+        </div>
+        <p id="adminPasswordError" class="hidden text-xs font-bold text-rose-600">⚠️ 비밀번호가 일치하지 않습니다.</p>
+      </div>
+      <div id="adminModalUnlockedView" class="hidden space-y-2.5">
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 font-semibold">
+          ✓ 관리자 인증 완료 상태입니다. <strong>🔥 난로·연통 DB</strong> 탭에서 동기화 및 상품 관리를 진행하세요.
+        </div>
+        <button id="adminGoProductsBtn" type="button" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition">
+          🔥 난로·연통 DB 관리 열기
+        </button>
+        <button id="adminSyncQuickBtn" type="button" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition">
+          🔄 스마트스토어(Supabase) 지금 동기화
+        </button>
+        <button id="adminLockBtn" type="button" class="w-full py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold transition">
+          🔒 관리자 잠금 (로그아웃)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -740,6 +795,9 @@
         visitedLinks: {},
         isAiEstimated: false,
         isSearchingAi: false,
+        adminUnlocked: false,
+        syncEndpoint: "/api/products",
+        lastSyncInfo: "",
         dragging: false,
         dragTarget: null,
         dragGeom: null,
@@ -747,6 +805,173 @@
         geom: null,
         lastBomText: ""
       };
+
+      const ADMIN_PW_HASH = "c4b2fa036cc79e0f84169a1cafa18f89eb9a7431b7fa6842336d91245b12f483";
+      async function sha256Hex(str) {
+        if (window.crypto && window.crypto.subtle) {
+          const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return (h >>> 0).toString(16);
+      }
+
+      function extractProductNoFromUrl(url) {
+        const m = String(url || "").match(/\/products\/(\d+)/);
+        return m ? m[1] : "";
+      }
+
+      function syncStoveModelsFromProducts() {
+        STOVE_MODELS.forEach((s) => {
+          const p = s.pid ? PRODUCTS[s.pid] : null;
+          if (!p) return;
+          const prefix = s.mat === "titanium" ? "[티타늄]" : "[스텐]";
+          const cleanName = p.name.replace(/^\[(스텐|티타늄)\]\s*/, "");
+          s.name = `${prefix} ${cleanName} (${s.stoveHeight}cm)${/품절/.test(p.status) ? " [품절]" : ""}`;
+          s.deleted = Boolean(p.deleted);
+        });
+      }
+
+      function saveLocalAdminOverrides() {
+        try {
+          localStorage.setItem("ct_pro_products_override_v1", JSON.stringify(PRODUCTS));
+        } catch (e) {}
+      }
+
+      function loadLocalAdminOverrides() {
+        try {
+          const ep = localStorage.getItem("ct_pro_sync_endpoint");
+          if (ep) state.syncEndpoint = ep;
+          const raw = localStorage.getItem("ct_pro_products_override_v1");
+          if (!raw) return;
+          const map = JSON.parse(raw);
+          if (map && typeof map === "object") {
+            Object.keys(map).forEach((k) => {
+              if (PRODUCTS[k]) Object.assign(PRODUCTS[k], map[k]);
+              else PRODUCTS[k] = map[k];
+            });
+          }
+        } catch (e) {}
+      }
+
+      function applyRemoteProducts(remoteList) {
+        if (!Array.isArray(remoteList) || remoteList.length === 0) return { updated: 0, added: 0, removed: 0 };
+        const byNo = {};
+        Object.values(PRODUCTS).forEach((p) => {
+          const no = extractProductNoFromUrl(p.url);
+          if (no) byNo[no] = p;
+        });
+
+        let updated = 0, added = 0, removed = 0;
+        const seenNos = new Set();
+
+        remoteList.forEach((r) => {
+          if (!r || !r.name) return;
+          const no = String(r.productNo || extractProductNoFromUrl(r.url) || "").trim();
+          if (no) seenNos.add(no);
+          const target = (r.id && PRODUCTS[r.id]) || (no && byNo[no]) || null;
+
+          if (target) {
+            if (r.deleted) {
+              target.deleted = true;
+              target.status = "삭제됨";
+              removed++;
+            } else {
+              target.deleted = false;
+              target.name = r.name;
+              if (typeof r.price === "number" && r.price > 0) target.price = r.price;
+              if (r.status) target.status = r.status;
+              if (r.url && /^https?:\/\//i.test(r.url)) target.url = r.url;
+              updated++;
+            }
+          } else if (!r.deleted) {
+            const newId = r.id && !PRODUCTS[r.id] ? r.id : (no ? `naver_${no}` : `naver_${Date.now()}_${added}`);
+            PRODUCTS[newId] = {
+              id: newId,
+              mat: r.mat || "stainless",
+              isStove: Boolean(r.isStove),
+              name: r.name,
+              price: Number(r.price) || 0,
+              status: r.status || "판매중",
+              url: r.url || STORE_URL,
+              isRemoteAdded: true
+            };
+            if (no) byNo[no] = PRODUCTS[newId];
+            added++;
+          }
+        });
+
+        // 스마트스토어 전체 동기화 리스트에 없는 기존 스마트스토어 상품(번호 매칭 기준)이 삭제된 경우 감지 (리스트가 5개 이상인 전체 동기화일 때)
+        if (seenNos.size >= 5) {
+          Object.values(PRODUCTS).forEach((p) => {
+            const no = extractProductNoFromUrl(p.url);
+            if (no && !seenNos.has(no) && p.isRemoteAdded) {
+              p.deleted = true;
+              p.status = "삭제됨";
+              removed++;
+            }
+          });
+        }
+
+        syncStoveModelsFromProducts();
+        return { updated, added, removed };
+      }
+
+      async function syncProductsFromServer(showNotify) {
+        const badge = byId("proSyncBadge");
+        const isHttp = window.location && /^https?:\/\//i.test(window.location.href);
+        if (!isHttp) {
+          if (badge) badge.textContent = "로컬 미리보기 모드";
+          return;
+        }
+        if (badge) badge.textContent = "⏳ 스토어 동기화 중...";
+        try {
+          const url = state.syncEndpoint || "/api/products";
+          const res = await fetch(url, { cache: "no-store" });
+          const data = await res.json().catch(() => null);
+          if (res.ok && data && data.ok && Array.isArray(data.products)) {
+            const stat = applyRemoteProducts(data.products);
+            const tStr = data.syncedAt
+              ? new Date(data.syncedAt).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+              : "방금";
+            state.lastSyncInfo = `동기화 완료 (${tStr} · 변경 ${stat.updated} / 추가 ${stat.added}${stat.removed ? ` / 삭제 ${stat.removed}` : ""})`;
+            if (badge) {
+              badge.textContent = `✓ ${state.lastSyncInfo}`;
+              badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200";
+            }
+            populateStoveDropdown();
+            renderProductsTab();
+            updateUI();
+            if (showNotify) showToast(`스마트스토어 동기화 완료! (업데이트 ${stat.updated}건, 신규 ${stat.added}건, 삭제 ${stat.removed}건)`);
+          } else {
+            const errMsg = (data && data.error) ? data.error : "동기화 API(/api/products) 미연결";
+            if (badge) {
+              badge.textContent = "⚠️ 기본 내장 DB 사용 중 (API 연결 필요)";
+              badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200";
+            }
+            if (showNotify) showToast(`동기화 실패: ${errMsg}`);
+          }
+        } catch (err) {
+          if (badge) {
+            badge.textContent = "⚠️ 기본 내장 DB 사용 중";
+            badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200";
+          }
+          if (showNotify) showToast("동기화 API에 연결할 수 없습니다. Vercel의 api/products.js 및 환경변수를 확인해 주세요.");
+        }
+      }
+
+      function renderAdminUiState() {
+        const hdrBtn = byId("adminToggleHeaderBtn");
+        const panel = byId("proAdminPanel");
+        const manSync = byId("proManualSyncBtn");
+        const epInp = byId("proSyncEndpointInput");
+        if (hdrBtn) hdrBtn.textContent = state.adminUnlocked ? "🔓" : "🔒";
+        if (panel) panel.classList.toggle("hidden", !state.adminUnlocked);
+        if (manSync) manSync.classList.toggle("hidden", !state.adminUnlocked);
+        if (epInp) epInp.value = state.syncEndpoint || "/api/products";
+        renderProductsTab();
+      }
 
       function showToast(msg) {
         const b = byId("toastBanner");
@@ -944,7 +1169,7 @@
         const prevVal = sel.value;
         const canUseTiGuard = isFixed60or70Pipe(stoveObj, state.pipeSystem);
         const compat = Object.values(PRODUCTS).filter((p) => {
-          if (p.isStove) return false;
+          if (p.deleted || p.isStove) return false;
           if (p.id === "p_ti_guard_70" && !canUseTiGuard) return false;
           return p.mat === stoveObj.mat || p.mat === "both";
         });
@@ -1130,14 +1355,15 @@
       function renderSvgDiagram(sim) {
         const svg = byId("simSvg");
         if (!svg) return;
-        const W = 800, H = 440, gY = 394;
-        const baseMaxH = Math.max(sim.H_tent + 160, sim.topH + 35, 405);
+        // 겹침 없는 3-Zone 레이아웃: 좌측(텐트/불티 라벨) | 중앙(텐트/파이프/마디) | 우측(천장~연통끝 + 총높이 2레인)
+        const W = 860, H = 470, gY = 412;
+        const baseMaxH = Math.max(sim.H_tent + 165, sim.topH + 38, 410);
         const maxH = (state.dragging && state.lockedMaxH) ? Math.max(state.lockedMaxH, sim.topH + 25) : baseMaxH;
-        const scaleY = (gY - 40) / maxH;
+        const scaleY = (gY - 42) / maxH;
         const yOf = (cm) => Math.round(gY - cm * scaleY);
         const t = getActiveTent();
-        const cx = 365;
-        const scaleX = Math.min(scaleY, (235 * 2) / Math.max(240, sim.span));
+        const cx = 395;
+        const scaleX = Math.min(scaleY, (210 * 2) / Math.max(240, sim.span));
         const halfW = Math.round((sim.span / 2) * scaleX);
         const lx = cx - halfW, rx = cx + halfW, py = yOf(sim.H_tent);
         const swCm = Math.round(sim.H_tent * (t.peakHeight > 0 ? t.sw / t.peakHeight : 0.45));
@@ -1168,7 +1394,7 @@
           jackPt = { x: jx - dir * 5, y: jY + 5, ang: dir * 45 };
         } else {
           const outDir = jx >= cx ? 1 : -1;
-          const outX = jx + outDir * Math.max(24, Math.round(35 * scaleX));
+          const outX = Math.min(638, Math.max(152, jx + outDir * Math.max(24, Math.round(35 * scaleX))));
           pts = [{ x: sx, y: stTopY }, { x: sx, y: jY }, { x: outX, y: jY }, { x: outX, y: topY }];
           jackPt = { x: jx, y: jY, ang: 90 }; topPt = { x: outX, y: topY };
         }
@@ -1202,6 +1428,42 @@
           return arr.join(" ");
         };
 
+        // 2D AABB 충돌 회피 유틸리티 (라벨 절대 겹침 방지)
+        const placedBoxes = [];
+        const overlapsAny = (x, y, w, h) => placedBoxes.some((b) => !(x + w + 4 < b.x || x > b.x + b.w + 4 || y + h + 3 < b.y || y > b.y + b.h + 3));
+        const reserveBox = (x, y, w, h) => { placedBoxes.push({ x, y, w, h }); };
+
+        // 1) 좌측 전용 구역: 불티방지 최소권장(+60cm) 라벨 & 텐트 높이 치수선 (충돌 없게 사전 예약)
+        const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
+        const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
+        const sparkBoxX = 12, sparkBoxW = 148, sparkBoxH = 18;
+        const sparkBoxY = Math.max(8, Math.min(py - 26, sparkMinY - 21));
+        reserveBox(sparkBoxX, sparkBoxY, sparkBoxW, sparkBoxH);
+
+        const lDim = 62;
+        const tentDimMidY = Math.max(sparkBoxY + sparkBoxH + 18, Math.round((gY + py) / 2));
+        reserveBox(lDim - 40, tentDimMidY - 10, 80, 20);
+
+        // 2) 우측 전용 2-레인 치수 구역 예약 (x = 655 ~ 854)
+        const roofDimX = 664;
+        const roofMidY = Math.max(24, Math.min(gY - 56, Math.round((py + topY) / 2)));
+        reserveBox(roofDimX + 6, roofMidY - 10, 112, 20);
+
+        const rDim = 804;
+        const totalDimMidY = Math.max(roofMidY + 30, Math.min(gY - 24, Math.round(topY + (gY - topY) * 0.65)));
+        reserveBox(rDim - 44, totalDimMidY - 10, 88, 20);
+
+        // 3) 홀잭 배지 위치 결정 (파이프와 겹치지 않도록 지시선 연결 + 영역 예약)
+        const jackSide = jackPt.x >= cx ? 1 : -1;
+        const jBadgeW = 94, jBadgeH = 20;
+        let jBadgeX = jackSide > 0 ? Math.min(646 - jBadgeW, jackPt.x + 28) : Math.max(165, jackPt.x - 28 - jBadgeW);
+        let jBadgeY = Math.max(18, Math.min(gY - 34, jackPt.y - 10));
+        if (overlapsAny(jBadgeX, jBadgeY, jBadgeW, jBadgeH)) {
+          jBadgeX = jackSide > 0 ? Math.max(165, jackPt.x - 28 - jBadgeW) : Math.min(646 - jBadgeW, jackPt.x + 28);
+        }
+        reserveBox(jBadgeX, jBadgeY, jBadgeW, jBadgeH);
+
+        // 파이프 마디 및 지능형 비겹침 라벨 배치
         let pipesHtml = `<polyline points="${pts.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
         let ticksHtml = "", labelsHtml = "";
         const totalW = Math.max(1, sim.rawFirst + sim.straightCnt * sim.effPipe);
@@ -1221,29 +1483,29 @@
           let dia = "Ø70", col = "#f59e0b";
           if (isTiMat) {
             if (state.pipeSystem === "ti_nested_83_89") {
-              if (isTopCap) { dia = "Ti Ø89불티캡"; col = "#7c3aed"; }
+              if (isTopCap) { dia = "Ti Ø89캡"; col = "#7c3aed"; }
               else { dia = i === 0 ? "Ti Ø83댐퍼" : (i < Math.ceil(sim.totalSeg / 2) ? "Ti Ø83" : "Ti Ø89"); col = i < Math.ceil(sim.totalSeg / 2) ? "#6366f1" : "#7c3aed"; }
             } else if (state.pipeSystem === "ti_nested_70_76") {
-              if (isTopCap) { dia = "Ti Ø76불티캡"; col = "#a855f7"; }
-              else if (i < p70End) { dia = i >= 5 ? "Ti Ø70(추가)" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
-              else if (i === p70End) { dia = "Ti Ø70-76"; col = "#4f46e5"; }
+              if (isTopCap) { dia = "Ti Ø76캡"; col = "#a855f7"; }
+              else if (i < p70End) { dia = i >= 5 ? "Ti Ø70+" : "Ti Ø70"; col = i >= 5 ? "#0284c7" : "#6366f1"; }
+              else if (i === p70End) { dia = "Ti 70-76"; col = "#4f46e5"; }
               else { dia = "Ti Ø76"; col = "#8b5cf6"; }
             } else {
-              dia = isTopCap ? "Ti Ø70불티캡" : (i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70");
+              dia = isTopCap ? "Ti Ø70캡" : (i === 0 ? "Ti Ø70댐퍼" : "Ti Ø70");
               col = isTopCap ? "#7c3aed" : "#6366f1";
             }
           } else if (state.pipeSystem === "tapered_70_73_76") {
-            if (isTopCap) { dia = "Ø76불티캡"; col = "#f43f5e"; }
+            if (isTopCap) { dia = "Ø76캡"; col = "#f43f5e"; }
             else if (i === 0) { dia = "Ø70댐퍼"; col = "#f59e0b"; }
-            else if (i < p70End) { dia = i >= 5 ? "Ø70(추가)" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
-            else if (i === p70End) { dia = "Ø70-73"; col = "#ea580c"; }
+            else if (i < p70End) { dia = i >= 5 ? "Ø70+" : "Ø70"; col = i >= 5 ? "#0284c7" : "#f59e0b"; }
+            else if (i === p70End) { dia = "70-73"; col = "#ea580c"; }
             else if (i <= p70End + 4) { dia = "Ø73"; col = "#f97316"; }
-            else if (i === p70End + 5) { dia = "Ø73-76"; col = "#e11d48"; }
+            else if (i === p70End + 5) { dia = "73-76"; col = "#e11d48"; }
             else { dia = "Ø76"; col = "#f43f5e"; }
           } else if (state.pipeSystem === "single_70") {
-            dia = isTopCap ? "Ø70불티캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
+            dia = isTopCap ? "Ø70캡" : (i === 0 ? "Ø70댐퍼" : "Ø70");
           } else {
-            dia = isTopCap ? "Ø75불티캡" : (i === 0 ? "Ø70-75" : "Ø75");
+            dia = isTopCap ? "Ø75캡" : (i === 0 ? "70-75" : "Ø75");
             col = i === 0 ? "#f59e0b" : "#f97316";
           }
           if (isExtraAdded) col = "#0284c7";
@@ -1257,72 +1519,108 @@
           if (state.showPipeNodes) {
             const mp = sample((d0 + d1) / 2);
             const horiz = Math.abs(mp.ux) > 0.7;
-            const side = horiz ? -1 : (i % 2 === 0 ? -1 : 1);
-            const lxPos = mp.x + (horiz ? 0 : side * 30);
-            const lyPos = mp.y + (horiz ? (i % 2 === 0 ? -15 : 17) : 0);
             const txt = `${i + 1}·${dia}${isExtraAdded ? "+" : ""}`;
-            const pw = Math.max(36, txt.length * 6.2 + 8);
-            labelsHtml += `
-              <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${lxPos.toFixed(1)}" y2="${lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
-              <rect x="${(lxPos - pw / 2).toFixed(1)}" y="${(lyPos - 7.5).toFixed(1)}" width="${pw.toFixed(1)}" height="15" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/>
-              <text x="${lxPos.toFixed(1)}" y="${(lyPos + 3.2).toFixed(1)}" fill="#0f172a" font-size="8.8" font-weight="800" text-anchor="middle">${txt}</text>
-            `;
+            const pw = Math.max(40, txt.length * 5.8 + 10);
+            const ph = 15;
+            const prefSide = i % 2 === 0 ? -1 : 1;
+
+            const candidates = horiz
+              ? [
+                  { cx: mp.x, cy: mp.y - 18 },
+                  { cx: mp.x, cy: mp.y + 18 },
+                  { cx: mp.x, cy: mp.y - 34 },
+                  { cx: mp.x, cy: mp.y + 34 }
+                ]
+              : [
+                  { cx: mp.x + prefSide * (pw / 2 + 18), cy: mp.y },
+                  { cx: mp.x - prefSide * (pw / 2 + 18), cy: mp.y },
+                  { cx: mp.x + prefSide * (pw / 2 + 24), cy: mp.y - 16 },
+                  { cx: mp.x - prefSide * (pw / 2 + 24), cy: mp.y - 16 },
+                  { cx: mp.x + prefSide * (pw / 2 + 24), cy: mp.y + 16 },
+                  { cx: mp.x - prefSide * (pw / 2 + 24), cy: mp.y + 16 },
+                  { cx: mp.x + prefSide * (pw / 2 + 64), cy: mp.y },
+                  { cx: mp.x - prefSide * (pw / 2 + 64), cy: mp.y }
+                ];
+
+            let chosen = null;
+            for (let cIdx = 0; cIdx < candidates.length; cIdx++) {
+              const cand = candidates[cIdx];
+              const bx = Math.max(115, Math.min(646 - pw, cand.cx - pw / 2));
+              const by = Math.max(8, Math.min(gY - ph - 8, cand.cy - ph / 2));
+              if (!overlapsAny(bx, by, pw, ph)) {
+                chosen = { bx, by, lxPos: bx + pw / 2, lyPos: by + ph / 2 };
+                break;
+              }
+            }
+            if (chosen) {
+              reserveBox(chosen.bx, chosen.by, pw, ph);
+              labelsHtml += `
+                <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${chosen.lxPos.toFixed(1)}" y2="${chosen.lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
+                <rect x="${chosen.bx.toFixed(1)}" y="${chosen.by.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph}" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/>
+                <text x="${chosen.lxPos.toFixed(1)}" y="${(chosen.lyPos + 3.2).toFixed(1)}" fill="#0f172a" font-size="8.6" font-weight="800" text-anchor="middle">${txt}</text>
+              `;
+            }
           }
         }
 
         const sleevePx = Math.max(26, Math.round(50 * scaleY));
+        const jLeaderX = jBadgeX > jackPt.x ? jBadgeX : jBadgeX + jBadgeW;
         const jackHtml = `
-          <g id="draggableJackGroup" transform="translate(${jackPt.x},${jackPt.y})" style="cursor: move; touch-action: none;">
-            <circle cx="0" cy="0" r="26" fill="transparent"/>
-            <g transform="rotate(${jackPt.ang})">
-              <line x1="-12" y1="${-sleevePx / 2}" x2="-12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
-              <line x1="12" y1="${-sleevePx / 2}" x2="12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
-              <line x1="-16" y1="${-sleevePx / 2}" x2="16" y2="${-sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
-              <line x1="-16" y1="${sleevePx / 2}" x2="16" y2="${sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
-              <line x1="-18" y1="0" x2="-9" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
-              <line x1="9" y1="0" x2="18" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+          <g id="draggableJackGroup" style="cursor: move; touch-action: none;">
+            <g transform="translate(${jackPt.x},${jackPt.y})">
+              <circle cx="0" cy="0" r="26" fill="transparent"/>
+              <g transform="rotate(${jackPt.ang})">
+                <line x1="-12" y1="${-sleevePx / 2}" x2="-12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+                <line x1="12" y1="${-sleevePx / 2}" x2="12" y2="${sleevePx / 2}" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+                <line x1="-16" y1="${-sleevePx / 2}" x2="16" y2="${-sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+                <line x1="-16" y1="${sleevePx / 2}" x2="16" y2="${sleevePx / 2}" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>
+                <line x1="-18" y1="0" x2="-9" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+                <line x1="9" y1="0" x2="18" y2="0" stroke="#ea580c" stroke-width="3.2" stroke-linecap="round"/>
+              </g>
             </g>
-            <rect x="19" y="-11" width="112" height="20" rx="10" fill="#ffffff" fill-opacity="0.95" stroke="#0284c7" stroke-width="1.6"/>
-            <text x="75" y="2.5" fill="#0369a1" font-size="9.5" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm</text>
+            <line x1="${jackPt.x}" y1="${jackPt.y}" x2="${jLeaderX}" y2="${jBadgeY + jBadgeH / 2}" stroke="#0284c7" stroke-width="1.3" stroke-dasharray="3,2"/>
+            <rect x="${jBadgeX}" y="${jBadgeY}" width="${jBadgeW}" height="${jBadgeH}" rx="10" fill="#ffffff" fill-opacity="0.96" stroke="#0284c7" stroke-width="1.6"/>
+            <text x="${jBadgeX + jBadgeW / 2}" y="${jBadgeY + 13.5}" fill="#0369a1" font-size="9.5" font-weight="800" text-anchor="middle">✥ 홀잭 ${sim.H_jack}cm</text>
           </g>
         `;
 
-        const sparkMinY = yOf(sim.H_tent + SPARK_MIN_CLEARANCE_CM);
-        const sparkLineCol = sim.sparkSafe ? "#059669" : "#e11d48";
         const sparkLineHtml = `
-          <line x1="${Math.max(24, lx - 10)}" y1="${sparkMinY}" x2="${Math.min(776, Math.max(rx + 25, topPt.x + 48))}" y2="${sparkMinY}" stroke="${sparkLineCol}" stroke-width="1.5" stroke-dasharray="5,4" stroke-opacity="0.85"/>
-          <rect x="${Math.max(24, lx - 8)}" y="${sparkMinY - 17}" width="154" height="16" rx="4" fill="#ffffff" fill-opacity="0.92" stroke="${sparkLineCol}" stroke-width="1"/>
-          <text x="${Math.max(24, lx - 8) + 77}" y="${sparkMinY - 6}" fill="${sparkLineCol}" font-size="8.8" font-weight="800" text-anchor="middle">🔥 불티방지 최소권장 +${SPARK_MIN_CLEARANCE_CM}cm</text>
+          <line x1="12" y1="${sparkMinY}" x2="650" y2="${sparkMinY}" stroke="${sparkLineCol}" stroke-width="1.4" stroke-dasharray="5,4" stroke-opacity="0.8"/>
+          <rect x="${sparkBoxX}" y="${sparkBoxY}" width="${sparkBoxW}" height="${sparkBoxH}" rx="4" fill="#ffffff" fill-opacity="0.95" stroke="${sparkLineCol}" stroke-width="1.2"/>
+          <text x="${sparkBoxX + sparkBoxW / 2}" y="${sparkBoxY + 12.2}" fill="${sparkLineCol}" font-size="8.8" font-weight="800" text-anchor="middle">🔥 불티방지 최소 +${SPARK_MIN_CLEARANCE_CM}cm</text>
         `;
 
         let dimHtml = "";
         if (state.showDimensions) {
-          const lDim = Math.max(46, lx - 34);
-          const rDim = Math.min(748, Math.max(rx + 42, topPt.x + 62));
           const clrCol = sim.sparkSafe ? "#059669" : "#e11d48";
-          const roofDimX = Math.max(92, topPt.x - 20);
-          const roofMidY = (py + topY) / 2;
           dimHtml = `
+            <!-- 좌측 전용 레인: 텐트 최고 높이 -->
             <line x1="${lDim}" y1="${gY}" x2="${lDim}" y2="${py}" stroke="#475569" stroke-width="1.6"/>
             <line x1="${lDim - 5}" y1="${py}" x2="${cx}" y2="${py}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
-            <rect x="${lDim - 38}" y="${(gY + py) / 2 - 10}" width="76" height="20" rx="5" fill="#fff" stroke="#475569"/>
-            <text x="${lDim}" y="${(gY + py) / 2 + 3.5}" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
+            <rect x="${lDim - 40}" y="${tentDimMidY - 10}" width="80" height="20" rx="5" fill="#fff" stroke="#475569"/>
+            <text x="${lDim}" y="${tentDimMidY + 3.5}" fill="#0f172a" font-size="9.8" font-weight="bold" text-anchor="middle">텐트 ${sim.H_tent}cm</text>
 
-            <line x1="${rDim}" y1="${gY}" x2="${rDim}" y2="${topY}" stroke="#ea580c" stroke-width="1.8"/>
-            <line x1="${topPt.x}" y1="${topY}" x2="${rDim + 5}" y2="${topY}" stroke="#ea580c" stroke-width="1.1" stroke-dasharray="3,3"/>
-            <rect x="${rDim - 46}" y="${(gY + topY) / 2 - 10}" width="92" height="20" rx="5" fill="#fff" stroke="#ea580c"/>
-            <text x="${rDim}" y="${(gY + topY) / 2 + 3.5}" fill="#c2410c" font-size="10" font-weight="bold" text-anchor="middle">총높이 ${sim.topH}cm</text>
-
-            <line x1="${cx}" y1="${py}" x2="${roofDimX + 6}" y2="${py}" stroke="${clrCol}" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <!-- 우측 1레인: 천장~연통끝 치수 (파이프와 완전 분리) -->
+            <line x1="${cx}" y1="${py}" x2="${roofDimX + 6}" y2="${py}" stroke="${clrCol}" stroke-width="1.1" stroke-dasharray="3,3"/>
+            <line x1="${topPt.x}" y1="${topY}" x2="${roofDimX + 6}" y2="${topY}" stroke="${clrCol}" stroke-width="1.1" stroke-dasharray="3,3"/>
             <line x1="${roofDimX - 4}" y1="${py}" x2="${roofDimX + 4}" y2="${py}" stroke="${clrCol}" stroke-width="2"/>
             <line x1="${roofDimX - 4}" y1="${topY}" x2="${roofDimX + 4}" y2="${topY}" stroke="${clrCol}" stroke-width="2"/>
             <line x1="${roofDimX}" y1="${py}" x2="${roofDimX}" y2="${topY}" stroke="${clrCol}" stroke-width="2.2"/>
-            <rect x="${roofDimX - 116}" y="${roofMidY - 10}" width="108" height="20" rx="5" fill="#fff" stroke="${clrCol}" stroke-width="1.4"/>
-            <text x="${roofDimX - 62}" y="${roofMidY + 3.5}" fill="${clrCol}" font-size="9.5" font-weight="800" text-anchor="middle">천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm</text>
+            <rect x="${roofDimX + 6}" y="${roofMidY - 10}" width="112" height="20" rx="5" fill="#fff" stroke="${clrCol}" stroke-width="1.4"/>
+            <text x="${roofDimX + 62}" y="${roofMidY + 3.5}" fill="${clrCol}" font-size="9.3" font-weight="800" text-anchor="middle">천장~연통끝 ${sim.roofClr >= 0 ? "+" : ""}${sim.roofClr}cm</text>
 
-            <line x1="${lx}" y1="${gY + 24}" x2="${rx}" y2="${gY + 24}" stroke="#64748b" stroke-width="1.3"/>
-            <rect x="${cx - 58}" y="${gY + 14}" width="116" height="19" rx="4" fill="#fff" stroke="#cbd5e1"/>
-            <text x="${cx}" y="${gY + 27}" fill="#334155" font-size="9.5" font-weight="bold" text-anchor="middle">${state.sectionViewMode === "side" ? "길이" : "폭"} ${sim.span}cm</text>
+            <!-- 우측 2레인: 연통 총 높이 -->
+            <line x1="${rDim}" y1="${gY}" x2="${rDim}" y2="${topY}" stroke="#ea580c" stroke-width="1.8"/>
+            <line x1="${roofDimX + 6}" y1="${topY}" x2="${rDim + 5}" y2="${topY}" stroke="#ea580c" stroke-width="1" stroke-dasharray="3,3"/>
+            <rect x="${rDim - 44}" y="${totalDimMidY - 10}" width="88" height="20" rx="5" fill="#fff" stroke="#ea580c" stroke-width="1.4"/>
+            <text x="${rDim}" y="${totalDimMidY + 3.5}" fill="#c2410c" font-size="9.5" font-weight="bold" text-anchor="middle">총높이 ${sim.topH}cm</text>
+
+            <!-- 하단 전용 레인: 폭/길이 치수 (이동 핸들과 완전 분리) -->
+            <line x1="${lx}" y1="${gY + 40}" x2="${rx}" y2="${gY + 40}" stroke="#64748b" stroke-width="1.3"/>
+            <line x1="${lx}" y1="${gY + 34}" x2="${lx}" y2="${gY + 46}" stroke="#64748b" stroke-width="1.3"/>
+            <line x1="${rx}" y1="${gY + 34}" x2="${rx}" y2="${gY + 46}" stroke="#64748b" stroke-width="1.3"/>
+            <rect x="${cx - 58}" y="${gY + 30}" width="116" height="19" rx="4" fill="#fff" stroke="#cbd5e1"/>
+            <text x="${cx}" y="${gY + 43}" fill="#334155" font-size="9.5" font-weight="bold" text-anchor="middle">${state.sectionViewMode === "side" ? "길이" : "폭"} ${sim.span}cm</text>
           `;
         }
 
@@ -1336,7 +1634,7 @@
               <stop offset="100%" stop-color="#fde68a" stop-opacity="0.42"/>
             </linearGradient>
           </defs>
-          ${[100, 200, 300, 400].filter((c) => c <= maxH).map((c) => `<line x1="18" y1="${yOf(c)}" x2="${W - 18}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="20" y="${yOf(c) - 3}" fill="#94a3b8" font-size="9">${c}cm</text>`).join("")}
+          ${[100, 200, 300, 400].filter((c) => c <= maxH).map((c) => `<line x1="14" y1="${yOf(c)}" x2="${W - 14}" y2="${yOf(c)}" stroke="#e2e8f0" stroke-dasharray="2,2"/><text x="16" y="${yOf(c) - 3}" fill="#94a3b8" font-size="8.5">${c}cm</text>`).join("")}
           <rect x="0" y="${gY}" width="${W}" height="${H - gY}" fill="#e2e8f0"/>
           <line x1="14" y1="${gY}" x2="${W - 14}" y2="${gY}" stroke="#475569" stroke-width="2.2"/>
           <path d="${tentD}" fill="url(#proTentGrad)" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
@@ -1345,8 +1643,8 @@
             ${sim.H_stand > 0 ? `<rect x="${sx - 26}" y="${standY}" width="52" height="${standHpx}" rx="3" fill="#bae6fd" fill-opacity="0.7" stroke="#0284c7" stroke-width="1.8"/>` : ""}
             <rect x="${sx - 23}" y="${stTopY}" width="46" height="${stoveHpx}" rx="5" fill="#334155" stroke="#ea580c" stroke-width="2"/>
             <path d="M ${sx - 6},${standY - 5} Q ${sx},${stTopY + 4} ${sx + 6},${standY - 5} Z" fill="#fb923c" class="flame-anim"/>
-            <rect x="${sx - 26}" y="${gY + 2}" width="52" height="14" rx="7" fill="#ea580c" stroke="#fff" stroke-width="1.2"/>
-            <text x="${sx}" y="${gY + 12}" fill="#fff" font-size="8.5" font-weight="bold" text-anchor="middle">↔ 이동</text>
+            <rect x="${sx - 26}" y="${gY + 4}" width="52" height="15" rx="7.5" fill="#ea580c" stroke="#fff" stroke-width="1.2"/>
+            <text x="${sx}" y="${gY + 14.5}" fill="#fff" font-size="8.5" font-weight="bold" text-anchor="middle">↔ 이동</text>
           </g>
           ${pipesHtml}
           ${ticksHtml}
@@ -1650,15 +1948,32 @@
       function renderProductsTab() {
         const grid = byId("productCardsGrid");
         if (!grid) return;
-        const list = Object.values(PRODUCTS).filter((p) => state.productCategoryFilter === "all" || p.mat === state.productCategoryFilter);
+        const list = Object.values(PRODUCTS).filter((p) => {
+          if (p.deleted && !state.adminUnlocked) return false;
+          return state.productCategoryFilter === "all" || p.mat === state.productCategoryFilter;
+        });
         grid.innerHTML = list.map((p) => `
-          <div class="rounded-2xl bg-white border border-slate-200 p-4 flex flex-col justify-between gap-3 shadow-sm">
-            <div class="space-y-1.5">
+          <div class="rounded-2xl bg-white border ${p.deleted ? "border-rose-300 opacity-60" : "border-slate-200"} p-4 flex flex-col justify-between gap-3 shadow-sm">
+            <div class="space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${p.mat === "titanium" ? "bg-indigo-50 text-indigo-700" : p.mat === "stainless" ? "bg-slate-100 text-slate-700" : "bg-emerald-50 text-emerald-700"}">${p.mat === "titanium" ? "🪶 티타늄" : p.mat === "stainless" ? "🔩 스테인리스" : "공용"}</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${/품절/.test(p.status) ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}">${escapeHtml(p.status)}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.deleted ? "bg-rose-100 text-rose-800" : (/품절/.test(p.status) ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700")}">${escapeHtml(p.deleted ? "삭제됨" : p.status)}</span>
               </div>
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">${escapeHtml(p.name)}</h3>
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug ${p.deleted ? "line-through" : ""}">${escapeHtml(p.name)}</h3>
+              ${state.adminUnlocked ? `
+                <div class="pt-2 border-t border-dashed border-slate-200 space-y-1.5 text-[11px]">
+                  <input type="text" data-adm-name="${escapeHtml(p.id)}" value="${escapeHtml(p.name)}" class="w-full rounded-lg bg-slate-50 border border-slate-300 px-2 py-1 text-[11px] font-bold" />
+                  <div class="flex items-center gap-1.5">
+                    <select data-adm-status="${escapeHtml(p.id)}" class="rounded-lg bg-white border border-slate-300 px-1.5 py-1 font-bold">
+                      <option value="판매중" ${p.status === "판매중" && !p.deleted ? "selected" : ""}>판매중</option>
+                      <option value="품절" ${/품절/.test(p.status) && !p.deleted ? "selected" : ""}>품절</option>
+                      <option value="삭제됨" ${p.deleted ? "selected" : ""}>삭제(숨김)</option>
+                    </select>
+                    <input type="number" data-adm-price="${escapeHtml(p.id)}" value="${p.price}" class="flex-1 min-w-0 rounded-lg bg-white border border-slate-300 px-2 py-1 text-right font-bold" />
+                  </div>
+                  <input type="url" data-adm-url="${escapeHtml(p.id)}" value="${escapeHtml(p.url)}" class="w-full rounded-lg bg-white border border-slate-300 px-2 py-1 text-[10px] font-mono text-slate-600" />
+                </div>
+              ` : ""}
             </div>
             <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between">
               <span class="text-sm font-extrabold text-orange-700">${formatKRW(p.price)}</span>
@@ -1692,7 +2007,7 @@
 
       function switchTab(tabId) {
         state.activeTab = tabId;
-        ["simulator", "products", "tents", "rules"].forEach((id) => {
+        ["simulator", "products", "tents"].forEach((id) => {
           const panel = byId(`tabPanel-${id}`);
           const btn = byId(`tabBtn-${id}`);
           if (panel) {
@@ -1886,8 +2201,8 @@
             if (!state.dragging || !state.dragGeom) return;
             const r = svg.getBoundingClientRect();
             if (!r.width || !r.height) return;
-            const xSvg = ((e.clientX - r.left) / r.width) * 800;
-            const ySvg = ((e.clientY - r.top) / r.height) * 440;
+            const xSvg = ((e.clientX - r.left) / r.width) * 860;
+            const ySvg = ((e.clientY - r.top) / r.height) * 470;
             if (state.dragTarget === "jack") {
               const rawX = (xSvg - state.dragGeom.cx) / state.dragGeom.scaleX;
               const rawH = (state.dragGeom.gY - ySvg) / state.dragGeom.scaleY;
@@ -1925,112 +2240,113 @@
           else state.jackHeight = Math.min(state.tentHeight - 10, state.stoveHeight + state.standHeight + 60);
           syncInputsFromState(); updateUI();
         });
-
-        onEl("proBomCards", "change", (e) => {
-          const c = e.target && e.target.closest ? e.target.closest(".pro-bom-chk") : null;
-          if (!c) return;
-          const id = c.getAttribute("data-bom-id");
-          if (c.getAttribute("data-soldout") === "1") {
-            if (c.checked) state.includedSoldOut[id] = true; else delete state.includedSoldOut[id];
+        // 7. DB 탭 필터 및 관리자 모드 제어
+        const openAdminModal = () => {
+          const modal = byId("adminAuthModal");
+          const locked = byId("adminModalLockedView");
+          const unlocked = byId("adminModalUnlockedView");
+          const icon = byId("adminModalIcon");
+          const err = byId("adminPasswordError");
+          if (err) err.classList.add("hidden");
+          if (locked) locked.classList.toggle("hidden", state.adminUnlocked);
+          if (unlocked) unlocked.classList.toggle("hidden", !state.adminUnlocked);
+          if (icon) icon.textContent = state.adminUnlocked ? "🔓" : "🔒";
+          if (modal) modal.classList.remove("hidden");
+          if (!state.adminUnlocked) {
+            const inp = byId("adminPasswordInput");
+            if (inp) setTimeout(() => inp.focus(), 50);
+          }
+        };
+        const closeAdminModal = () => {
+          const modal = byId("adminAuthModal");
+          if (modal) modal.classList.add("hidden");
+        };
+        const handleUnlock = async () => {
+          const inp = byId("adminPasswordInput");
+          const err = byId("adminPasswordError");
+          const val = (inp ? inp.value : "").trim();
+          if (!val) return;
+          const hashed = await sha256Hex(val);
+          if (hashed === ADMIN_PW_HASH) {
+            state.adminUnlocked = true;
+            if (inp) inp.value = "";
+            closeAdminModal();
+            renderAdminUiState();
+            switchTab("products");
+            showToast("관리자 인증 완료! 동기화 및 상품 관리가 활성화되었습니다.");
           } else {
-            if (c.checked) delete state.excluded[id]; else state.excluded[id] = true;
+            if (err) err.classList.remove("hidden");
           }
+        };
+
+        onEl("adminToggleHeaderBtn", "click", openAdminModal);
+        onEl("closeAdminModalBtn", "click", closeAdminModal);
+        onEl("adminAuthModal", "click", (e) => { if (e.target && e.target.id === "adminAuthModal") closeAdminModal(); });
+        onEl("adminUnlockSubmitBtn", "click", handleUnlock);
+        onEl("adminPasswordInput", "keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleUnlock(); } });
+        onEl("adminGoProductsBtn", "click", () => { closeAdminModal(); switchTab("products"); });
+        onEl("adminSyncQuickBtn", "click", () => { closeAdminModal(); syncProductsFromServer(true); });
+        onEl("adminLockBtn", "click", () => {
+          state.adminUnlocked = false;
+          closeAdminModal();
+          renderAdminUiState();
+          showToast("관리자 잠금이 완료되었습니다.");
+        });
+
+        onEl("proManualSyncBtn", "click", () => syncProductsFromServer(true));
+        onEl("proAdminSyncNowBtn", "click", () => syncProductsFromServer(true));
+        onEl("proSaveSyncEndpointBtn", "click", () => {
+          const inp = byId("proSyncEndpointInput");
+          state.syncEndpoint = (inp && inp.value.trim()) ? inp.value.trim() : "/api/products";
+          try { localStorage.setItem("ct_pro_sync_endpoint", state.syncEndpoint); } catch (e) {}
+          syncProductsFromServer(true);
+        });
+        onEl("proAdminResetLocalBtn", "click", () => {
+          try { localStorage.removeItem("ct_pro_products_override_v1"); } catch (e) {}
+          showToast("로컬 수정 기록을 초기화했습니다. 새로고침 시 최신 동기화 데이터를 불러옵니다.");
+          syncProductsFromServer(true);
+        });
+        onEl("adminAddProdBtn", "click", () => {
+          const name = (byId("adminNewName") ? byId("adminNewName").value : "").trim();
+          if (!name) { showToast("신규 상품명을 입력해 주세요."); return; }
+          const mat = byId("adminNewMat") ? byId("adminNewMat").value : "stainless";
+          const price = Math.max(0, Number(byId("adminNewPrice") ? byId("adminNewPrice").value : 0) || 0);
+          const url = (byId("adminNewUrl") ? byId("adminNewUrl").value : "").trim() || STORE_URL;
+          const id = `p_adm_${Date.now()}`;
+          PRODUCTS[id] = { id, mat, isStove: false, name, price, status: "판매중", url };
+          saveLocalAdminOverrides();
+          renderProductsTab();
           updateUI();
+          if (byId("adminNewName")) byId("adminNewName").value = "";
+          if (byId("adminNewUrl")) byId("adminNewUrl").value = "";
+          showToast(`"${name}" 상품이 추가되었습니다.`);
         });
 
-        onEl("proBomCards", "click", (e) => {
-          const target = e.target && e.target.closest ? e.target : null;
-          if (!target) return;
-          const vLink = target.closest("[data-bom-visit]");
-          if (vLink) {
-            state.visitedLinks[vLink.getAttribute("data-bom-visit")] = true;
-            try { sessionStorage.setItem("ct_pro_visited_links", JSON.stringify(state.visitedLinks)); } catch (err) {}
-            setTimeout(() => updateUI(), 80);
-            return;
+        onEl("productCardsGrid", "change", (e) => {
+          if (!state.adminUnlocked) return;
+          const el = e.target;
+          if (!el || !el.getAttribute) return;
+          const pidName = el.getAttribute("data-adm-name");
+          const pidSt = el.getAttribute("data-adm-status");
+          const pidPr = el.getAttribute("data-adm-price");
+          const pidUrl = el.getAttribute("data-adm-url");
+          const pid = pidName || pidSt || pidPr || pidUrl;
+          if (!pid || !PRODUCTS[pid]) return;
+          if (pidName) PRODUCTS[pid].name = el.value.trim() || PRODUCTS[pid].name;
+          if (pidSt) {
+            PRODUCTS[pid].deleted = el.value === "삭제됨";
+            PRODUCTS[pid].status = el.value;
           }
-          const uvBtn = target.closest("[data-bom-unvisit]");
-          if (uvBtn) {
-            delete state.visitedLinks[uvBtn.getAttribute("data-bom-unvisit")];
-            try { sessionStorage.setItem("ct_pro_visited_links", JSON.stringify(state.visitedLinks)); } catch (err) {}
-            updateUI();
-            return;
-          }
-          const incBtn = target.closest("[data-bom-inc]");
-          const decBtn = target.closest("[data-bom-dec]");
-          const delBtn = target.closest("[data-bom-del]");
-          if (incBtn) {
-            const id = incBtn.getAttribute("data-bom-inc");
-            const cur = buildBomItems(computeSimulation()).buyList.find((x) => x.id === id);
-            const nq = Math.min(20, (cur ? cur.qty : 1) + 1);
-            if (cur && cur.isManual) state.extraBuyItems[id] = nq; else state.qtyOverrides[id] = nq;
-            delete state.excluded[id]; updateUI();
-          } else if (decBtn) {
-            const id = decBtn.getAttribute("data-bom-dec");
-            const cur = buildBomItems(computeSimulation()).buyList.find((x) => x.id === id);
-            if (!cur) return;
-            if (cur.isManual && cur.qty <= 1) delete state.extraBuyItems[id];
-            else { const nq = Math.max(1, cur.qty - 1); if (cur.isManual) state.extraBuyItems[id] = nq; else state.qtyOverrides[id] = nq; }
-            updateUI();
-          } else if (delBtn) {
-            const id = delBtn.getAttribute("data-bom-del");
-            delete state.extraBuyItems[id]; delete state.qtyOverrides[id]; updateUI();
-          }
-        });
-
-        onEl("proAddExtraBtn", "click", () => {
-          const sel = byId("proAddExtraSelect");
-          const pid = sel ? sel.value : "";
-          const prod = PRODUCTS[pid];
-          if (!prod) return;
-          const existing = buildBomItems(computeSimulation()).buyList.find((x) => x.id === pid);
-          if (existing) {
-            const nq = Math.min(20, existing.qty + 1);
-            if (existing.isManual) state.extraBuyItems[pid] = nq; else state.qtyOverrides[pid] = nq;
-          } else {
-            state.extraBuyItems[pid] = (state.extraBuyItems[pid] || 0) + 1;
-          }
-          delete state.excluded[pid];
-          if (/품절/.test(prod.status)) state.includedSoldOut[pid] = true;
+          if (pidPr) PRODUCTS[pid].price = Math.max(0, Number(el.value) || 0);
+          if (pidUrl && el.value.trim()) PRODUCTS[pid].url = el.value.trim();
+          syncStoveModelsFromProducts();
+          saveLocalAdminOverrides();
+          populateStoveDropdown();
+          renderProductsTab();
           updateUI();
-          showToast(`"${prod.name}"이(가) 추가 구매 목록에 담겼습니다!`);
+          showToast(`"${PRODUCTS[pid].name}" 변경사항이 저장되었습니다.`);
         });
 
-        onEl("proResetExtraBtn", "click", () => {
-          state.extraBuyItems = {}; state.qtyOverrides = {}; state.excluded = {}; state.includedSoldOut = {};
-          updateUI(); showToast("추가 구매 목록을 추천 기본값으로 초기화했습니다.");
-        });
-
-        onEl("copyBomBtn", "click", () => {
-          const ta = document.createElement("textarea");
-          ta.value = state.lastBomText; ta.style.position = "fixed"; ta.style.opacity = "0";
-          document.body.appendChild(ta); ta.select();
-          try { document.execCommand("copy"); showToast("연통 목록이 클립보드에 복사되었습니다!"); } catch (err) { showToast("복사에 실패했습니다."); }
-          document.body.removeChild(ta);
-        });
-
-        onEl("copyProShareUrlBtn", "click", () => {
-          const curTent = getActiveTent();
-          const base = (window.location && /^https?:\/\//i.test(window.location.href)) ? window.location.href.split("?")[0] : "https://stove-iota.vercel.app/pro.html";
-          const params = new URLSearchParams();
-          params.set("tent", state.selectedTentId);
-          if (curTent.id !== "custom_tent") params.set("tname", `${curTent.brand} ${curTent.name}`);
-          params.set("th", String(state.tentHeight));
-          params.set("jh", String(state.jackHeight));
-          params.set("stove", state.selectedStoveId);
-          params.set("sh", String(state.stoveHeight));
-          params.set("st", String(state.standHeight));
-          params.set("path", state.pathType);
-          params.set("pipe", state.pipeSystem);
-          params.set("prot", state.protectionType);
-          if (state.extraOutPipes) params.set("ex", String(state.extraOutPipes));
-          const ta = document.createElement("textarea");
-          ta.value = `${base}?${params.toString()}`; ta.style.position = "fixed"; ta.style.opacity = "0";
-          document.body.appendChild(ta); ta.select();
-          try { document.execCommand("copy"); showToast("🔗 현재 세팅 공유 링크가 복사되었습니다!"); } catch (err) { showToast("복사에 실패했습니다."); }
-          document.body.removeChild(ta);
-        });
-
-        // 7. DB 탭 필터
         document.querySelectorAll(".prod-cat-btn").forEach((b) => b.addEventListener("click", () => {
           state.productCategoryFilter = b.getAttribute("data-pcat");
           document.querySelectorAll(".prod-cat-btn").forEach((x) => {
@@ -2102,19 +2418,20 @@
           suggest.classList.add("hidden"); resBox.classList.add("hidden");
           state.isAiEstimated = false;
           if (item.source === "main") {
-            state.tentOriginFilter = "all"; populateTentDropdown();
-            applyTentModel(item.id);
-          } else {
-            state.selectedTentId = "custom_tent";
-            state.customTentWidth = item.w || 340;
-            state.customTentLength = item.l || 380;
-            state.tentShape = item.shape || "dome";
-            state.tentHeight = item.h;
-            state.jackHeight = item.jh;
-            state.pathType = item.path || "elbow45";
-            state.extraOutPipes = 0;
-            resetStoveAndJackPositions(); syncInputsFromState(); updateUI();
-          }
+        // 3단계: 드롭다운·도면·DB 탭 초기 렌더링 + 스마트스토어(Supabase) 자동 동기화
+        try { loadLocalAdminOverrides(); } catch (e) {}
+        try { syncStoveModelsFromProducts(); } catch (e) {}
+        try { populateStoveDropdown(); } catch (e) {}
+        try { populateTentDropdown(); } catch (e) {}
+        try { syncMaterialSelectors(); } catch (e) {}
+        try { resetStoveAndJackPositions(); } catch (e) {}
+        try { syncInputsFromState(); } catch (e) {}
+        try { renderAdminUiState(); } catch (e) {}
+        try { renderProductsTab(); } catch (e) {}
+        try { renderTentsTab(); } catch (e) {}
+        try { updateUI(); } catch (e) {}
+        try { syncProductsFromServer(false); } catch (e) {}
+      }
           fb.className = "rounded-lg px-2.5 py-2 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800";
           fb.textContent = `✅ ${item.displayName} 자동 입력 완료 (높이 ${item.h}cm · 폭 ${item.w}cm · 홀잭 ${item.jh}cm)`;
           fb.classList.remove("hidden");
