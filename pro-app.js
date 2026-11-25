@@ -575,7 +575,6 @@
     const manSync = byId("proManualSyncBtn");
     const tentManSync = byId("proTentManualSyncBtn");
     const epInp = byId("proSyncEndpointInput");
-    const tentEpInp = byId("proTentSyncEndpointInput");
     if (hdrBtn) hdrBtn.textContent = state.adminUnlocked ? "🔓" : "🔒";
     if (panel) panel.classList.toggle("hidden", !state.adminUnlocked);
     if (tentPanel) tentPanel.classList.toggle("hidden", !state.adminUnlocked);
@@ -583,7 +582,6 @@
     if (manSync) manSync.classList.toggle("hidden", !state.adminUnlocked);
     if (tentManSync) tentManSync.classList.toggle("hidden", !state.adminUnlocked);
     if (epInp) epInp.value = state.syncEndpoint || "/api/products";
-    if (tentEpInp) tentEpInp.value = state.tentSyncEndpoint || "/api/tents";
     renderProductsTab();
     renderTentsTab();
   }
@@ -2246,11 +2244,65 @@
     // 7-2) 관리자 모드: 텐트 DB Supabase 연동 + 추가·수정·삭제·초기화·JSON 복사
     onEl("proTentManualSyncBtn", "click", () => syncTentsFromServer(true));
     onEl("proAdminSyncTentsNowBtn", "click", () => syncTentsFromServer(true));
-    onEl("proSaveTentSyncEndpointBtn", "click", () => {
-      const inp = byId("proTentSyncEndpointInput");
-      state.tentSyncEndpoint = (inp && inp.value.trim()) ? inp.value.trim() : "/api/tents";
-      try { localStorage.setItem("ct_pro_tent_sync_endpoint", state.tentSyncEndpoint); } catch (e) {}
-      syncTentsFromServer(true);
+    const runExtractTentFromUrl = async () => {
+      if (!state.adminUnlocked) return;
+      const urlInp = byId("adminTentSourceUrl");
+      const fetchBtn = byId("adminFetchTentUrlBtn");
+      const fbEl = byId("adminTentUrlFeedback");
+      const rawUrl = (urlInp ? urlInp.value : "").trim();
+      if (!rawUrl || !/^https?:\/\//i.test(rawUrl)) {
+        showToast("http:// 또는 https:// 로 시작하는 텐트 페이지 주소를 입력해 주세요.");
+        return;
+      }
+
+      if (fetchBtn) { fetchBtn.disabled = true; fetchBtn.textContent = "분석 중..."; }
+      if (fbEl) {
+        fbEl.className = "rounded-md px-2.5 py-1.5 text-[11px] font-semibold bg-sky-50 border border-sky-200 text-sky-800";
+        fbEl.textContent = "⏳ 웹페이지에서 텐트 브랜드·모델명·설치 사이즈를 분석하고 있습니다...";
+        fbEl.classList.remove("hidden");
+      }
+
+      const res = await pushTentToServer("POST", { action: "extract_url", url: rawUrl });
+
+      if (fetchBtn) { fetchBtn.disabled = false; fetchBtn.textContent = "🔍 주소에서 사이즈 자동 입력"; }
+
+      if (!res.ok || !res.data || !res.data.tent) {
+        if (fbEl) {
+          fbEl.className = "rounded-md px-2.5 py-1.5 text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-900";
+          fbEl.textContent = `⚠️ ${res.error || "페이지 분석에 실패했습니다."}`;
+          fbEl.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const t = res.data.tent;
+      if (t.origin) setVal("adminTentOrigin", t.origin);
+      if (t.brand) setVal("adminTentBrand", t.brand);
+      if (t.name) setVal("adminTentName", t.name);
+      if (t.shape) setVal("adminTentShape", t.shape);
+      if (t.defaultPath) setVal("adminTentPath", t.defaultPath);
+      if (t.w) setVal("adminTentWidth", t.w);
+      if (t.l) setVal("adminTentLength", t.l);
+      if (t.peakHeight) setVal("adminTentHeight", t.peakHeight);
+      if (t.defaultJackHeight) setVal("adminTentJackHeight", t.defaultJackHeight);
+      if (typeof t.sw === "number") setVal("adminTentSw", t.sw);
+
+      if (fbEl) {
+        if (res.data.foundDimensions) {
+          fbEl.className = "rounded-md px-2.5 py-1.5 text-[11px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800";
+          fbEl.textContent = `✅ 자동 입력 완료 (${res.data.method === "ai" ? "AI 정밀 분석" : "규격 패턴 추출"}): ${t.brand} ${t.name} · 폭 ${t.w}×길이 ${t.l}×높이 ${t.peakHeight}cm (홀잭 ${t.defaultJackHeight}cm). 수치 확인 후 [➕ 텐트 추가]를 눌러주세요.`;
+        } else {
+          fbEl.className = "rounded-md px-2.5 py-1.5 text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-900";
+          fbEl.textContent = `⚠️ ${res.data.warning || "치수를 자동 추출하지 못해 기본값으로 채웠습니다. 수치를 확인해 주세요."}`;
+        }
+        fbEl.classList.remove("hidden");
+      }
+      showToast(res.data.foundDimensions ? "URL에서 텐트 사이즈를 자동으로 입력했습니다!" : "브랜드/제목만 추출되었습니다. 치수를 확인해 주세요.");
+    };
+
+    onEl("adminFetchTentUrlBtn", "click", runExtractTentFromUrl);
+    onEl("adminTentSourceUrl", "keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); runExtractTentFromUrl(); }
     });
 
     onEl("adminAddTentBtn", "click", async () => {
@@ -2319,6 +2371,8 @@
       if (byId("adminTentBrand")) byId("adminTentBrand").value = "";
       if (byId("adminTentName")) byId("adminTentName").value = "";
       if (byId("adminTentSw")) byId("adminTentSw").value = "";
+      if (byId("adminTentSourceUrl")) byId("adminTentSourceUrl").value = "";
+      if (byId("adminTentUrlFeedback")) byId("adminTentUrlFeedback").classList.add("hidden");
 
       if (remoteRes.ok) {
         showToast(`✅ "${brand} ${name}" Supabase에 영구 저장 완료! 모든 고객에게 자동 노출됩니다.`);
