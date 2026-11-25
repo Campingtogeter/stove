@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>캠핑투게더 — 그림으로 10초 만에 계산하는 화목난로 연통 시뮬레이터</title>
+  <title>캠핑투게더 — 화목난로 연통 시뮬레이터</title>
   <meta name="description" content="그림 한 장을 보며 텐트·난로·스탠드·홀잭 높이만 선택하면 필요한 연통 본수와 구성품을 10초 만에 추천해 드립니다." />
   <link rel="canonical" href="https://stove-iota.vercel.app/" />
   <meta property="og:type" content="website" />
@@ -2529,8 +2529,8 @@
           });
           data.products.forEach((r) => {
             if (!r || !r.name) return;
-            const no = String(r.productNo || "").trim();
-            const target = (r.id && PRODUCTS[r.id]) || (no && byNo[no]) || null;
+            const no = String(r.productNo || (String(r.url || "").match(/\/products\/(\d+)/) || [])[1] || "").trim();
+            const target = (no && byNo[no]) || (r.id && !/^\d+$/.test(String(r.id)) && PRODUCTS[r.id]) || null;
             if (target) {
               if (r.deleted) { target.deleted = true; target.status = "삭제됨"; }
               else {
@@ -2540,8 +2540,8 @@
                 if (r.status) target.status = r.status;
                 if (r.url && /^https?:\/\//i.test(r.url)) target.url = r.url;
               }
-            } else if (!r.deleted) {
-              const nid = r.id && !PRODUCTS[r.id] ? r.id : (no ? `naver_${no}` : `naver_${Date.now()}`);
+            } else if (!r.deleted && r.isChimneyAccessory !== false) {
+              const nid = no ? `naver_${no}` : (r.id && !PRODUCTS[r.id] ? String(r.id) : `naver_${Date.now()}`);
               PRODUCTS[nid] = { id: nid, mat: r.mat || "stainless", name: r.name, price: Number(r.price) || 0, status: r.status || "판매중", url: r.url || STORE_URL };
             }
           });

@@ -870,7 +870,8 @@
           if (!r || !r.name) return;
           const no = String(r.productNo || extractProductNoFromUrl(r.url) || "").trim();
           if (no) seenNos.add(no);
-          const target = (r.id && PRODUCTS[r.id]) || (no && byNo[no]) || null;
+          // DB 기본키(숫자 "1","2" 등)보다 스마트스토어 고유 상품번호(productNo / URL)를 최우선 매칭
+          const target = (no && byNo[no]) || (r.id && !/^\d+$/.test(String(r.id)) && PRODUCTS[r.id]) || null;
 
           if (target) {
             if (r.deleted) {
@@ -885,8 +886,8 @@
               if (r.url && /^https?:\/\//i.test(r.url)) target.url = r.url;
               updated++;
             }
-          } else if (!r.deleted) {
-            const newId = r.id && !PRODUCTS[r.id] ? r.id : (no ? `naver_${no}` : `naver_${Date.now()}_${added}`);
+          } else if (!r.deleted && r.isChimneyAccessory !== false) {
+            const newId = no ? `naver_${no}` : (r.id && !PRODUCTS[r.id] ? String(r.id) : `naver_${Date.now()}_${added}`);
             PRODUCTS[newId] = {
               id: newId,
               mat: r.mat || "stainless",

@@ -73,6 +73,10 @@ function normalizeRow(row) {
   const isStove = typeof row.is_stove === "boolean"
     ? row.is_stove
     : (/화목난로|장작난로/.test(name) && !/연통|엘보|댐퍼|레듀셔|후렌지|보호망|고정링|도킹툴|스탠드|가방|유리/.test(name));
+  const isChimneyAccessory = typeof row.is_chimney_accessory === "boolean"
+    ? row.is_chimney_accessory
+    : (isStove || /연통|엘보|댐퍼|레듀셔|후렌지|보호망|가이드링|고정링|불티캡|도킹툴|스탠드/.test(name)) &&
+      !/리벳|부지깽이|상판|유리패널|연소판|펠릿\s*연소기|화로대|바베큐/.test(name);
 
   return {
     id: String(row.code ?? row.simulator_id ?? row.id ?? (productNo ? `naver_${productNo}` : "")),
@@ -84,6 +88,7 @@ function normalizeRow(row) {
     url,
     mat,
     isStove,
+    isChimneyAccessory,
     updatedAt: row.updated_at ?? row.synced_at ?? row.modified_at ?? null
   };
 }
