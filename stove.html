@@ -332,7 +332,6 @@
       #diagramSettingsDrawer button { min-height: 38px; min-width: 38px; }
       #heroDiagramSection { position: static; }
       #heroSvg { width: 100%; max-height: none; }
-      .pipe-labels { display: none; }
       .mobile-reading { display: block; margin: .35rem .25rem; font-size: 13px; line-height: 1.55; }
       .touch-ctrl-grid { grid-template-columns: 1fr; }
       .touch-dock { padding: 9px 10px; }
@@ -2255,26 +2254,32 @@
           if(st.showNode) {
             const label=part.type==="doubleWall"?order+"단　◆":order+"단　"+name+(part.type==="doubleCap" && st.pipeSys!=="mixed_70_75"?" (교체)":["기본 구성","포몰리 호환 구성","혼합 구성"].includes(part.source)?"":" (추가)");
             const mx=(x1+x2)/2,my=(y1+y2)/2;
-            const width=Array.from(label).reduce((w,c)=>w+(c.charCodeAt(0)>255?9.5:6.3),8);
+            const nodeFont=mobile?11.2:9;
+            const boxH=mobile?17:15;
+            const boxTopOff=mobile?13:11;
+            const minXBound=mobile?vb.x+6:52;
+            const maxXBound=mobile?vb.x+vb.w-6:800;
+            const width=Array.from(label).reduce((w,c)=>w+(c.charCodeAt(0)>255?(mobile?11.5:9.5):(mobile?7.6:6.3)),mobile?10:8);
             const preferred=pipeNames.length%2?-1:1;
             let chosen;
-            for(const dy of [0,-14,14,-28,28,-42,42]){
+            const offsets=mobile?[0,-16,16,-32,32,-48,48]:[0,-14,14,-28,28,-42,42];
+            for(const dy of offsets){
               for(const side of [preferred,-preferred]){
-                const lx=mx+side*(elbow?56:22),left=side<0?lx-width:lx,baseline=my+dy;
-                if(left<52||left+width>800||baseline<13||baseline>gY)continue;
-                if(!overlapsAny(left,baseline-11,width,15)){chosen={lx,left,baseline,side};break;}
+                const lx=mx+side*(elbow?56:(mobile?20:22)),left=side<0?lx-width:lx,baseline=my+dy;
+                if(left<minXBound||left+width>maxXBound||baseline<15||baseline>gY)continue;
+                if(!overlapsAny(left,baseline-boxTopOff,width,boxH)){chosen={lx,left,baseline,side};break;}
               }
               if(chosen)break;
             }
             if(!chosen){
-              const left=Math.max(54,Math.min(790-width,mx+22));
+              const left=Math.max(minXBound,Math.min(maxXBound-width,mx+20));
               const baseline=Math.abs(my-sparkMinY)<25?sparkMinY+25:my;
               chosen={lx:left,left,baseline,side:1};
             }
             const {lx,left,baseline,side}=chosen;
-            reserveBox(left,baseline-11,width,15);
-            if(Math.abs(baseline-my)>4)labelsHtml+=`<line x1="${mx}" y1="${my}" x2="${lx}" y2="${baseline-3}" stroke="#81909e" stroke-width=".7"/>`;
-            labelsHtml+=`<text x="${lx}" y="${baseline}" text-anchor="${side<0?"end":"start"}" font-size="9" fill="#243448" stroke="white" stroke-width="2.5" paint-order="stroke">${label}</text>`;
+            reserveBox(left,baseline-boxTopOff,width,boxH);
+            if(Math.abs(baseline-my)>4)labelsHtml+=`<line x1="${mx}" y1="${my}" x2="${lx}" y2="${baseline-3}" stroke="#81909e" stroke-width=".8"/>`;
+            labelsHtml+=`<text x="${lx}" y="${baseline}" text-anchor="${side<0?"end":"start"}" font-size="${nodeFont}" font-weight="${mobile?"700":"600"}" fill="#1e293b" stroke="white" stroke-width="${mobile?"3":"2.5"}" paint-order="stroke">${label}</text>`;
           }
         }
       } else for (let i = 0; i < sim.totalSeg; i++) {
@@ -2338,8 +2343,8 @@
           const mp = sample((d0 + d1) / 2);
           const horiz = Math.abs(mp.ux) > 0.7;
           const txt = `${i + 1}단　${dia}${isExtraAdded ? "+" : ""}`;
-          const pw = Math.max(40, txt.length * 5.8 + 10);
-          const ph = 15;
+          const pw = Math.max(mobile ? 52 : 40, txt.length * (mobile ? 7.2 : 5.8) + 12);
+          const ph = mobile ? 19 : 15;
           const prefSide = i % 2 === 0 ? -1 : 1;
 
           const candidates = horiz
@@ -2375,7 +2380,7 @@
             labelsHtml += `
               <line x1="${mp.x.toFixed(1)}" y1="${mp.y.toFixed(1)}" x2="${chosen.lxPos.toFixed(1)}" y2="${chosen.lyPos.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-opacity="0.7"/>
               <rect x="${chosen.bx.toFixed(1)}" y="${chosen.by.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph}" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/>
-              <text x="${chosen.lxPos.toFixed(1)}" y="${(chosen.lyPos + 3.2).toFixed(1)}" fill="#0f172a" font-size="8.6" font-weight="800" text-anchor="middle">${txt}</text>
+              <text x="${chosen.lxPos.toFixed(1)}" y="${(chosen.lyPos + (mobile ? 4 : 3.2)).toFixed(1)}" fill="#0f172a" font-size="${mobile ? 10.8 : 8.6}" font-weight="800" text-anchor="middle">${txt}</text>
             `;
           }
         }
